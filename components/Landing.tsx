@@ -1,6 +1,4 @@
-
 import React from 'react';
-// Import Variants to correctly type motion configurations and ensure literal types like 'spring' are preserved
 import { motion, Variants } from 'framer-motion';
 import { ArrowUpRight, Fingerprint, Scan, Shield } from 'lucide-react';
 
@@ -58,6 +56,7 @@ const Landing: React.FC<Props> = ({ onStart }) => {
         AI-powered auditing of your first impression. Advanced neural analysis to calibrate your impact.
       </motion.p>
 
+      {/* Button Container */}
       <motion.div variants={item} className="flex flex-wrap justify-center gap-6">
         <motion.button 
           onClick={onStart}
@@ -72,6 +71,7 @@ const Landing: React.FC<Props> = ({ onStart }) => {
         </motion.button>
       </motion.div>
       
+      {/* Features Grid */}
       <div className="mt-40 grid grid-cols-1 md:grid-cols-3 gap-px bg-white/10 w-full overflow-hidden rounded-[2rem] border border-white/10">
         {[
           { icon: <Fingerprint className="w-6 h-6" />, title: "Biometric Audit", desc: "Deciphering non-verbal cues with 99.8% precision." },
