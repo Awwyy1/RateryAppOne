@@ -1,11 +1,11 @@
 
-import React from 'react';
+import React, { useState, useRef } from 'react';
 // Import Variants to correctly type motion configurations and ensure literal types like 'spring' are preserved
 import { motion, Variants } from 'framer-motion';
 import { MOCK_RESULTS, INSIGHTS } from '../constants';
 import { AnalysisResult } from '../types';
 import RadarChart from './RadarChart';
-import { Download, Share2, Target, Zap, Shield, Cpu, ExternalLink } from 'lucide-react';
+import { Download, Share2, Target, Zap, Shield, Cpu, ExternalLink, Check, Copy } from 'lucide-react';
 
 interface Props {
   photo: string | null;
@@ -13,10 +13,96 @@ interface Props {
 }
 
 const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
+  const [shareStatus, setShareStatus] = useState<'idle' | 'copied' | 'shared'>('idle');
+  const [isDownloading, setIsDownloading] = useState(false);
+  const reportRef = useRef<HTMLDivElement>(null);
+
   // Use real analysis results if available, otherwise fall back to mocks
   const metrics = analysisResult?.metrics || MOCK_RESULTS;
   const insights = analysisResult?.insights || INSIGHTS;
   const overallScore = analysisResult?.overallScore || 8.4;
+
+  // Share functionality
+  const handleShare = async () => {
+    const shareData = {
+      title: 'My Ratery Perception Audit',
+      text: `I scored ${overallScore.toFixed(1)}/10 on my first impression audit! Check out Ratery for your own AI-powered perception analysis.`,
+      url: window.location.href
+    };
+
+    try {
+      if (navigator.share && navigator.canShare(shareData)) {
+        await navigator.share(shareData);
+        setShareStatus('shared');
+      } else {
+        // Fallback: copy to clipboard
+        await navigator.clipboard.writeText(
+          `${shareData.text}\n\n${shareData.url}`
+        );
+        setShareStatus('copied');
+      }
+      setTimeout(() => setShareStatus('idle'), 2000);
+    } catch (err) {
+      console.error('Share failed:', err);
+    }
+  };
+
+  // Download functionality - generates a text report
+  const handleDownload = async () => {
+    setIsDownloading(true);
+
+    try {
+      // Generate report content
+      const reportContent = `
+╔══════════════════════════════════════════════════════════════╗
+║                    RATERY PERCEPTION AUDIT                     ║
+║                      AI Analysis Report                        ║
+╚══════════════════════════════════════════════════════════════╝
+
+Generated: ${new Date().toLocaleString()}
+Overall Impact Score: ${overallScore.toFixed(1)} / 10
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DETAILED METRICS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+${metrics.map(m => `
+${m.label.toUpperCase()}
+  Score: ${m.value}/100 (Benchmark: ${m.benchmark})
+  ${m.value >= m.benchmark ? '↑' : '↓'} ${Math.abs(m.value - m.benchmark)} ${m.value >= m.benchmark ? 'above' : 'below'} average
+  ${m.description}
+`).join('\n')}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+AI INSIGHTS & RECOMMENDATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+${insights.map((insight, i) => `${i + 1}. ${insight}`).join('\n\n')}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Powered by Ratery AI • ratery.app
+This analysis was performed using Claude Vision AI
+      `.trim();
+
+      // Create blob and download
+      const blob = new Blob([reportContent], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ratery-audit-${Date.now()}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Download failed:', err);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   // Explicitly type variants to avoid 'string' vs literal type mismatches in framer-motion transitions
   const container: Variants = {
@@ -32,6 +118,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
 
   return (
     <motion.div
+      ref={reportRef}
       variants={container}
       initial="hidden"
       animate="show"
@@ -66,11 +153,43 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
             </div>
 
             <div className="pt-4 border-t border-white/5 space-y-2">
-              <button className="w-full py-4 bg-white text-black font-black rounded-2xl flex items-center justify-center gap-2 hover:bg-[#00f0ff] transition-all text-xs uppercase tracking-widest">
-                <Download className="w-4 h-4" /> Download Audit
+              <button
+                onClick={handleDownload}
+                disabled={isDownloading}
+                className="w-full py-4 bg-white text-black font-black rounded-2xl flex items-center justify-center gap-2 hover:bg-[#00f0ff] transition-all text-xs uppercase tracking-widest disabled:opacity-50"
+              >
+                {isDownloading ? (
+                  <>
+                    <motion.div
+                      className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full"
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                    />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4" /> Download Audit
+                  </>
+                )}
               </button>
-              <button className="w-full py-4 bg-white/5 border border-white/10 text-white font-bold rounded-2xl flex items-center justify-center gap-2 hover:bg-white/10 transition-all text-xs uppercase tracking-widest">
-                <Share2 className="w-4 h-4" /> Share Results
+              <button
+                onClick={handleShare}
+                className="w-full py-4 bg-white/5 border border-white/10 text-white font-bold rounded-2xl flex items-center justify-center gap-2 hover:bg-white/10 transition-all text-xs uppercase tracking-widest"
+              >
+                {shareStatus === 'copied' ? (
+                  <>
+                    <Check className="w-4 h-4 text-green-500" /> Copied to Clipboard
+                  </>
+                ) : shareStatus === 'shared' ? (
+                  <>
+                    <Check className="w-4 h-4 text-green-500" /> Shared!
+                  </>
+                ) : (
+                  <>
+                    <Share2 className="w-4 h-4" /> Share Results
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -83,7 +202,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
           <div className="flex justify-between items-start mb-8">
             <div>
               <h2 className="text-3xl font-black tracking-tighter mb-2">Social Blueprint</h2>
-              <p className="text-white/30 text-xs font-bold uppercase tracking-widest">Multidimensional consensus mapping</p>
+              <p className="text-white/30 text-xs font-bold uppercase tracking-widest">AI-powered perception mapping</p>
             </div>
             <div className="flex gap-4 p-2 bg-black/20 rounded-xl border border-white/5">
               <div className="flex items-center gap-2 px-3 py-1">

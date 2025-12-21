@@ -17,6 +17,8 @@ interface AnalysisResult {
   overallScore: number;
   metrics: MetricData[];
   insights: string[];
+  isValidFace?: boolean;
+  validationMessage?: string;
 }
 
 export default async function handler(
@@ -44,25 +46,29 @@ export default async function handler(
     const mediaType = matches[1] as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp';
     const base64Data = matches[2];
 
-    // Create the prompt for facial analysis
-    const prompt = `You are a professional first-impression and social perception analyst. Analyze this facial photo and provide a detailed perception audit.
+    // Create the prompt for facial analysis with validation
+    const prompt = `You are a professional first-impression and social perception analyst. Your task is to analyze facial photos of REAL HUMAN FACES ONLY.
 
-IMPORTANT: Respond ONLY with valid JSON, no markdown formatting, no code blocks, just raw JSON.
+IMPORTANT VALIDATION STEP:
+First, determine if this image contains a clear, real human face suitable for perception analysis.
 
-Evaluate the following metrics on a scale of 0-100:
-1. Trustworthiness - How reliable and honest does the person appear?
-2. Charisma - What is their magnetic/attractive presence level?
-3. Intelligence - How intellectually capable do they appear?
-4. Approachability - How easy would it be to start a conversation with them?
-5. Authority - How commanding is their leadership presence?
-6. Energy - What is their perceived vitality and engagement level?
+REJECT the image if:
+- It's a landscape, object, animal, or non-human subject
+- It's a cartoon, anime, illustration, or AI-generated character
+- It's a robot, mask, or artificial face
+- The face is too blurry, too small, or not visible
+- It's a group photo without a clear primary subject
+- It's a meme, screenshot, or non-portrait image
 
-Also provide:
-- An overall impact score (0-10 with one decimal)
-- 3 specific, actionable insights about their appearance that could help improve first impressions
-
-Respond in this exact JSON format:
+If the image is NOT a valid human face photo, respond with EXACTLY this JSON:
 {
+  "isValidFace": false,
+  "validationMessage": "[Explain why this image cannot be analyzed - e.g., 'This appears to be a landscape photo' or 'No human face detected']"
+}
+
+If the image IS a valid human face photo, analyze it and respond with:
+{
+  "isValidFace": true,
   "overallScore": 8.2,
   "metrics": [
     {"label": "Trustworthiness", "value": 85, "benchmark": 72, "description": "Brief explanation of score"},
@@ -79,7 +85,15 @@ Respond in this exact JSON format:
   ]
 }
 
-Base benchmarks on average population scores. Be objective but constructive in your analysis.`;
+Evaluate these metrics on a scale of 0-100:
+1. Trustworthiness - How reliable and honest does the person appear?
+2. Charisma - What is their magnetic/attractive presence level?
+3. Intelligence - How intellectually capable do they appear?
+4. Approachability - How easy would it be to start a conversation with them?
+5. Authority - How commanding is their leadership presence?
+6. Energy - What is their perceived vitality and engagement level?
+
+RESPOND ONLY WITH VALID JSON, no markdown, no code blocks.`;
 
     // Call Claude API with vision
     const response = await anthropic.messages.create({
@@ -122,28 +136,26 @@ Base benchmarks on average population scores. Be objective but constructive in y
       analysisResult = JSON.parse(cleanedText);
     } catch (parseError) {
       console.error('Failed to parse Claude response:', text);
-      // Return a fallback result if parsing fails
-      analysisResult = {
-        overallScore: 7.5,
-        metrics: [
-          { label: 'Trustworthiness', value: 75, benchmark: 72, description: 'Analysis pending - please try again.' },
-          { label: 'Charisma', value: 70, benchmark: 65, description: 'Analysis pending - please try again.' },
-          { label: 'Intelligence', value: 80, benchmark: 78, description: 'Analysis pending - please try again.' },
-          { label: 'Approachability', value: 68, benchmark: 70, description: 'Analysis pending - please try again.' },
-          { label: 'Authority', value: 72, benchmark: 68, description: 'Analysis pending - please try again.' },
-          { label: 'Energy', value: 70, benchmark: 60, description: 'Analysis pending - please try again.' }
-        ],
-        insights: [
-          'Unable to fully process the image. Please try with a clearer headshot.',
-          'Ensure good lighting and a neutral background for best results.',
-          'Front-facing photos with visible facial features work best.'
-        ]
-      };
+      return res.status(400).json({
+        isValidFace: false,
+        validationMessage: 'Unable to process the image. Please try with a clearer headshot.'
+      });
     }
 
-    // Validate and sanitize the response
+    // Check if it's a valid face
+    if (analysisResult.isValidFace === false) {
+      return res.status(400).json({
+        isValidFace: false,
+        validationMessage: analysisResult.validationMessage || 'No valid human face detected in the image.'
+      });
+    }
+
+    // Validate the analysis response structure
     if (!analysisResult.overallScore || !analysisResult.metrics || !analysisResult.insights) {
-      throw new Error('Invalid response structure');
+      return res.status(400).json({
+        isValidFace: false,
+        validationMessage: 'Unable to complete facial analysis. Please try with a different photo.'
+      });
     }
 
     return res.status(200).json(analysisResult);
