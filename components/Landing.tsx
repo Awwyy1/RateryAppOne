@@ -70,11 +70,6 @@ const Landing: React.FC<Props> = ({ onStart }) => {
           </span>
           <div className="absolute inset-0 bg-[#00f0ff] translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
         </motion.button>
-        
-        <button className="px-10 py-5 bg-white/5 border border-white/10 rounded-full font-bold uppercase tracking-widest text-xs hover:bg-white/10 transition-all">
-          How It Works
-        </button>
-      </motion.div>
 
       <div className="mt-40 grid grid-cols-1 md:grid-cols-3 gap-px bg-white/10 w-full overflow-hidden rounded-[2rem] border border-white/10">
         {[
