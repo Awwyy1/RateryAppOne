@@ -70,7 +70,8 @@ const Landing: React.FC<Props> = ({ onStart }) => {
           </span>
           <div className="absolute inset-0 bg-[#00f0ff] translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
         </motion.button>
-
+        </motion.div>
+      
       <div className="mt-40 grid grid-cols-1 md:grid-cols-3 gap-px bg-white/10 w-full overflow-hidden rounded-[2rem] border border-white/10">
         {[
           { icon: <Fingerprint className="w-6 h-6" />, title: "Biometric Audit", desc: "Deciphering non-verbal cues with 99.8% precision." },
