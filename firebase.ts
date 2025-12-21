@@ -1,15 +1,14 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 
-// Firebase configuration - these values should be set in environment variables
-// For Vercel deployment, add these in the Vercel dashboard under Project Settings > Environment Variables
+// Firebase configuration
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || '',
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || '',
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || '',
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || ''
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyBA5e023wB-ZHr8RZ5DIL7zFAmeyVBHTAs",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "rateryappone.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "rateryappone",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "rateryappone.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "716505401460",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:716505401460:web:d913cbbd8e748418702921"
 };
 
 // Initialize Firebase

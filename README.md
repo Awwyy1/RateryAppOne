@@ -4,12 +4,12 @@
 
 # Ratery - AI-Powered Perception Audit
 
-An AI-powered facial perception analysis tool that uses Google Gemini Vision API to analyze first impressions.
+An AI-powered facial perception analysis tool that uses Claude Vision API to analyze first impressions.
 
 ## Features
 
 - **Google Authentication** - Secure sign-in with Google
-- **AI Face Analysis** - Real facial analysis using Gemini Vision API
+- **AI Face Analysis** - Real facial analysis using Claude Vision API
 - **Detailed Metrics** - Trustworthiness, Charisma, Intelligence, Approachability, Authority, Energy
 - **Beautiful UI** - Cyberpunk-inspired design with smooth animations
 
@@ -21,37 +21,20 @@ An AI-powered facial perception analysis tool that uses Google Gemini Vision API
 npm install
 ```
 
-### 2. Firebase Setup
+### 2. Firebase Setup (Already configured!)
 
-1. Go to [Firebase Console](https://console.firebase.google.com)
-2. Create a new project (or use existing)
-3. Go to **Authentication** > **Sign-in method** > Enable **Google**
-4. Go to **Project Settings** > **General** > **Your apps** > Add **Web app**
-5. Copy the config values
+Firebase project `rateryappone` is already set up. You just need to:
 
-### 3. Gemini API Setup
+1. Go to [Firebase Console](https://console.firebase.google.com) > Select `rateryappone`
+2. Go to **Authentication** > **Sign-in method** > Enable **Google**
+3. Go to **Authentication** > **Settings** > **Authorized domains** > Add your Vercel domain
 
-1. Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
+### 3. Claude API Setup
+
+1. Go to [Anthropic Console](https://console.anthropic.com/)
 2. Create an API key
 
-### 4. Environment Variables
-
-Create `.env.local` file in the root:
-
-```env
-# Firebase (for local development)
-VITE_FIREBASE_API_KEY=your-api-key
-VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=your-project-id
-VITE_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
-VITE_FIREBASE_MESSAGING_SENDER_ID=123456789
-VITE_FIREBASE_APP_ID=1:123456789:web:abc123
-
-# Gemini API (for local development with Vercel CLI)
-GEMINI_API_KEY=your-gemini-api-key
-```
-
-### 5. Run Locally
+### 4. Run Locally
 
 For full functionality with API routes, use Vercel CLI:
 
@@ -74,13 +57,9 @@ Go to your Vercel project > **Settings** > **Environment Variables** and add:
 
 | Variable | Value |
 |----------|-------|
-| `VITE_FIREBASE_API_KEY` | Your Firebase API key |
-| `VITE_FIREBASE_AUTH_DOMAIN` | your-project.firebaseapp.com |
-| `VITE_FIREBASE_PROJECT_ID` | your-project-id |
-| `VITE_FIREBASE_STORAGE_BUCKET` | your-project.appspot.com |
-| `VITE_FIREBASE_MESSAGING_SENDER_ID` | Your sender ID |
-| `VITE_FIREBASE_APP_ID` | Your app ID |
-| `GEMINI_API_KEY` | Your Gemini API key |
+| `ANTHROPIC_API_KEY` | Your Claude API key |
+
+Firebase config is already hardcoded as fallback values - no need to add Firebase env vars unless you want to override them.
 
 ### Firebase Auth Domain Configuration
 
@@ -93,5 +72,5 @@ In Firebase Console > Authentication > Settings > Authorized domains, add:
 - **Frontend**: React 19, TypeScript, Vite
 - **Styling**: Tailwind CSS, Framer Motion
 - **Auth**: Firebase Authentication
-- **AI**: Google Gemini Vision API
+- **AI**: Claude Vision API (Anthropic)
 - **Deployment**: Vercel

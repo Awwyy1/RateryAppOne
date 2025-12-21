@@ -1,8 +1,10 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import Anthropic from '@anthropic-ai/sdk';
 
-// Initialize the Gemini API with the API key from environment variables
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+// Initialize the Anthropic client
+const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY || '',
+});
 
 interface MetricData {
   label: string;
@@ -33,12 +35,14 @@ export default async function handler(
       return res.status(400).json({ error: 'No image provided' });
     }
 
-    // Extract base64 data from data URL
-    const base64Data = image.replace(/^data:image\/\w+;base64,/, '');
-    const mimeType = image.match(/^data:(image\/\w+);base64,/)?.[1] || 'image/jpeg';
+    // Extract base64 data and media type from data URL
+    const matches = image.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
+    if (!matches) {
+      return res.status(400).json({ error: 'Invalid image format' });
+    }
 
-    // Get the Gemini model with vision capabilities
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const mediaType = matches[1] as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp';
+    const base64Data = matches[2];
 
     // Create the prompt for facial analysis
     const prompt = `You are a professional first-impression and social perception analyst. Analyze this facial photo and provide a detailed perception audit.
@@ -77,19 +81,38 @@ Respond in this exact JSON format:
 
 Base benchmarks on average population scores. Be objective but constructive in your analysis.`;
 
-    // Generate content with the image
-    const result = await model.generateContent([
-      prompt,
-      {
-        inlineData: {
-          mimeType,
-          data: base64Data
-        }
-      }
-    ]);
+    // Call Claude API with vision
+    const response = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1024,
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'image',
+              source: {
+                type: 'base64',
+                media_type: mediaType,
+                data: base64Data,
+              },
+            },
+            {
+              type: 'text',
+              text: prompt,
+            },
+          ],
+        },
+      ],
+    });
 
-    const response = await result.response;
-    const text = response.text();
+    // Extract text from response
+    const textContent = response.content.find((block) => block.type === 'text');
+    if (!textContent || textContent.type !== 'text') {
+      throw new Error('No text response from Claude');
+    }
+
+    const text = textContent.text;
 
     // Parse the JSON response
     let analysisResult: AnalysisResult;
@@ -98,7 +121,7 @@ Base benchmarks on average population scores. Be objective but constructive in y
       const cleanedText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       analysisResult = JSON.parse(cleanedText);
     } catch (parseError) {
-      console.error('Failed to parse Gemini response:', text);
+      console.error('Failed to parse Claude response:', text);
       // Return a fallback result if parsing fails
       analysisResult = {
         overallScore: 7.5,

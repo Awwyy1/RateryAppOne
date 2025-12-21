@@ -160,7 +160,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
             </div>
             <div className="flex justify-between items-center text-[10px] font-mono font-bold text-white/40">
               <span>AI_ENGINE</span>
-              <span className="text-green-500">{analysisResult ? 'GEMINI' : 'STANDBY'}</span>
+              <span className="text-green-500">{analysisResult ? 'CLAUDE' : 'STANDBY'}</span>
             </div>
             <div className="pt-4">
               <button className="w-full py-3 bg-white/10 hover:bg-white/20 transition-all rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-2">
