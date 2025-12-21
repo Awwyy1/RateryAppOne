@@ -55,7 +55,7 @@ const Landing: React.FC<Props> = ({ onStart }) => {
         variants={item}
         className="max-w-2xl text-center text-white/40 text-lg md:text-xl font-medium leading-relaxed mb-16 px-4"
       >
-        AI-powered auditing of your first impression. Advanced neural analysis to calibrate your professional impact.
+        AI-powered auditing of your first impression. Advanced neural analysis to calibrate your impact.
       </motion.p>
 
       <motion.div variants={item} className="flex flex-wrap justify-center gap-6">
