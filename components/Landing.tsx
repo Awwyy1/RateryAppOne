@@ -55,7 +55,7 @@ const Landing: React.FC<Props> = ({ onStart }) => {
         variants={item}
         className="max-w-2xl text-center text-white/40 text-lg md:text-xl font-medium leading-relaxed mb-16 px-4"
       >
-        Scientific auditing of your first impression. Leveraging global social consensus to calibrate your professional impact.
+        AI-powered auditing of your first impression. Advanced neural analysis to calibrate your professional impact.
       </motion.p>
 
       <motion.div variants={item} className="flex flex-wrap justify-center gap-6">
@@ -72,14 +72,14 @@ const Landing: React.FC<Props> = ({ onStart }) => {
         </motion.button>
         
         <button className="px-10 py-5 bg-white/5 border border-white/10 rounded-full font-bold uppercase tracking-widest text-xs hover:bg-white/10 transition-all">
-          Research Paper
+          How It Works
         </button>
       </motion.div>
 
       <div className="mt-40 grid grid-cols-1 md:grid-cols-3 gap-px bg-white/10 w-full overflow-hidden rounded-[2rem] border border-white/10">
         {[
           { icon: <Fingerprint className="w-6 h-6" />, title: "Biometric Audit", desc: "Deciphering non-verbal cues with 99.8% precision." },
-          { icon: <Scan className="w-6 h-6" />, title: "Social Radar", desc: "Cross-referencing global perception databases." },
+          { icon: <Scan className="w-6 h-6" />, title: "Neural Analysis", desc: "Advanced AI evaluating facial perception markers." },
           { icon: <Shield className="w-6 h-6" />, title: "Zero Trust", desc: "Encrypted analysis. Your image never leaves the RAM." }
         ].map((feat, i) => (
           <motion.div 

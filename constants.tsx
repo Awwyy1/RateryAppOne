@@ -10,8 +10,8 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
     icon: "Eye"
   },
   {
-    title: "Social Consensus",
-    description: "Our engine uses a proprietary blend of crowd analysis and behavioral psychology for objective results.",
+    title: "AI Analysis",
+    description: "Our engine uses advanced neural networks trained on perception psychology for objective results.",
     icon: "Users"
   },
   {

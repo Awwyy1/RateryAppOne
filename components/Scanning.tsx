@@ -1,11 +1,12 @@
 
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useEffect, useState, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { AnalysisResult } from '../types';
+import { AlertTriangle, ArrowLeft } from 'lucide-react';
 
 interface Props {
   photo: string | null;
-  onComplete: (result: AnalysisResult) => void;
+  onComplete: (result: AnalysisResult | null, error?: string) => void;
 }
 
 const Scanning: React.FC<Props> = ({ photo, onComplete }) => {
@@ -14,6 +15,7 @@ const Scanning: React.FC<Props> = ({ photo, onComplete }) => {
   const [tickerData, setTickerData] = useState('');
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
   const [apiComplete, setApiComplete] = useState(false);
 
   // Generate random hex-like data for the top ticker
@@ -43,33 +45,20 @@ const Scanning: React.FC<Props> = ({ photo, onComplete }) => {
           body: JSON.stringify({ image: photo }),
         });
 
-        if (!response.ok) {
-          throw new Error('Analysis failed');
+        const result = await response.json();
+
+        // Check for validation error (not a valid face)
+        if (!response.ok || result.isValidFace === false) {
+          setValidationError(result.validationMessage || 'No valid human face detected in the image.');
+          setApiComplete(true);
+          return;
         }
 
-        const result = await response.json();
         setAnalysisResult(result);
         setApiComplete(true);
       } catch (err) {
         console.error('Analysis error:', err);
         setError('Failed to analyze image. Please try again.');
-        // Fallback result in case of error
-        setAnalysisResult({
-          overallScore: 7.5,
-          metrics: [
-            { label: 'Trustworthiness', value: 75, benchmark: 72, description: 'Unable to fully analyze.' },
-            { label: 'Charisma', value: 70, benchmark: 65, description: 'Unable to fully analyze.' },
-            { label: 'Intelligence', value: 80, benchmark: 78, description: 'Unable to fully analyze.' },
-            { label: 'Approachability', value: 68, benchmark: 70, description: 'Unable to fully analyze.' },
-            { label: 'Authority', value: 72, benchmark: 68, description: 'Unable to fully analyze.' },
-            { label: 'Energy', value: 70, benchmark: 60, description: 'Unable to fully analyze.' }
-          ],
-          insights: [
-            'Analysis encountered an issue. Results may be limited.',
-            'Try uploading a clearer headshot for better results.',
-            'Ensure your face is well-lit and clearly visible.'
-          ]
-        });
         setApiComplete(true);
       }
     };
@@ -77,33 +66,37 @@ const Scanning: React.FC<Props> = ({ photo, onComplete }) => {
     analyzePhoto();
   }, [photo]);
 
-  // Progress animation - runs faster initially, then waits for API
+  // Progress animation
   useEffect(() => {
     const statusUpdates = [
       'CORE_SYNC_ESTABLISHED',
       'EXTRACTING_FACIAL_GEOMETRY',
       'ANALYZING_MICRO_EXPRESSIONS',
-      'CALIBRATING_SOCIAL_WEIGHTS',
+      'CALIBRATING_PERCEPTION_WEIGHTS',
       'GENERATING_PERCEPTION_MAP',
       'FINALIZING_AUDIT_REPORT'
     ];
 
     const timer = setInterval(() => {
       setProgress(prev => {
-        // If API is done and we're past 80%, go to 100%
+        if (validationError && prev >= 50) {
+          return 50; // Stop at 50% if validation failed
+        }
         if (apiComplete && prev >= 80) {
           return Math.min(prev + 5, 100);
         }
-        // If API not done, slow down at 80%
         if (!apiComplete && prev >= 80) {
           return 80;
         }
-        // Normal progress
         return prev + 1;
       });
     }, 45);
 
     const statusInterval = setInterval(() => {
+      if (validationError) {
+        setStatus('VALIDATION_FAILED');
+        return;
+      }
       const statusIndex = Math.floor((progress / 100) * (statusUpdates.length - 1));
       setStatus(statusUpdates[statusIndex] || statusUpdates[0]);
     }, 800);
@@ -112,17 +105,22 @@ const Scanning: React.FC<Props> = ({ photo, onComplete }) => {
       clearInterval(timer);
       clearInterval(statusInterval);
     };
-  }, [progress, apiComplete]);
+  }, [progress, apiComplete, validationError]);
 
   // Complete when both progress and API are done
   useEffect(() => {
-    if (progress >= 100 && analysisResult) {
+    if (progress >= 100 && analysisResult && !validationError) {
       const timer = setTimeout(() => {
         onComplete(analysisResult);
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [progress, analysisResult, onComplete]);
+  }, [progress, analysisResult, validationError, onComplete]);
+
+  // Handle going back on validation error
+  const handleGoBack = () => {
+    onComplete(null, validationError || 'Invalid image');
+  };
 
   // Biometric markers logic
   const markers = useMemo(() => {
@@ -146,6 +144,49 @@ const Scanning: React.FC<Props> = ({ photo, onComplete }) => {
           {new Date().toISOString()}
         </span>
       </div>
+
+      {/* Validation Error Modal */}
+      {validationError && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+        >
+          <div className="glass p-8 rounded-[2rem] max-w-md mx-4 border border-red-500/20 bg-red-500/5">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center">
+                <AlertTriangle className="w-6 h-6 text-red-500" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-red-400">Invalid Image</h3>
+                <p className="text-[10px] uppercase tracking-widest text-white/40">Analysis Rejected</p>
+              </div>
+            </div>
+
+            <p className="text-sm text-white/60 mb-6 leading-relaxed">
+              {validationError}
+            </p>
+
+            <div className="p-4 bg-white/5 rounded-xl mb-6">
+              <p className="text-[10px] uppercase tracking-widest text-white/40 mb-2">Requirements:</p>
+              <ul className="text-xs text-white/60 space-y-1">
+                <li>• Clear, front-facing human face</li>
+                <li>• Good lighting conditions</li>
+                <li>• No cartoons, robots, or AI-generated faces</li>
+                <li>• Single person in the photo</li>
+              </ul>
+            </div>
+
+            <button
+              onClick={handleGoBack}
+              className="w-full py-4 bg-white text-black font-bold rounded-2xl flex items-center justify-center gap-2 hover:bg-[#00f0ff] transition-all"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Try Another Photo
+            </button>
+          </div>
+        </motion.div>
+      )}
 
       <div className="relative flex flex-col md:flex-row gap-12 items-center justify-center w-full">
 
@@ -174,26 +215,27 @@ const Scanning: React.FC<Props> = ({ photo, onComplete }) => {
           <div className="absolute -bottom-6 -left-6 w-12 h-12 border-b border-l border-[#00f0ff]/50 rounded-bl-2xl" />
           <div className="absolute -bottom-6 -right-6 w-12 h-12 border-b border-r border-[#00f0ff]/50 rounded-br-2xl" />
 
-          <div className="relative w-[340px] md:w-[420px] aspect-[3/4] rounded-3xl overflow-hidden bg-black shadow-[0_0_100px_rgba(0,240,255,0.05)] border border-white/10">
+          <div className={`relative w-[340px] md:w-[420px] aspect-[3/4] rounded-3xl overflow-hidden bg-black shadow-[0_0_100px_rgba(0,240,255,0.05)] border ${validationError ? 'border-red-500/30' : 'border-white/10'}`}>
             {photo && (
               <>
                 <motion.img
                   src={photo}
-                  className="w-full h-full object-cover grayscale opacity-40 brightness-110"
+                  className={`w-full h-full object-cover grayscale brightness-110 ${validationError ? 'opacity-20' : 'opacity-40'}`}
                   animate={{
-                    filter: progress % 10 === 0 ? ['grayscale(1) brightness(1)', 'grayscale(0) brightness(1.5)', 'grayscale(1) brightness(1)'] : 'grayscale(1) brightness(1)',
-                    scale: progress % 25 === 0 ? [1, 1.02, 1] : 1
+                    filter: progress % 10 === 0 && !validationError ? ['grayscale(1) brightness(1)', 'grayscale(0) brightness(1.5)', 'grayscale(1) brightness(1)'] : 'grayscale(1) brightness(1)',
+                    scale: progress % 25 === 0 && !validationError ? [1, 1.02, 1] : 1
                   }}
                   transition={{ duration: 0.1 }}
                 />
-                {/* Chromatic Aberration Layers */}
-                <motion.img
-                  src={photo}
-                  className="absolute inset-0 w-full h-full object-cover mix-blend-screen opacity-20 contrast-150"
-                  style={{ filter: 'hue-rotate(90deg) grayscale(1)' }}
-                  animate={{ x: [-2, 2, -2], y: [1, -1, 1] }}
-                  transition={{ duration: 0.2, repeat: Infinity }}
-                />
+                {!validationError && (
+                  <motion.img
+                    src={photo}
+                    className="absolute inset-0 w-full h-full object-cover mix-blend-screen opacity-20 contrast-150"
+                    style={{ filter: 'hue-rotate(90deg) grayscale(1)' }}
+                    animate={{ x: [-2, 2, -2], y: [1, -1, 1] }}
+                    transition={{ duration: 0.2, repeat: Infinity }}
+                  />
+                )}
               </>
             )}
 
@@ -202,17 +244,19 @@ const Scanning: React.FC<Props> = ({ photo, onComplete }) => {
               style={{ backgroundImage: 'linear-gradient(transparent 50%, rgba(0, 240, 255, 0.1) 50%)', backgroundSize: '100% 4px' }} />
 
             {/* SCANNING BEAM */}
-            <motion.div
-              animate={{ top: ['-5%', '105%'] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-              className="absolute left-0 right-0 h-16 z-20 pointer-events-none"
-            >
-              <div className="w-full h-[2px] bg-[#00f0ff] shadow-[0_0_30px_#00f0ff,0_0_60px_#00f0ff]" />
-              <div className="w-full h-full bg-gradient-to-b from-[#00f0ff]/20 to-transparent" />
-            </motion.div>
+            {!validationError && (
+              <motion.div
+                animate={{ top: ['-5%', '105%'] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                className="absolute left-0 right-0 h-16 z-20 pointer-events-none"
+              >
+                <div className="w-full h-[2px] bg-[#00f0ff] shadow-[0_0_30px_#00f0ff,0_0_60px_#00f0ff]" />
+                <div className="w-full h-full bg-gradient-to-b from-[#00f0ff]/20 to-transparent" />
+              </motion.div>
+            )}
 
             {/* BIOMETRIC POINTS */}
-            {markers.map((m) => (
+            {!validationError && markers.map((m) => (
               <motion.div
                 key={m.id}
                 className="absolute z-30 flex items-start gap-1"
@@ -230,19 +274,23 @@ const Scanning: React.FC<Props> = ({ photo, onComplete }) => {
             ))}
 
             {/* COORDINATE CROSSHAIR */}
-            <motion.div
-              className="absolute w-full h-px bg-white/5 z-10"
-              animate={{ top: ['20%', '80%', '20%'] }}
-              transition={{ duration: 5, repeat: Infinity }}
-            />
-            <motion.div
-              className="absolute h-full w-px bg-white/5 z-10"
-              animate={{ left: ['20%', '80%', '20%'] }}
-              transition={{ duration: 7, repeat: Infinity }}
-            />
+            {!validationError && (
+              <>
+                <motion.div
+                  className="absolute w-full h-px bg-white/5 z-10"
+                  animate={{ top: ['20%', '80%', '20%'] }}
+                  transition={{ duration: 5, repeat: Infinity }}
+                />
+                <motion.div
+                  className="absolute h-full w-px bg-white/5 z-10"
+                  animate={{ left: ['20%', '80%', '20%'] }}
+                  transition={{ duration: 7, repeat: Infinity }}
+                />
+              </>
+            )}
 
-            {/* API Status Indicator */}
-            {apiComplete && (
+            {/* Status Indicators */}
+            {apiComplete && !validationError && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -250,6 +298,17 @@ const Scanning: React.FC<Props> = ({ photo, onComplete }) => {
               >
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                 <span className="text-[8px] font-mono text-green-400 uppercase">AI Analysis Complete</span>
+              </motion.div>
+            )}
+
+            {validationError && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="absolute top-4 right-4 z-40 flex items-center gap-2 px-3 py-1.5 bg-red-500/20 border border-red-500/30 rounded-lg backdrop-blur-sm"
+              >
+                <div className="w-2 h-2 bg-red-500 rounded-full" />
+                <span className="text-[8px] font-mono text-red-400 uppercase">Invalid Subject</span>
               </motion.div>
             )}
           </div>
@@ -263,7 +322,9 @@ const Scanning: React.FC<Props> = ({ photo, onComplete }) => {
           </div>
           <div className="space-y-1">
             <p className="text-[8px] text-white/30 uppercase tracking-widest">Buffer_State</p>
-            <p className="text-xs text-[#00f0ff] font-bold">{progress > 80 ? 'STABLE' : 'SYNCING...'}</p>
+            <p className={`text-xs font-bold ${validationError ? 'text-red-500' : 'text-[#00f0ff]'}`}>
+              {validationError ? 'REJECTED' : progress > 80 ? 'STABLE' : 'SYNCING...'}
+            </p>
           </div>
           <div className="space-y-1">
             <p className="text-[8px] text-white/30 uppercase tracking-widest">AES_256_LINK</p>
@@ -277,31 +338,33 @@ const Scanning: React.FC<Props> = ({ photo, onComplete }) => {
         <div className="flex justify-between items-end mb-6 font-mono">
           <div className="flex flex-col">
             <div className="flex items-center gap-2 mb-1">
-              <span className="w-2 h-2 rounded-full bg-[#00f0ff] animate-pulse" />
-              <span className="text-[#00f0ff] text-[10px] uppercase tracking-widest font-bold">Process_Monitor</span>
+              <span className={`w-2 h-2 rounded-full animate-pulse ${validationError ? 'bg-red-500' : 'bg-[#00f0ff]'}`} />
+              <span className={`text-[10px] uppercase tracking-widest font-bold ${validationError ? 'text-red-500' : 'text-[#00f0ff]'}`}>Process_Monitor</span>
             </div>
-            <span className="text-2xl font-black tracking-tighter text-white/90 uppercase">{status}</span>
+            <span className={`text-2xl font-black tracking-tighter uppercase ${validationError ? 'text-red-400' : 'text-white/90'}`}>{status}</span>
           </div>
           <div className="flex flex-col items-end">
             <span className="text-white/20 text-[10px] uppercase tracking-widest font-bold mb-1">Audit_Completeness</span>
-            <span className="text-5xl font-black text-[#00f0ff] tabular-nums leading-none tracking-tighter">
-              {progress}<span className="text-lg text-[#00f0ff]/40">%</span>
+            <span className={`text-5xl font-black tabular-nums leading-none tracking-tighter ${validationError ? 'text-red-500' : 'text-[#00f0ff]'}`}>
+              {progress}<span className={`text-lg ${validationError ? 'text-red-500/40' : 'text-[#00f0ff]/40'}`}>%</span>
             </span>
           </div>
         </div>
 
-        <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden relative border border-white/5">
+        <div className={`h-1 w-full bg-white/5 rounded-full overflow-hidden relative border ${validationError ? 'border-red-500/20' : 'border-white/5'}`}>
           <motion.div
-            className="absolute inset-0 bg-[#00f0ff]"
+            className={`absolute inset-0 ${validationError ? 'bg-red-500' : 'bg-[#00f0ff]'}`}
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
           />
-          <motion.div
-            className="absolute inset-0 bg-white/20"
-            animate={{ left: ['-100%', '100%'] }}
-            transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-            style={{ width: '30%' }}
-          />
+          {!validationError && (
+            <motion.div
+              className="absolute inset-0 bg-white/20"
+              animate={{ left: ['-100%', '100%'] }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+              style={{ width: '30%' }}
+            />
+          )}
         </div>
 
         <div className="mt-8 flex justify-between items-center text-[10px] font-mono text-white/20 uppercase tracking-[0.4em]">
@@ -310,7 +373,7 @@ const Scanning: React.FC<Props> = ({ photo, onComplete }) => {
             <span>UPLINK: ACTIVE</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-1 h-1 bg-red-500 rounded-full animate-ping" />
+            <span className={`w-1 h-1 rounded-full animate-ping ${validationError ? 'bg-red-500' : 'bg-red-500'}`} />
             <span>LIVE_FEED</span>
           </div>
         </div>

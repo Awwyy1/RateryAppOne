@@ -49,7 +49,13 @@ const AppContent: React.FC = () => {
     setStage(AppStage.SCANNING);
   };
 
-  const handleScanComplete = (result: AnalysisResult) => {
+  const handleScanComplete = (result: AnalysisResult | null, error?: string) => {
+    if (error || !result) {
+      // If there's an error (invalid face), go back to upload
+      setPhoto(null);
+      setStage(AppStage.UPLOAD);
+      return;
+    }
     setAnalysisResult(result);
     setStage(AppStage.DASHBOARD);
   };
@@ -92,10 +98,13 @@ const AppContent: React.FC = () => {
           <span className="text-sm font-bold tracking-[0.3em] uppercase">Ratery.System</span>
         </motion.div>
 
-        <nav className="hidden md:flex gap-10 text-[10px] font-bold uppercase tracking-widest text-white/40">
-          <a href="#" className="hover:text-white transition-colors">Architecture</a>
-          <a href="#" className="hover:text-white transition-colors">Protocols</a>
-          <a href="#" className="hover:text-white transition-colors">Nodes</a>
+        <nav className="hidden md:flex gap-8 text-[10px] font-bold uppercase tracking-widest text-white/40">
+          <span className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 bg-[#00f0ff] rounded-full animate-pulse" />
+            AI Powered
+          </span>
+          <span className="text-white/20">|</span>
+          <span>Perception Analysis</span>
         </nav>
 
         {user ? (
