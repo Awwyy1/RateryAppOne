@@ -2,9 +2,16 @@
 export enum AppStage {
   LANDING = 'LANDING',
   ONBOARDING = 'ONBOARDING',
+  LOGIN = 'LOGIN',
   UPLOAD = 'UPLOAD',
   SCANNING = 'SCANNING',
   DASHBOARD = 'DASHBOARD'
+}
+
+export interface AnalysisResult {
+  overallScore: number;
+  metrics: MetricData[];
+  insights: string[];
 }
 
 export interface MetricData {

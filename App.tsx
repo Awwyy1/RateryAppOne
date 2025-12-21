@@ -1,16 +1,21 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useSpring, useMotionValue } from 'framer-motion';
-import { AppStage } from './types';
+import { AppStage, AnalysisResult } from './types';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Landing from './components/Landing';
 import Onboarding from './components/Onboarding';
+import Login from './components/Login';
 import PhotoUpload from './components/PhotoUpload';
 import Scanning from './components/Scanning';
 import Dashboard from './components/Dashboard';
+import { LogOut, User } from 'lucide-react';
 
-const App: React.FC = () => {
+const AppContent: React.FC = () => {
   const [stage, setStage] = useState<AppStage>(AppStage.LANDING);
   const [photo, setPhoto] = useState<string | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const { user, signOut, loading } = useAuth();
 
   // Mouse tracking for custom cursor and spotlight
   const mouseX = useMotionValue(0);
@@ -28,21 +33,38 @@ const App: React.FC = () => {
   }, [mouseX, mouseY]);
 
   const handleStart = () => setStage(AppStage.ONBOARDING);
-  const handleOnboardingComplete = () => setStage(AppStage.UPLOAD);
-  
+  const handleOnboardingComplete = () => {
+    // If user is already logged in, go directly to upload
+    if (user) {
+      setStage(AppStage.UPLOAD);
+    } else {
+      setStage(AppStage.LOGIN);
+    }
+  };
+
+  const handleLoginSuccess = () => setStage(AppStage.UPLOAD);
+
   const handlePhotoSelected = (img: string) => {
     setPhoto(img);
     setStage(AppStage.SCANNING);
   };
 
-  const handleScanComplete = () => {
+  const handleScanComplete = (result: AnalysisResult) => {
+    setAnalysisResult(result);
     setStage(AppStage.DASHBOARD);
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    setStage(AppStage.LANDING);
+    setPhoto(null);
+    setAnalysisResult(null);
   };
 
   return (
     <div className="min-h-screen bg-[#050505] text-white cyber-grid relative selection:bg-[#00f0ff] selection:text-black">
       {/* Spotlight Effect */}
-      <motion.div 
+      <motion.div
         className="fixed inset-0 pointer-events-none z-0"
         style={{
           background: `radial-gradient(600px circle at ${smoothMouseX}px ${smoothMouseY}px, rgba(0, 240, 255, 0.03), transparent 80%)`
@@ -61,7 +83,7 @@ const App: React.FC = () => {
       />
 
       <header className="fixed top-0 left-0 right-0 z-[100] px-10 py-6 flex justify-between items-center backdrop-blur-md border-b border-white/5">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           className="flex items-center gap-3"
@@ -69,20 +91,43 @@ const App: React.FC = () => {
           <div className="w-10 h-10 bg-white text-black flex items-center justify-center font-black rounded-full text-lg">R</div>
           <span className="text-sm font-bold tracking-[0.3em] uppercase">Ratery.System</span>
         </motion.div>
-        
+
         <nav className="hidden md:flex gap-10 text-[10px] font-bold uppercase tracking-widest text-white/40">
           <a href="#" className="hover:text-white transition-colors">Architecture</a>
           <a href="#" className="hover:text-white transition-colors">Protocols</a>
           <a href="#" className="hover:text-white transition-colors">Nodes</a>
         </nav>
 
-        <motion.button 
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="px-6 py-2 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-white hover:text-black transition-all"
-        >
-          Access Console
-        </motion.button>
+        {user ? (
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full">
+              {user.photoURL ? (
+                <img src={user.photoURL} alt="" className="w-6 h-6 rounded-full" />
+              ) : (
+                <User className="w-4 h-4 text-[#00f0ff]" />
+              )}
+              <span className="text-[10px] font-bold uppercase tracking-widest text-white/60 max-w-[100px] truncate">
+                {user.displayName || user.email}
+              </span>
+            </div>
+            <motion.button
+              onClick={handleSignOut}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="p-2 bg-white/5 border border-white/10 rounded-full hover:bg-red-500/20 hover:border-red-500/30 transition-all"
+            >
+              <LogOut className="w-4 h-4" />
+            </motion.button>
+          </div>
+        ) : (
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="px-6 py-2 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-white hover:text-black transition-all"
+          >
+            Access Console
+          </motion.button>
+        )}
       </header>
 
       <main className="pt-32 pb-20 px-6 max-w-7xl mx-auto relative z-10">
@@ -93,6 +138,9 @@ const App: React.FC = () => {
           {stage === AppStage.ONBOARDING && (
             <Onboarding key="onboarding" onComplete={handleOnboardingComplete} />
           )}
+          {stage === AppStage.LOGIN && (
+            <Login key="login" onSuccess={handleLoginSuccess} />
+          )}
           {stage === AppStage.UPLOAD && (
             <PhotoUpload key="upload" onPhotoSelected={handlePhotoSelected} />
           )}
@@ -100,7 +148,7 @@ const App: React.FC = () => {
             <Scanning key="scanning" photo={photo} onComplete={handleScanComplete} />
           )}
           {stage === AppStage.DASHBOARD && (
-            <Dashboard key="dashboard" photo={photo} />
+            <Dashboard key="dashboard" photo={photo} analysisResult={analysisResult} />
           )}
         </AnimatePresence>
       </main>
@@ -108,7 +156,7 @@ const App: React.FC = () => {
       <footer className="fixed bottom-8 left-10 right-10 flex justify-between items-end pointer-events-none z-[100]">
         <div className="flex flex-col gap-1">
           <div className="w-1 h-12 bg-white/10 rounded-full overflow-hidden">
-            <motion.div 
+            <motion.div
               className="w-full bg-[#00f0ff]"
               animate={{ height: ['0%', '100%'] }}
               transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
@@ -121,6 +169,14 @@ const App: React.FC = () => {
         </div>
       </footer>
     </div>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 };
 
