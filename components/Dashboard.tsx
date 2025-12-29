@@ -5,7 +5,7 @@ import { motion, Variants } from 'framer-motion';
 import { MOCK_RESULTS, INSIGHTS } from '../constants';
 import { AnalysisResult } from '../types';
 import RadarChart from './RadarChart';
-import { Download, Share2, Target, Zap, Shield, Cpu, ExternalLink, Check, Copy } from 'lucide-react';
+import { Download, Share2, Target, Zap, Shield, Cpu, ExternalLink, Check, Copy, X } from 'lucide-react';
 
 interface Props {
   photo: string | null;
@@ -15,6 +15,7 @@ interface Props {
 const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
   const [shareStatus, setShareStatus] = useState<'idle' | 'copied' | 'shared'>('idle');
   const [isDownloading, setIsDownloading] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const reportRef = useRef<HTMLDivElement>(null);
 
   // Use real analysis results if available, otherwise fall back to mocks
@@ -22,29 +23,46 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
   const insights = analysisResult?.insights || INSIGHTS;
   const overallScore = analysisResult?.overallScore || 8.4;
 
-  // Share functionality
-  const handleShare = async () => {
-    const shareData = {
-      title: 'My Ratery Perception Audit',
-      text: `I scored ${overallScore.toFixed(1)}/10 on my first impression audit! Check out Ratery for your own AI-powered perception analysis.`,
-      url: window.location.href
-    };
+  // Share text for social media
+  const getShareText = () => `I scored ${overallScore.toFixed(1)}/10 on my first impression audit! Check out Ratery for your own AI-powered perception analysis.`;
+  const shareUrl = 'https://ratery.cc';
 
+  // Open share modal
+  const handleShare = () => {
+    setShowShareModal(true);
+  };
+
+  // Share to Twitter/X
+  const shareToTwitter = () => {
+    const text = encodeURIComponent(getShareText());
+    const url = encodeURIComponent(shareUrl);
+    window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank', 'width=600,height=400');
+    setShowShareModal(false);
+    setShareStatus('shared');
+    setTimeout(() => setShareStatus('idle'), 2000);
+  };
+
+  // Share to Instagram (copy to clipboard since IG doesn't have web share API)
+  const shareToInstagram = async () => {
     try {
-      if (navigator.share && navigator.canShare(shareData)) {
-        await navigator.share(shareData);
-        setShareStatus('shared');
-      } else {
-        // Fallback: copy to clipboard
-        await navigator.clipboard.writeText(
-          `${shareData.text}\n\n${shareData.url}`
-        );
-        setShareStatus('copied');
-      }
-      setTimeout(() => setShareStatus('idle'), 2000);
+      await navigator.clipboard.writeText(`${getShareText()}\n\n${shareUrl}`);
+      setShareStatus('copied');
+      setShowShareModal(false);
+      // Open Instagram
+      window.open('https://instagram.com', '_blank');
+      setTimeout(() => setShareStatus('idle'), 3000);
     } catch (err) {
-      console.error('Share failed:', err);
+      console.error('Copy failed:', err);
     }
+  };
+
+  // Share to Threads
+  const shareToThreads = () => {
+    const text = encodeURIComponent(`${getShareText()}\n\n${shareUrl}`);
+    window.open(`https://www.threads.net/intent/post?text=${text}`, '_blank', 'width=600,height=400');
+    setShowShareModal(false);
+    setShareStatus('shared');
+    setTimeout(() => setShareStatus('idle'), 2000);
   };
 
   // Download functionality - generates a text report
@@ -332,6 +350,93 @@ This analysis was performed using Claude Vision AI
           </div>
         </div>
       </motion.div>
+
+      {/* Share Modal */}
+      {showShareModal && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm"
+          onClick={() => setShowShareModal(false)}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="glass p-8 rounded-[2rem] max-w-sm w-full mx-4 border border-white/10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-bold">Share Your Results</h3>
+              <button
+                onClick={() => setShowShareModal(false)}
+                className="p-2 hover:bg-white/10 rounded-full transition-all"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-white/40 text-sm mb-6">
+              Share your {overallScore.toFixed(1)}/10 score with friends!
+            </p>
+
+            <div className="space-y-3">
+              {/* Twitter/X */}
+              <button
+                onClick={shareToTwitter}
+                className="w-full py-4 px-6 bg-black border border-white/10 rounded-2xl flex items-center gap-4 hover:bg-white/5 transition-all group"
+              >
+                <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center">
+                  <svg className="w-5 h-5 text-black" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                  </svg>
+                </div>
+                <div className="text-left">
+                  <p className="font-bold text-sm">X (Twitter)</p>
+                  <p className="text-[10px] text-white/40">Tweet your score</p>
+                </div>
+              </button>
+
+              {/* Instagram */}
+              <button
+                onClick={shareToInstagram}
+                className="w-full py-4 px-6 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-white/10 rounded-2xl flex items-center gap-4 hover:from-purple-600/30 hover:to-pink-600/30 transition-all group"
+              >
+                <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center">
+                  <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                  </svg>
+                </div>
+                <div className="text-left">
+                  <p className="font-bold text-sm">Instagram</p>
+                  <p className="text-[10px] text-white/40">Copy & share to story</p>
+                </div>
+              </button>
+
+              {/* Threads */}
+              <button
+                onClick={shareToThreads}
+                className="w-full py-4 px-6 bg-white/5 border border-white/10 rounded-2xl flex items-center gap-4 hover:bg-white/10 transition-all group"
+              >
+                <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center">
+                  <svg className="w-5 h-5 text-black" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.472 12.01v-.017c.03-3.579.879-6.43 2.525-8.482C5.845 1.205 8.6.024 12.18 0h.014c2.746.02 5.043.725 6.826 2.098 1.677 1.29 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.89 3.589 12c.027 3.107.718 5.49 2.056 7.164 1.43 1.783 3.631 2.698 6.54 2.717 2.623-.02 4.358-.631 5.8-2.045 1.647-1.613 1.618-3.593 1.09-4.798-.31-.71-.873-1.3-1.634-1.75-.192 1.352-.622 2.446-1.284 3.272-.886 1.102-2.14 1.704-3.73 1.79-1.202.065-2.361-.218-3.259-.801-1.063-.689-1.685-1.74-1.752-2.96-.065-1.187.408-2.281 1.332-3.08.88-.76 2.106-1.168 3.546-1.18 1.018-.01 1.953.125 2.791.402.022-.468.015-.91-.022-1.322-.174-1.934-1.381-2.966-3.386-2.897-1.218.024-2.18.428-2.86 1.2l-1.493-1.262c1.056-1.218 2.577-1.876 4.394-1.9h.03c2.866-.063 4.828 1.56 5.073 4.265.038.423.05.882.035 1.39.486.282.922.62 1.306 1.016.836.86 1.385 1.974 1.633 3.31.397 2.146-.012 4.308-1.15 6.082-1.138 1.775-2.98 3.005-5.326 3.555-1.017.238-2.1.353-3.232.343zm.026-14.618c-.927.008-1.667.243-2.204.698-.519.438-.782 1.018-.746 1.64.035.643.36 1.19.917 1.543.59.374 1.373.544 2.2.477 1.05-.066 1.873-.47 2.449-1.2.436-.556.718-1.274.843-2.133-.727-.202-1.506-.346-2.295-.346-.39 0-.78.027-1.164.082v-.761z" />
+                  </svg>
+                </div>
+                <div className="text-left">
+                  <p className="font-bold text-sm">Threads</p>
+                  <p className="text-[10px] text-white/40">Share to Threads</p>
+                </div>
+              </button>
+            </div>
+
+            <p className="text-center text-[10px] text-white/20 mt-6">
+              Your score: {overallScore.toFixed(1)}/10
+            </p>
+          </motion.div>
+        </motion.div>
+      )}
     </motion.div>
   );
 };
