@@ -65,56 +65,229 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
     setTimeout(() => setShareStatus('idle'), 2000);
   };
 
-  // Download functionality - generates a text report
+  // Download functionality - generates a visual card image
   const handleDownload = async () => {
     setIsDownloading(true);
 
     try {
-      // Generate report content
-      const reportContent = `
-╔══════════════════════════════════════════════════════════════╗
-║                    RATERY PERCEPTION AUDIT                     ║
-║                      AI Analysis Report                        ║
-╚══════════════════════════════════════════════════════════════╝
+      // Create canvas for the card
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Canvas not supported');
 
-Generated: ${new Date().toLocaleString()}
-Overall Impact Score: ${overallScore.toFixed(1)} / 10
+      // Card dimensions (optimized for social media sharing)
+      const width = 600;
+      const height = 800;
+      canvas.width = width;
+      canvas.height = height;
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      // Background
+      ctx.fillStyle = '#050505';
+      ctx.fillRect(0, 0, width, height);
 
-DETAILED METRICS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      // Add subtle grid pattern
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+      ctx.lineWidth = 1;
+      for (let i = 0; i < width; i += 40) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i, height);
+        ctx.stroke();
+      }
+      for (let i = 0; i < height; i += 40) {
+        ctx.beginPath();
+        ctx.moveTo(0, i);
+        ctx.lineTo(width, i);
+        ctx.stroke();
+      }
 
-${metrics.map(m => `
-${m.label.toUpperCase()}
-  Score: ${m.value}/100 (Benchmark: ${m.benchmark})
-  ${m.value >= m.benchmark ? '↑' : '↓'} ${Math.abs(m.value - m.benchmark)} ${m.value >= m.benchmark ? 'above' : 'below'} average
-  ${m.description}
-`).join('\n')}
+      // Top border accent
+      const gradient = ctx.createLinearGradient(0, 0, width, 0);
+      gradient.addColorStop(0, '#00f0ff');
+      gradient.addColorStop(1, '#0080ff');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, 4);
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      // Logo circle with R
+      const logoX = 40;
+      const logoY = 40;
+      const logoRadius = 20;
+      ctx.beginPath();
+      ctx.arc(logoX + logoRadius, logoY + logoRadius, logoRadius, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+      ctx.fillStyle = '#000000';
+      ctx.font = 'bold 24px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('R', logoX + logoRadius, logoY + logoRadius + 2);
 
-AI INSIGHTS & RECOMMENDATIONS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      // Title
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 14px Arial';
+      ctx.textAlign = 'left';
+      ctx.fillText('RATERY PERCEPTION AUDIT', logoX + logoRadius * 2 + 15, logoY + logoRadius);
 
-${insights.map((insight, i) => `${i + 1}. ${insight}`).join('\n\n')}
+      // Decorative line
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(40, 100);
+      ctx.lineTo(width - 40, 100);
+      ctx.stroke();
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      // Photo section (if available)
+      let contentStartY = 130;
 
-Powered by Ratery AI • ratery.app
-This analysis was performed using Claude Vision AI
-      `.trim();
+      if (photo) {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
 
-      // Create blob and download
-      const blob = new Blob([reportContent], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `ratery-audit-${Date.now()}.txt`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+        await new Promise<void>((resolve, reject) => {
+          img.onload = () => {
+            // Draw photo with rounded corners effect
+            const photoX = 40;
+            const photoY = contentStartY;
+            const photoW = 120;
+            const photoH = 150;
+
+            // Photo background
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.fillRect(photoX - 5, photoY - 5, photoW + 10, photoH + 10);
+
+            // Draw the image
+            ctx.drawImage(img, photoX, photoY, photoW, photoH);
+
+            // Photo border
+            ctx.strokeStyle = 'rgba(0, 240, 255, 0.3)';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(photoX, photoY, photoW, photoH);
+
+            resolve();
+          };
+          img.onerror = () => resolve(); // Continue even if image fails
+          img.src = photo;
+        });
+      }
+
+      // Impact Score section
+      const scoreX = photo ? 180 : 40;
+      const scoreY = contentStartY + 20;
+
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.font = '10px Arial';
+      ctx.textAlign = 'left';
+      ctx.fillText('IMPACT SCORE', scoreX, scoreY);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 64px Arial';
+      ctx.fillText(overallScore.toFixed(1), scoreX, scoreY + 60);
+
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.font = 'bold 24px Arial';
+      ctx.fillText('/10', scoreX + 100, scoreY + 60);
+
+      // Cyan accent circle
+      ctx.beginPath();
+      ctx.arc(scoreX + 180, scoreY + 40, 25, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(0, 240, 255, 0.5)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(0, 240, 255, 0.1)';
+      ctx.fill();
+
+      // Metrics section
+      const metricsStartY = 310;
+
+      // Section header
+      ctx.fillStyle = '#00f0ff';
+      ctx.font = 'bold 12px Arial';
+      ctx.textAlign = 'left';
+      ctx.fillText('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 40, metricsStartY);
+
+      // Draw metrics
+      metrics.forEach((metric, i) => {
+        const y = metricsStartY + 30 + i * 55;
+        const barWidth = 300;
+        const barHeight = 12;
+        const barX = 180;
+
+        // Metric label
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'left';
+        ctx.fillText(metric.label, 40, y + 10);
+
+        // Background bar
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+        ctx.fillRect(barX, y, barWidth, barHeight);
+
+        // Value bar with gradient
+        const barGradient = ctx.createLinearGradient(barX, y, barX + barWidth, y);
+        barGradient.addColorStop(0, '#00f0ff');
+        barGradient.addColorStop(1, '#0080ff');
+        ctx.fillStyle = barGradient;
+        ctx.fillRect(barX, y, (metric.value / 100) * barWidth, barHeight);
+
+        // Value text
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'right';
+        ctx.fillText(`${metric.value}%`, width - 40, y + 11);
+      });
+
+      // AI Insights section
+      const insightsY = metricsStartY + 30 + metrics.length * 55 + 20;
+
+      ctx.fillStyle = '#00f0ff';
+      ctx.font = 'bold 12px Arial';
+      ctx.textAlign = 'left';
+      ctx.fillText('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 40, insightsY);
+
+      // Lightbulb emoji and title
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 12px Arial';
+      ctx.fillText('AI Insights:', 40, insightsY + 25);
+
+      // First insight (truncated if too long)
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+      ctx.font = '11px Arial';
+      const firstInsight = insights[0] || '';
+      const truncatedInsight = firstInsight.length > 60 ? firstInsight.substring(0, 60) + '...' : firstInsight;
+      ctx.fillText(`• ${truncatedInsight}`, 40, insightsY + 50);
+
+      // Footer
+      ctx.fillStyle = '#00f0ff';
+      ctx.font = 'bold 12px Arial';
+      ctx.textAlign = 'left';
+      ctx.fillText('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 40, height - 60);
+
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.font = '11px Arial';
+      ctx.fillText('ratery.cc', 40, height - 35);
+
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.textAlign = 'right';
+      ctx.fillText('Powered by Claude AI', width - 40, height - 35);
+
+      // Bottom border accent
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, height - 4, width, 4);
+
+      // Convert to blob and download
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `ratery-audit-${Date.now()}.png`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }
+      }, 'image/png');
+
     } catch (err) {
       console.error('Download failed:', err);
     } finally {
