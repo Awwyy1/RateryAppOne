@@ -2,9 +2,11 @@
 import React, { useState, useRef } from 'react';
 // Import Variants to correctly type motion configurations and ensure literal types like 'spring' are preserved
 import { motion, Variants } from 'framer-motion';
+import html2canvas from 'html2canvas';
 import { MOCK_RESULTS, INSIGHTS } from '../constants';
 import { AnalysisResult } from '../types';
 import RadarChart from './RadarChart';
+import NeuralIdentityCard from './NeuralIdentityCard';
 import { Download, Share2, Target, Zap, Shield, Cpu, ExternalLink, Check, Copy, X } from 'lucide-react';
 
 interface Props {
@@ -16,7 +18,9 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
   const [shareStatus, setShareStatus] = useState<'idle' | 'copied' | 'shared'>('idle');
   const [isDownloading, setIsDownloading] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
   const reportRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   // Use real analysis results if available, otherwise fall back to mocks
   const metrics = analysisResult?.metrics || MOCK_RESULTS;
@@ -65,222 +69,30 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
     setTimeout(() => setShareStatus('idle'), 2000);
   };
 
-  // Download functionality - generates a visual card image
-  const handleDownload = async () => {
+  // Open download modal with card preview
+  const handleDownload = () => {
+    setShowDownloadModal(true);
+  };
+
+  // Actually download the card as PNG
+  const downloadCard = async () => {
+    if (!cardRef.current) return;
     setIsDownloading(true);
 
     try {
-      // Create canvas for the card
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      if (!ctx) throw new Error('Canvas not supported');
-
-      // Card dimensions (optimized for social media sharing)
-      const width = 600;
-      const height = 800;
-      canvas.width = width;
-      canvas.height = height;
-
-      // Background
-      ctx.fillStyle = '#050505';
-      ctx.fillRect(0, 0, width, height);
-
-      // Add subtle grid pattern
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
-      ctx.lineWidth = 1;
-      for (let i = 0; i < width; i += 40) {
-        ctx.beginPath();
-        ctx.moveTo(i, 0);
-        ctx.lineTo(i, height);
-        ctx.stroke();
-      }
-      for (let i = 0; i < height; i += 40) {
-        ctx.beginPath();
-        ctx.moveTo(0, i);
-        ctx.lineTo(width, i);
-        ctx.stroke();
-      }
-
-      // Top border accent
-      const gradient = ctx.createLinearGradient(0, 0, width, 0);
-      gradient.addColorStop(0, '#00f0ff');
-      gradient.addColorStop(1, '#0080ff');
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, width, 4);
-
-      // Logo circle with R
-      const logoX = 40;
-      const logoY = 40;
-      const logoRadius = 20;
-      ctx.beginPath();
-      ctx.arc(logoX + logoRadius, logoY + logoRadius, logoRadius, 0, Math.PI * 2);
-      ctx.fillStyle = '#ffffff';
-      ctx.fill();
-      ctx.fillStyle = '#000000';
-      ctx.font = 'bold 24px Arial';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('R', logoX + logoRadius, logoY + logoRadius + 2);
-
-      // Title
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 14px Arial';
-      ctx.textAlign = 'left';
-      ctx.fillText('RATERY PERCEPTION AUDIT', logoX + logoRadius * 2 + 15, logoY + logoRadius);
-
-      // Decorative line
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(40, 100);
-      ctx.lineTo(width - 40, 100);
-      ctx.stroke();
-
-      // Photo section (if available)
-      let contentStartY = 130;
-
-      if (photo) {
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-
-        await new Promise<void>((resolve, reject) => {
-          img.onload = () => {
-            // Draw photo with rounded corners effect
-            const photoX = 40;
-            const photoY = contentStartY;
-            const photoW = 120;
-            const photoH = 150;
-
-            // Photo background
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
-            ctx.fillRect(photoX - 5, photoY - 5, photoW + 10, photoH + 10);
-
-            // Draw the image
-            ctx.drawImage(img, photoX, photoY, photoW, photoH);
-
-            // Photo border
-            ctx.strokeStyle = 'rgba(0, 240, 255, 0.3)';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(photoX, photoY, photoW, photoH);
-
-            resolve();
-          };
-          img.onerror = () => resolve(); // Continue even if image fails
-          img.src = photo;
-        });
-      }
-
-      // Impact Score section
-      const scoreX = photo ? 180 : 40;
-      const scoreY = contentStartY + 20;
-
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-      ctx.font = '10px Arial';
-      ctx.textAlign = 'left';
-      ctx.fillText('IMPACT SCORE', scoreX, scoreY);
-
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 64px Arial';
-      ctx.fillText(overallScore.toFixed(1), scoreX, scoreY + 60);
-
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-      ctx.font = 'bold 24px Arial';
-      ctx.fillText('/10', scoreX + 100, scoreY + 60);
-
-      // Cyan accent circle
-      ctx.beginPath();
-      ctx.arc(scoreX + 180, scoreY + 40, 25, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(0, 240, 255, 0.5)';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      ctx.fillStyle = 'rgba(0, 240, 255, 0.1)';
-      ctx.fill();
-
-      // Metrics section
-      const metricsStartY = 310;
-
-      // Section header
-      ctx.fillStyle = '#00f0ff';
-      ctx.font = 'bold 12px Arial';
-      ctx.textAlign = 'left';
-      ctx.fillText('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 40, metricsStartY);
-
-      // Draw metrics
-      metrics.forEach((metric, i) => {
-        const y = metricsStartY + 30 + i * 55;
-        const barWidth = 300;
-        const barHeight = 12;
-        const barX = 180;
-
-        // Metric label
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-        ctx.font = '12px Arial';
-        ctx.textAlign = 'left';
-        ctx.fillText(metric.label, 40, y + 10);
-
-        // Background bar
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
-        ctx.fillRect(barX, y, barWidth, barHeight);
-
-        // Value bar with gradient
-        const barGradient = ctx.createLinearGradient(barX, y, barX + barWidth, y);
-        barGradient.addColorStop(0, '#00f0ff');
-        barGradient.addColorStop(1, '#0080ff');
-        ctx.fillStyle = barGradient;
-        ctx.fillRect(barX, y, (metric.value / 100) * barWidth, barHeight);
-
-        // Value text
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 14px Arial';
-        ctx.textAlign = 'right';
-        ctx.fillText(`${metric.value}%`, width - 40, y + 11);
+      const canvas = await html2canvas(cardRef.current, {
+        backgroundColor: '#080808',
+        scale: 2, // Higher quality
+        useCORS: true,
+        allowTaint: true,
       });
 
-      // AI Insights section
-      const insightsY = metricsStartY + 30 + metrics.length * 55 + 20;
-
-      ctx.fillStyle = '#00f0ff';
-      ctx.font = 'bold 12px Arial';
-      ctx.textAlign = 'left';
-      ctx.fillText('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 40, insightsY);
-
-      // Lightbulb emoji and title
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 12px Arial';
-      ctx.fillText('AI Insights:', 40, insightsY + 25);
-
-      // First insight (truncated if too long)
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-      ctx.font = '11px Arial';
-      const firstInsight = insights[0] || '';
-      const truncatedInsight = firstInsight.length > 60 ? firstInsight.substring(0, 60) + '...' : firstInsight;
-      ctx.fillText(`• ${truncatedInsight}`, 40, insightsY + 50);
-
-      // Footer
-      ctx.fillStyle = '#00f0ff';
-      ctx.font = 'bold 12px Arial';
-      ctx.textAlign = 'left';
-      ctx.fillText('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 40, height - 60);
-
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-      ctx.font = '11px Arial';
-      ctx.fillText('ratery.cc', 40, height - 35);
-
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-      ctx.textAlign = 'right';
-      ctx.fillText('Powered by Claude AI', width - 40, height - 35);
-
-      // Bottom border accent
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, height - 4, width, 4);
-
-      // Convert to blob and download
       canvas.toBlob((blob) => {
         if (blob) {
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `ratery-audit-${Date.now()}.png`;
+          a.download = `ratery-neural-profile-${Date.now()}.png`;
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
@@ -608,6 +420,67 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
               Your score: {overallScore.toFixed(1)}/10
             </p>
           </motion.div>
+        </motion.div>
+      )}
+
+      {/* Download Modal with Card Preview */}
+      {showDownloadModal && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md overflow-y-auto py-8"
+          onClick={() => setShowDownloadModal(false)}
+        >
+          <div className="flex flex-col items-center gap-6" onClick={(e) => e.stopPropagation()}>
+            {/* Close button */}
+            <button
+              onClick={() => setShowDownloadModal(false)}
+              className="absolute top-6 right-6 p-3 hover:bg-white/10 rounded-full transition-all z-10"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            {/* Card Preview */}
+            <div ref={cardRef}>
+              <NeuralIdentityCard
+                photo={photo}
+                score={overallScore}
+                metrics={metrics}
+                insights={insights}
+                isStatic={true}
+              />
+            </div>
+
+            {/* Download Button */}
+            <motion.button
+              onClick={downloadCard}
+              disabled={isDownloading}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="px-8 py-4 bg-[#00f0ff] text-black font-black rounded-2xl flex items-center gap-3 hover:bg-white transition-all disabled:opacity-50 text-sm uppercase tracking-widest"
+            >
+              {isDownloading ? (
+                <>
+                  <motion.div
+                    className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                  />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Download className="w-5 h-5" />
+                  Download Card
+                </>
+              )}
+            </motion.button>
+
+            <p className="text-white/30 text-xs">
+              Tap the button to save your Neural Profile card
+            </p>
+          </div>
         </motion.div>
       )}
     </motion.div>
