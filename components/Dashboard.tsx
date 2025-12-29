@@ -429,20 +429,24 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md overflow-y-auto py-8"
+          className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-md"
           onClick={() => setShowDownloadModal(false)}
         >
-          <div className="flex flex-col items-center gap-6" onClick={(e) => e.stopPropagation()}>
-            {/* Close button */}
-            <button
-              onClick={() => setShowDownloadModal(false)}
-              className="absolute top-6 right-6 p-3 hover:bg-white/10 rounded-full transition-all z-10"
-            >
-              <X className="w-6 h-6" />
-            </button>
+          {/* Fixed Close button - always visible */}
+          <button
+            onClick={() => setShowDownloadModal(false)}
+            className="fixed top-4 right-4 z-[210] p-3 bg-white/10 hover:bg-white/20 rounded-full transition-all border border-white/20"
+          >
+            <X className="w-6 h-6 text-white" />
+          </button>
 
-            {/* Card Preview */}
-            <div ref={cardRef}>
+          {/* Scrollable content container */}
+          <div
+            className="h-full w-full overflow-y-auto flex flex-col items-center py-16 px-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Card Preview - scaled down for mobile */}
+            <div ref={cardRef} className="transform scale-[0.85] sm:scale-100 origin-top mb-4">
               <NeuralIdentityCard
                 photo={photo}
                 score={overallScore}
@@ -458,7 +462,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
               disabled={isDownloading}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="px-8 py-4 bg-[#00f0ff] text-black font-black rounded-2xl flex items-center gap-3 hover:bg-white transition-all disabled:opacity-50 text-sm uppercase tracking-widest"
+              className="px-8 py-4 bg-[#00f0ff] text-black font-black rounded-2xl flex items-center gap-3 hover:bg-white transition-all disabled:opacity-50 text-sm uppercase tracking-widest shadow-lg shadow-[#00f0ff]/20"
             >
               {isDownloading ? (
                 <>
@@ -477,7 +481,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
               )}
             </motion.button>
 
-            <p className="text-white/30 text-xs">
+            <p className="text-white/30 text-xs mt-4 text-center">
               Tap the button to save your Neural Profile card
             </p>
           </div>
