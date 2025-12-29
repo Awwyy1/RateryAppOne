@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Generate Ratery Icons</title>
+  <style>
+    body { font-family: Arial; padding: 40px; background: #1a1a1a; color: white; }
+    canvas { border: 1px solid #333; margin: 10px; }
+    button { padding: 15px 30px; font-size: 16px; cursor: pointer; margin: 10px; background: #00f0ff; border: none; border-radius: 8px; }
+    .container { display: flex; gap: 20px; align-items: center; margin: 20px 0; }
+  </style>
+</head>
+<body>
+  <h1>Ratery Icon Generator</h1>
+  <p>Click the buttons to download icons:</p>
+
+  <div class="container">
+    <div>
+      <canvas id="icon192" width="192" height="192"></canvas>
+      <br>
+      <button onclick="download(192)">Download 192x192</button>
+    </div>
+    <div>
+      <canvas id="icon512" width="512" height="512"></canvas>
+      <br>
+      <button onclick="download(512)">Download 512x512</button>
+    </div>
+  </div>
+
+  <script>
+    function drawIcon(canvas) {
+      const size = canvas.width;
+      const ctx = canvas.getContext('2d');
+
+      // White circle
+      ctx.beginPath();
+      ctx.arc(size/2, size/2, size/2, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+
+      // Black R
+      ctx.fillStyle = '#000000';
+      ctx.font = 'bold ' + (size * 0.55) + 'px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('R', size/2, size/2 + size*0.02);
+    }
+
+    function download(size) {
+      const canvas = document.getElementById('icon' + size);
+      const link = document.createElement('a');
+      link.download = 'icon-' + size + '.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    // Draw icons on load
+    drawIcon(document.getElementById('icon192'));
+    drawIcon(document.getElementById('icon512'));
+  </script>
+</body>
+</html>
