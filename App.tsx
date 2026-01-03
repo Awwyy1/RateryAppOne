@@ -139,7 +139,7 @@ const AppContent: React.FC = () => {
         )}
       </header>
 
-      <main className="pt-32 pb-20 px-6 max-w-7xl mx-auto relative z-10">
+      <main className="pt-24 md:pt-32 pb-24 md:pb-20 px-4 md:px-6 max-w-7xl mx-auto relative z-10">
         <AnimatePresence mode="wait">
           {stage === AppStage.LANDING && (
             <Landing key="landing" onStart={handleStart} />
@@ -162,7 +162,7 @@ const AppContent: React.FC = () => {
         </AnimatePresence>
       </main>
 
-      <footer className="fixed bottom-8 left-10 right-10 flex justify-between items-end pointer-events-none z-[100]">
+      <footer className="hidden md:flex fixed bottom-8 left-10 right-10 justify-between items-end pointer-events-none z-[100]">
         <div className="flex flex-col gap-1">
           <div className="w-1 h-12 bg-white/10 rounded-full overflow-hidden">
             <motion.div

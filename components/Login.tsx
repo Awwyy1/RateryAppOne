@@ -50,7 +50,7 @@ const Login: React.FC<Props> = ({ onSuccess }) => {
 
         <h2 className="text-3xl font-bold tracking-tight mb-4">Secure Access Required</h2>
         <p className="text-white/40 text-sm leading-relaxed max-w-sm mx-auto">
-          Authenticate to unlock the Neural Perception Engine. Your session data remains encrypted and private.
+          Authenticate to decode your Social DNA. Your session data remains encrypted and private.
         </p>
       </div>
 

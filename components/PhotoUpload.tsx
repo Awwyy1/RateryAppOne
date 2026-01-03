@@ -109,8 +109,8 @@ const PhotoUpload: React.FC<Props> = ({ onPhotoSelected }) => {
       className="max-w-2xl mx-auto"
     >
       <div className="text-center mb-10">
-        <h2 className="text-3xl font-bold tracking-tight mb-2">Upload Analysis Subject</h2>
-        <p className="text-slate-500">High-resolution headshots produce the most accurate AI analysis.</p>
+        <h2 className="text-3xl font-bold tracking-tight mb-2">Upload Your Photo</h2>
+        <p className="text-slate-500">High-resolution headshots produce the most accurate DNA scan.</p>
       </div>
 
       <AnimatePresence mode="wait">
@@ -233,7 +233,7 @@ const PhotoUpload: React.FC<Props> = ({ onPhotoSelected }) => {
         <div>
           <h4 className="text-xs font-bold text-amber-500 uppercase tracking-widest mb-1">Privacy Notice</h4>
           <p className="text-[11px] text-slate-400 leading-normal">
-            Your image is processed temporarily for AI perception analysis and is not stored or used for training. All data is purged after session termination.
+            Your image is processed temporarily to decode your Social DNA and is not stored or used for training. All data is purged after session termination.
           </p>
         </div>
       </div>

@@ -11,7 +11,7 @@ interface Props {
 
 const Scanning: React.FC<Props> = ({ photo, onComplete }) => {
   const [progress, setProgress] = useState(0);
-  const [status, setStatus] = useState('INITIALIZING...');
+  const [status, setStatus] = useState('STARTING_DNA_SCAN...');
   const [tickerData, setTickerData] = useState('');
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -69,12 +69,12 @@ const Scanning: React.FC<Props> = ({ photo, onComplete }) => {
   // Progress animation
   useEffect(() => {
     const statusUpdates = [
-      'CORE_SYNC_ESTABLISHED',
-      'EXTRACTING_FACIAL_GEOMETRY',
-      'ANALYZING_MICRO_EXPRESSIONS',
-      'CALIBRATING_PERCEPTION_WEIGHTS',
-      'GENERATING_PERCEPTION_MAP',
-      'FINALIZING_AUDIT_REPORT'
+      'INITIALIZING_DNA_SCANNER',
+      'READING_FACIAL_MARKERS',
+      'ANALYZING_SOCIAL_SIGNALS',
+      'CALCULATING_VIBE_SCORE',
+      'DECODING_SOCIAL_DNA',
+      'COMPLETING_DNA_DECODE'
     ];
 
     const timer = setInterval(() => {
@@ -297,7 +297,7 @@ const Scanning: React.FC<Props> = ({ photo, onComplete }) => {
                 className="absolute top-4 right-4 z-40 flex items-center gap-2 px-3 py-1.5 bg-green-500/20 border border-green-500/30 rounded-lg backdrop-blur-sm"
               >
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                <span className="text-[8px] font-mono text-green-400 uppercase">AI Analysis Complete</span>
+                <span className="text-[8px] font-mono text-green-400 uppercase">DNA Decoded</span>
               </motion.div>
             )}
 
@@ -344,7 +344,7 @@ const Scanning: React.FC<Props> = ({ photo, onComplete }) => {
             <span className={`text-2xl font-black tracking-tighter uppercase ${validationError ? 'text-red-400' : 'text-white/90'}`}>{status}</span>
           </div>
           <div className="flex flex-col items-end">
-            <span className="text-white/20 text-[10px] uppercase tracking-widest font-bold mb-1">Audit_Completeness</span>
+            <span className="text-white/20 text-[10px] uppercase tracking-widest font-bold mb-1">Scan_Progress</span>
             <span className={`text-5xl font-black tabular-nums leading-none tracking-tighter ${validationError ? 'text-red-500' : 'text-[#00f0ff]'}`}>
               {progress}<span className={`text-lg ${validationError ? 'text-red-500/40' : 'text-[#00f0ff]/40'}`}>%</span>
             </span>
