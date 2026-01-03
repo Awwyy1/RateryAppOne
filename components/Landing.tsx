@@ -45,7 +45,7 @@ const Landing: React.FC<Props> = ({ onStart }) => {
 
       <motion.h1
         variants={item}
-        className="text-5xl md:text-8xl lg:text-9xl font-black tracking-tighter text-center leading-[0.85] mb-6 md:mb-10"
+        className="text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter text-center leading-[0.85] mb-8 md:mb-10"
       >
         REVEAL YOUR <br />
         <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white/40 to-white/10">SOCIAL DNA</span>
@@ -53,7 +53,7 @@ const Landing: React.FC<Props> = ({ onStart }) => {
 
       <motion.p
         variants={item}
-        className="max-w-2xl text-center text-white/40 text-base md:text-xl font-medium leading-relaxed mb-8 md:mb-16 px-4"
+        className="max-w-2xl text-center text-white/40 text-lg md:text-xl font-medium leading-relaxed mb-12 md:mb-16 px-4"
       >
         Your face sends invisible signals every second. AI decodes them and shows how the world really sees you.
       </motion.p>
@@ -88,26 +88,28 @@ const Landing: React.FC<Props> = ({ onStart }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+            className="fixed inset-0 z-[200] flex items-end md:items-center justify-center bg-black/80 backdrop-blur-sm"
             onClick={() => setShowExplainer(false)}
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="relative w-full max-w-lg bg-[#0a0a0a] border border-white/10 rounded-3xl p-8"
+              initial={{ scale: 0.9, opacity: 0, y: 50 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 50 }}
+              className="relative w-full max-w-lg max-h-[85vh] overflow-y-auto bg-[#0a0a0a] border border-white/10 rounded-t-3xl md:rounded-3xl p-6 md:p-8"
               onClick={(e) => e.stopPropagation()}
             >
-              <button
-                onClick={() => setShowExplainer(false)}
-                className="absolute top-4 right-4 p-2 text-white/40 hover:text-white transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              <h2 className="text-2xl md:text-3xl font-black tracking-tight mb-6">
-                What is Social DNA?
-              </h2>
+              {/* Close button - inside content flow for mobile */}
+              <div className="flex justify-between items-start mb-6">
+                <h2 className="text-2xl md:text-3xl font-black tracking-tight">
+                  What is Social DNA?
+                </h2>
+                <button
+                  onClick={() => setShowExplainer(false)}
+                  className="p-2 text-white/40 hover:text-white transition-colors -mr-2 -mt-1"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
 
               <div className="space-y-4 text-white/60 leading-relaxed">
                 <p>Every face tells a story before you say a word.</p>

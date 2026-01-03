@@ -193,7 +193,7 @@ const Scanning: React.FC<Props> = ({ photo, onComplete }) => {
         {/* LEFT HUD DATA */}
         <div className="hidden lg:flex flex-col gap-8 w-48 font-mono">
           <div className="space-y-1">
-            <p className="text-[8px] text-white/30 uppercase tracking-widest">Neural_Load</p>
+            <p className="text-[8px] text-white/30 uppercase tracking-widest">Scan_Load</p>
             <p className="text-xs text-[#00f0ff] font-bold">{(Math.random() * 100).toFixed(2)}%</p>
             <div className="w-full h-0.5 bg-white/5"><motion.div className="h-full bg-[#00f0ff]" animate={{ width: ['0%', '100%', '30%'] }} transition={{ duration: 2, repeat: Infinity }} /></div>
           </div>
