@@ -71,12 +71,12 @@ If the image IS a valid human face photo, analyze it and respond with:
   "isValidFace": true,
   "overallScore": 8.2,
   "metrics": [
-    {"label": "Trustworthiness", "value": 85, "benchmark": 72, "description": "Brief explanation of score"},
-    {"label": "Charisma", "value": 78, "benchmark": 65, "description": "Brief explanation"},
-    {"label": "Intelligence", "value": 90, "benchmark": 78, "description": "Brief explanation"},
-    {"label": "Approachability", "value": 65, "benchmark": 70, "description": "Brief explanation"},
-    {"label": "Authority", "value": 82, "benchmark": 68, "description": "Brief explanation"},
-    {"label": "Energy", "value": 75, "benchmark": 60, "description": "Brief explanation"}
+    {"label": "Trust", "value": 85, "benchmark": 72, "description": "Brief explanation of score"},
+    {"label": "Magnetism", "value": 78, "benchmark": 65, "description": "Brief explanation"},
+    {"label": "Spark", "value": 90, "benchmark": 78, "description": "Brief explanation"},
+    {"label": "Warmth", "value": 65, "benchmark": 70, "description": "Brief explanation"},
+    {"label": "Power", "value": 82, "benchmark": 68, "description": "Brief explanation"},
+    {"label": "Mystery", "value": 75, "benchmark": 60, "description": "Brief explanation"}
   ],
   "insights": [
     "Specific insight about their appearance",
@@ -86,12 +86,12 @@ If the image IS a valid human face photo, analyze it and respond with:
 }
 
 Evaluate these metrics on a scale of 0-100:
-1. Trustworthiness - How reliable and honest does the person appear?
-2. Charisma - What is their magnetic/attractive presence level?
-3. Intelligence - How intellectually capable do they appear?
-4. Approachability - How easy would it be to start a conversation with them?
-5. Authority - How commanding is their leadership presence?
-6. Energy - What is their perceived vitality and engagement level?
+1. Trust - How reliable and trustworthy does the person appear at first glance?
+2. Magnetism - How much do they naturally draw attention and interest?
+3. Spark - How memorable and distinctive is their presence?
+4. Warmth - How approachable and friendly do they seem?
+5. Power - How much confidence and authority do they project?
+6. Mystery - How intriguing and interesting do they appear?
 
 RESPOND ONLY WITH VALID JSON, no markdown, no code blocks.`;
 
