@@ -15,6 +15,7 @@ const AppContent: React.FC = () => {
   const [stage, setStage] = useState<AppStage>(AppStage.LANDING);
   const [photo, setPhoto] = useState<string | null>(null);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const [hasCompletedScan, setHasCompletedScan] = useState(false);
   const { user, signOut, loading } = useAuth();
 
   // Mouse tracking for custom cursor and spotlight
@@ -57,6 +58,7 @@ const AppContent: React.FC = () => {
       return;
     }
     setAnalysisResult(result);
+    setHasCompletedScan(true);
     setStage(AppStage.DASHBOARD);
   };
 
@@ -74,8 +76,8 @@ const AppContent: React.FC = () => {
   };
 
   const handleCancelUpload = () => {
-    // Only go back to Dashboard if there's already a scan result
-    if (analysisResult) {
+    // Go back to Dashboard if user has completed at least one scan
+    if (hasCompletedScan) {
       setStage(AppStage.DASHBOARD);
     }
   };
@@ -167,7 +169,7 @@ const AppContent: React.FC = () => {
             <PhotoUpload
               key="upload"
               onPhotoSelected={handlePhotoSelected}
-              onCancel={analysisResult ? handleCancelUpload : undefined}
+              onCancel={hasCompletedScan ? handleCancelUpload : undefined}
             />
           )}
           {stage === AppStage.SCANNING && (

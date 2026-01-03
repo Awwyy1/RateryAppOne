@@ -41,6 +41,28 @@ interface ScanHistoryItem {
 
 type TabType = 'results' | 'history' | 'settings';
 
+// Compress photo for localStorage storage (reduce size to ~50-100KB)
+const compressPhoto = (base64: string, maxWidth = 400): Promise<string> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ratio = Math.min(maxWidth / img.width, maxWidth / img.height);
+      canvas.width = img.width * ratio;
+      canvas.height = img.height * ratio;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.6)); // 60% quality JPEG
+      } else {
+        resolve(base64);
+      }
+    };
+    img.onerror = () => resolve(base64);
+    img.src = base64;
+  });
+};
+
 const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut }) => {
   const [activeTab, setActiveTab] = useState<TabType>('results');
   const [scanHistory, setScanHistory] = useState<ScanHistoryItem[]>([]);
@@ -51,9 +73,18 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut 
 
   // Load history from localStorage
   useEffect(() => {
-    const saved = localStorage.getItem('ratery_scan_history');
-    if (saved) {
-      setScanHistory(JSON.parse(saved));
+    try {
+      const saved = localStorage.getItem('ratery_scan_history');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Validate data structure
+        if (Array.isArray(parsed)) {
+          setScanHistory(parsed);
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to load scan history, clearing corrupted data');
+      localStorage.removeItem('ratery_scan_history');
     }
     const savePref = localStorage.getItem('ratery_save_history');
     if (savePref !== null) {
@@ -61,28 +92,39 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut 
     }
   }, []);
 
-  // Save current scan to history
+  // Save current scan to history (with compressed photo)
   useEffect(() => {
     if (analysisResult && photo && saveHistory && photo !== lastSavedPhoto) {
-      const newScan: ScanHistoryItem = {
-        id: Date.now().toString(),
-        date: new Date().toISOString(),
-        photo,
-        score: analysisResult.overallScore,
-        tier: getTier(analysisResult.overallScore),
-        metrics: analysisResult.metrics,
-        insights: analysisResult.insights
-      };
-
-      // Update history - add new scan at the beginning
-      setScanHistory(prevHistory => {
-        const updated = [newScan, ...prevHistory].slice(0, 10); // Keep max 10
-        localStorage.setItem('ratery_scan_history', JSON.stringify(updated));
-        return updated;
-      });
-
-      // Mark this photo as saved to prevent duplicates
+      // Mark as saved immediately to prevent duplicate saves
       setLastSavedPhoto(photo);
+
+      // Compress and save asynchronously
+      compressPhoto(photo).then(compressedPhoto => {
+        const newScan: ScanHistoryItem = {
+          id: Date.now().toString(),
+          date: new Date().toISOString(),
+          photo: compressedPhoto,
+          score: analysisResult.overallScore,
+          tier: getTier(analysisResult.overallScore),
+          metrics: analysisResult.metrics,
+          insights: analysisResult.insights
+        };
+
+        // Update history - add new scan at the beginning
+        setScanHistory(prevHistory => {
+          const updated = [newScan, ...prevHistory].slice(0, 10); // Keep max 10
+          try {
+            localStorage.setItem('ratery_scan_history', JSON.stringify(updated));
+          } catch (e) {
+            // localStorage quota exceeded - remove oldest scans
+            console.warn('localStorage quota exceeded, trimming history');
+            const trimmed = updated.slice(0, 5);
+            localStorage.setItem('ratery_scan_history', JSON.stringify(trimmed));
+            return trimmed;
+          }
+          return updated;
+        });
+      });
     }
   }, [analysisResult, photo, saveHistory, lastSavedPhoto]);
 
