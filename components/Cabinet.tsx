@@ -17,7 +17,9 @@ import {
   Shield,
   Eye,
   EyeOff,
-  Zap
+  Zap,
+  ArrowLeft,
+  X
 } from 'lucide-react';
 
 interface Props {
@@ -43,6 +45,8 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut 
   const [activeTab, setActiveTab] = useState<TabType>('results');
   const [scanHistory, setScanHistory] = useState<ScanHistoryItem[]>([]);
   const [saveHistory, setSaveHistory] = useState(true);
+  const [selectedHistoryScan, setSelectedHistoryScan] = useState<ScanHistoryItem | null>(null);
+  const [lastSavedPhoto, setLastSavedPhoto] = useState<string | null>(null);
   const { user } = useAuth();
 
   // Load history from localStorage
@@ -59,7 +63,7 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut 
 
   // Save current scan to history
   useEffect(() => {
-    if (analysisResult && photo && saveHistory) {
+    if (analysisResult && photo && saveHistory && photo !== lastSavedPhoto) {
       const newScan: ScanHistoryItem = {
         id: Date.now().toString(),
         date: new Date().toISOString(),
@@ -70,19 +74,17 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut 
         insights: analysisResult.insights
       };
 
-      // Check if this scan is already in history (by score and date proximity)
-      const exists = scanHistory.some(s =>
-        Math.abs(s.score - newScan.score) < 0.1 &&
-        new Date(s.date).getTime() > Date.now() - 60000
-      );
-
-      if (!exists) {
-        const updated = [newScan, ...scanHistory].slice(0, 10); // Keep max 10
-        setScanHistory(updated);
+      // Update history - add new scan at the beginning
+      setScanHistory(prevHistory => {
+        const updated = [newScan, ...prevHistory].slice(0, 10); // Keep max 10
         localStorage.setItem('ratery_scan_history', JSON.stringify(updated));
-      }
+        return updated;
+      });
+
+      // Mark this photo as saved to prevent duplicates
+      setLastSavedPhoto(photo);
     }
-  }, [analysisResult, photo, saveHistory]);
+  }, [analysisResult, photo, saveHistory, lastSavedPhoto]);
 
   const getTier = (score: number) => {
     if (score >= 9) return 'LEGENDARY';
@@ -260,7 +262,8 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut 
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: index * 0.05 }}
-                      className="group relative bg-white/5 rounded-2xl border border-white/10 overflow-hidden hover:border-[#00f0ff]/30 transition-all"
+                      onClick={() => setSelectedHistoryScan(scan)}
+                      className="group relative bg-white/5 rounded-2xl border border-white/10 overflow-hidden hover:border-[#00f0ff]/30 transition-all cursor-pointer"
                     >
                       {/* Photo */}
                       <div className="aspect-square relative">
@@ -270,6 +273,13 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut 
                           className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
+
+                        {/* View Analytics Hint */}
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                          <div className="px-4 py-2 bg-[#00f0ff]/90 text-black font-bold rounded-xl text-xs uppercase tracking-widest backdrop-blur-md">
+                            View Analytics
+                          </div>
+                        </div>
 
                         {/* Score Badge */}
                         <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
@@ -288,7 +298,7 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut 
 
                         {/* Delete Button */}
                         <button
-                          onClick={() => deleteScan(scan.id)}
+                          onClick={(e) => { e.stopPropagation(); deleteScan(scan.id); }}
                           className="absolute top-3 right-3 p-2 bg-black/50 backdrop-blur-md rounded-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500/30"
                         >
                           <Trash2 className="w-4 h-4 text-white/60" />
@@ -466,6 +476,53 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut 
                   <p className="font-bold group-hover:text-[#00f0ff] transition-all">Ratery Intelligence</p>
                 </div>
               </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* History Scan Analytics Modal */}
+      <AnimatePresence>
+        {selectedHistoryScan && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-md overflow-y-auto"
+          >
+            {/* Header with Back Button */}
+            <div className="sticky top-0 z-10 bg-black/80 backdrop-blur-md border-b border-white/5 px-6 py-4">
+              <div className="max-w-7xl mx-auto flex items-center justify-between">
+                <button
+                  onClick={() => setSelectedHistoryScan(null)}
+                  className="flex items-center gap-2 px-4 py-2 text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all text-sm font-bold"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Back to History
+                </button>
+                <div className="flex items-center gap-2 text-white/40 text-xs uppercase tracking-widest">
+                  <Clock className="w-4 h-4" />
+                  {formatDate(selectedHistoryScan.date)}
+                </div>
+                <button
+                  onClick={() => setSelectedHistoryScan(null)}
+                  className="p-2 hover:bg-white/10 rounded-xl transition-all"
+                >
+                  <X className="w-5 h-5 text-white/60" />
+                </button>
+              </div>
+            </div>
+
+            {/* Analytics Content */}
+            <div className="max-w-7xl mx-auto px-6 py-8">
+              <Dashboard
+                photo={selectedHistoryScan.photo}
+                analysisResult={{
+                  overallScore: selectedHistoryScan.score,
+                  metrics: selectedHistoryScan.metrics,
+                  insights: selectedHistoryScan.insights
+                }}
+              />
             </div>
           </motion.div>
         )}
