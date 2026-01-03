@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, useMotionValue, useTransform, useSpring } from 'framer-motion';
-import { Shield, Cpu } from 'lucide-react';
+import { Dna, Cpu } from 'lucide-react';
 import { MetricData } from '../types';
 
 interface Props {
@@ -37,10 +37,11 @@ const NeuralIdentityCard: React.FC<Props> = ({ photo, score, metrics = [], insig
 
   // Calculate tier based on score
   const getTier = (score: number) => {
-    if (score >= 9) return 'Elite Subject';
-    if (score >= 7) return 'High Tier';
-    if (score >= 5) return 'Mid Tier';
-    return 'Base Tier';
+    if (score >= 9) return 'LEGENDARY';
+    if (score >= 7) return 'EPIC';
+    if (score >= 5) return 'RARE';
+    if (score >= 3) return 'COMMON';
+    return 'BASIC';
   };
 
   // Calculate average metric sync
@@ -71,11 +72,11 @@ const NeuralIdentityCard: React.FC<Props> = ({ photo, score, metrics = [], insig
         {/* Header Section */}
         <div className="flex justify-between items-center mb-6 z-10 shrink-0">
           <div className="flex flex-col">
-            <span className="text-[13px] font-black text-[#00f0ff] tracking-[0.5em] uppercase mb-0.5 font-mono">Neural Profile</span>
-            <span className="text-[10px] font-mono text-white/30 uppercase tracking-widest">Protocol: RT-2025-XQ9</span>
+            <span className="text-[13px] font-black text-[#00f0ff] tracking-[0.5em] uppercase mb-0.5 font-mono">Social DNA</span>
+            <span className="text-[10px] font-mono text-white/30 uppercase tracking-widest">Decoded by Ratery</span>
           </div>
           <div className="w-11 h-11 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-center backdrop-blur-md">
-            <Shield className="w-5 h-5 text-white/40" />
+            <Dna className="w-5 h-5 text-white/40" />
           </div>
         </div>
 
@@ -87,17 +88,17 @@ const NeuralIdentityCard: React.FC<Props> = ({ photo, score, metrics = [], insig
                 src={photo}
                 className="w-full h-full object-cover block grayscale contrast-125 brightness-110"
                 style={{ objectPosition: 'center 20%' }}
-                alt="Identity Subject"
+                alt="DNA Scan"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20" />
 
               {/* Corner Accents on Image */}
               <div className="absolute top-5 right-5 flex items-center gap-2 px-3 py-1.5 bg-black/60 backdrop-blur-md border border-white/10 rounded-xl">
                  <div className="w-1.5 h-1.5 rounded-full bg-[#00f0ff] animate-pulse" />
-                 <span className="text-[8px] font-black text-white/80 uppercase tracking-widest">Live</span>
+                 <span className="text-[8px] font-black text-white/80 uppercase tracking-widest">Scanned</span>
               </div>
 
-              {/* Biometrics Badge */}
+              {/* Verified Badge */}
               <div className="absolute bottom-5 left-5 right-5 flex items-center justify-between px-4 py-2.5 bg-black/40 backdrop-blur-2xl border border-white/10 rounded-xl z-30 shadow-2xl">
                 <div className="flex items-center gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-[#00f0ff] shadow-[0_0_10px_#00f0ff]" />
@@ -122,10 +123,10 @@ const NeuralIdentityCard: React.FC<Props> = ({ photo, score, metrics = [], insig
           )}
         </div>
 
-        {/* Impact Consensus Label */}
+        {/* Vibe Score Label */}
         <div className="flex items-center gap-4 mb-4 z-10 shrink-0">
            <div className="h-px w-6 bg-white/10" />
-           <h3 className="text-[9px] font-mono font-bold tracking-[0.5em] uppercase text-white/30 whitespace-nowrap">Impact Consensus</h3>
+           <h3 className="text-[9px] font-mono font-bold tracking-[0.5em] uppercase text-white/30 whitespace-nowrap">Vibe Score</h3>
            <div className="h-px flex-1 bg-white/10" />
         </div>
 
@@ -147,12 +148,12 @@ const NeuralIdentityCard: React.FC<Props> = ({ photo, score, metrics = [], insig
         {/* Metrics Grid */}
         <div className="grid grid-cols-2 gap-3 z-10 shrink-0">
           <div className="p-4 bg-white/[0.02] rounded-2xl border border-white/5 flex flex-col gap-1.5 transition-colors hover:bg-white/[0.04]">
-            <span className="text-[8px] font-black uppercase tracking-widest text-white/40">Tier</span>
+            <span className="text-[8px] font-black uppercase tracking-widest text-white/40">Status</span>
             <p className="text-[13px] font-black uppercase tracking-tight text-white/90">{getTier(score)}</p>
           </div>
           <div className="p-4 bg-white/[0.02] rounded-2xl border border-white/5 flex flex-col gap-1.5 transition-colors hover:bg-white/[0.04]">
-            <span className="text-[8px] font-black uppercase tracking-widest text-white/40">Sync</span>
-            <p className="text-[13px] font-black uppercase tracking-tight text-white/90">{getSync()}% Match</p>
+            <span className="text-[8px] font-black uppercase tracking-widest text-white/40">Match</span>
+            <p className="text-[13px] font-black uppercase tracking-tight text-white/90">{getSync()}%</p>
           </div>
         </div>
 
@@ -163,7 +164,7 @@ const NeuralIdentityCard: React.FC<Props> = ({ photo, score, metrics = [], insig
                <div key={i} className={`w-1 h-1 rounded-full ${i === 2 ? 'bg-[#00f0ff]' : 'bg-white/10'}`} />
              ))}
            </div>
-           <span className="text-[8px] font-mono tracking-[0.5em] text-white/20 uppercase font-black">Ratery // Neural_Asset_01</span>
+           <span className="text-[8px] font-mono tracking-[0.5em] text-white/20 uppercase font-black">ratery.cc</span>
         </div>
       </div>
     </motion.div>

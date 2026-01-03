@@ -7,7 +7,7 @@ import { MOCK_RESULTS, INSIGHTS } from '../constants';
 import { AnalysisResult } from '../types';
 import RadarChart from './RadarChart';
 import NeuralIdentityCard from './NeuralIdentityCard';
-import { Download, Share2, Target, Zap, Shield, Cpu, ExternalLink, Check, Copy, X } from 'lucide-react';
+import { Download, Share2, Target, Zap, Shield, Cpu, Check, X, Dna } from 'lucide-react';
 
 interface Props {
   photo: string | null;
@@ -27,8 +27,17 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
   const insights = analysisResult?.insights || INSIGHTS;
   const overallScore = analysisResult?.overallScore || 8.4;
 
+  // Get tier based on score
+  const getTier = (score: number) => {
+    if (score >= 9) return 'LEGENDARY';
+    if (score >= 7) return 'EPIC';
+    if (score >= 5) return 'RARE';
+    if (score >= 3) return 'COMMON';
+    return 'BASIC';
+  };
+
   // Share text for social media
-  const getShareText = () => `I scored ${overallScore.toFixed(1)}/10 on my first impression audit! Check out Ratery for your own AI-powered perception analysis.`;
+  const getShareText = () => `Just decoded my Social DNA. Vibe Score: ${overallScore.toFixed(1)}/10. Status: ${getTier(overallScore)}. What is YOUR Social DNA?`;
   const shareUrl = 'https://ratery.cc';
 
   // Open share modal
@@ -92,7 +101,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `ratery-neural-profile-${Date.now()}.png`;
+          a.download = `ratery-dna-card-${Date.now()}.png`;
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
@@ -135,11 +144,11 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
           <div className="relative aspect-[3/4] rounded-3xl overflow-hidden mb-6 border border-white/5 shadow-2xl">
             {photo && <img src={photo} alt="Subject" className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" />}
             <div className="absolute top-4 left-4 flex gap-2 z-20">
-              <span className="px-2 py-1 bg-black/50 backdrop-blur-md rounded text-[8px] font-mono font-bold border border-white/10 uppercase">Identity Verified</span>
+              <span className="px-2 py-1 bg-black/50 backdrop-blur-md rounded text-[8px] font-mono font-bold border border-white/10 uppercase">DNA Verified</span>
             </div>
             {analysisResult && (
               <div className="absolute bottom-4 right-4 z-20">
-                <span className="px-2 py-1 bg-[#00f0ff]/20 backdrop-blur-md rounded text-[8px] font-mono font-bold border border-[#00f0ff]/30 uppercase text-[#00f0ff]">AI Analyzed</span>
+                <span className="px-2 py-1 bg-[#00f0ff]/20 backdrop-blur-md rounded text-[8px] font-mono font-bold border border-[#00f0ff]/30 uppercase text-[#00f0ff]">DNA Decoded</span>
               </div>
             )}
           </div>
@@ -147,7 +156,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
           <div className="space-y-4 relative z-20">
             <div className="flex justify-between items-end">
               <div>
-                <p className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold mb-1">Impact Score</p>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold mb-1">Vibe Score</p>
                 <p className="text-5xl font-black tracking-tighter">{overallScore.toFixed(1)}<span className="text-sm font-bold text-white/20">/10</span></p>
               </div>
               <div className="w-12 h-12 rounded-full border border-[#00f0ff]/30 flex items-center justify-center bg-[#00f0ff]/5">
@@ -172,7 +181,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
                   </>
                 ) : (
                   <>
-                    <Download className="w-4 h-4" /> Download Audit
+                    <Download className="w-4 h-4" /> Download DNA Card
                   </>
                 )}
               </button>
@@ -190,7 +199,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
                   </>
                 ) : (
                   <>
-                    <Share2 className="w-4 h-4" /> Share Results
+                    <Share2 className="w-4 h-4" /> Share My DNA
                   </>
                 )}
               </button>
@@ -204,13 +213,13 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
         <div className="glass p-10 rounded-[2.5rem] flex-1 flex flex-col min-h-[500px] border-white/5">
           <div className="flex justify-between items-start mb-8">
             <div>
-              <h2 className="text-3xl font-black tracking-tighter mb-2">Social Blueprint</h2>
-              <p className="text-white/30 text-xs font-bold uppercase tracking-widest">AI-powered perception mapping</p>
+              <h2 className="text-3xl font-black tracking-tighter mb-2">Your DNA Markers</h2>
+              <p className="text-white/30 text-xs font-bold uppercase tracking-widest">The signals your face sends to the world</p>
             </div>
             <div className="flex gap-4 p-2 bg-black/20 rounded-xl border border-white/5">
               <div className="flex items-center gap-2 px-3 py-1">
                 <div className="w-2 h-2 rounded-full bg-[#00f0ff] shadow-[0_0_8px_#00f0ff]" />
-                <span className="text-[9px] uppercase tracking-widest font-black text-white">Subject</span>
+                <span className="text-[9px] uppercase tracking-widest font-black text-white">You</span>
               </div>
               <div className="flex items-center gap-2 px-3 py-1">
                 <div className="w-2 h-2 rounded-full bg-white/10" />
@@ -246,7 +255,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
       <motion.div variants={bentoItem} className="md:col-span-12 lg:col-span-3 flex flex-col gap-6">
         <div className="glass p-8 rounded-[2.5rem] border-white/5 flex-1">
           <h3 className="text-sm font-black uppercase tracking-[0.3em] mb-8 flex items-center gap-2 text-[#00f0ff]">
-            <Zap className="w-4 h-4" /> Strategy
+            <Zap className="w-4 h-4" /> DNA Insights
           </h3>
           <div className="space-y-8">
             {insights.map((insight, i) => (
@@ -268,26 +277,21 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
 
         <div className="glass p-8 rounded-[2.5rem] bg-[#00f0ff]/5 border-[#00f0ff]/20">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-sm font-black uppercase tracking-[0.3em]">System Health</h3>
+            <h3 className="text-sm font-black uppercase tracking-[0.3em]">Scan Status</h3>
             <Cpu className="w-4 h-4 text-[#00f0ff]" />
           </div>
           <div className="space-y-4">
             <div className="flex justify-between items-center text-[10px] font-mono font-bold text-white/40">
-              <span>ANALYSIS_NODES</span>
-              <span className="text-[#00f0ff]">ONLINE</span>
+              <span>DNA_SCANNER</span>
+              <span className="text-[#00f0ff]">ACTIVE</span>
             </div>
             <div className="flex justify-between items-center text-[10px] font-mono font-bold text-white/40">
-              <span>VERBATIM_CONF</span>
+              <span>ACCURACY</span>
               <span className="text-[#00f0ff]">{analysisResult ? '99.2%' : '94.2%'}</span>
             </div>
             <div className="flex justify-between items-center text-[10px] font-mono font-bold text-white/40">
-              <span>AI_ENGINE</span>
-              <span className="text-green-500">{analysisResult ? 'CLAUDE' : 'STANDBY'}</span>
-            </div>
-            <div className="pt-4">
-              <button className="w-full py-3 bg-white/10 hover:bg-white/20 transition-all rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-2">
-                View Full Logs <ExternalLink className="w-3 h-3" />
-              </button>
+              <span>AI_STATUS</span>
+              <span className="text-green-500">{analysisResult ? 'DECODED' : 'READY'}</span>
             </div>
           </div>
         </div>
@@ -353,7 +357,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-bold">Share Your Results</h3>
+              <h3 className="text-lg font-bold">Share Your DNA</h3>
               <button
                 onClick={() => setShowShareModal(false)}
                 className="p-2 hover:bg-white/10 rounded-full transition-all"
@@ -363,7 +367,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
             </div>
 
             <p className="text-white/40 text-sm mb-6">
-              Share your {overallScore.toFixed(1)}/10 score with friends!
+              Share your Vibe Score of {overallScore.toFixed(1)}/10 with friends!
             </p>
 
             <div className="space-y-3">
@@ -417,7 +421,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
             </div>
 
             <p className="text-center text-[10px] text-white/20 mt-6">
-              Your score: {overallScore.toFixed(1)}/10
+              Your Vibe Score: {overallScore.toFixed(1)}/10
             </p>
           </motion.div>
         </motion.div>
@@ -483,7 +487,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
             </motion.button>
 
             <p className="text-white/30 text-xs mt-4 text-center mb-6">
-              Tap the button to save your Neural Profile card
+              Tap the button to save your DNA Card
             </p>
           </div>
         </motion.div>
