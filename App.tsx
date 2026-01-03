@@ -73,6 +73,13 @@ const AppContent: React.FC = () => {
     setStage(AppStage.UPLOAD);
   };
 
+  const handleCancelUpload = () => {
+    // Only go back to Dashboard if there's already a scan result
+    if (analysisResult) {
+      setStage(AppStage.DASHBOARD);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#050505] text-white cyber-grid relative selection:bg-[#00f0ff] selection:text-black">
       {/* Spotlight Effect */}
@@ -157,7 +164,11 @@ const AppContent: React.FC = () => {
             <Login key="login" onSuccess={handleLoginSuccess} />
           )}
           {stage === AppStage.UPLOAD && (
-            <PhotoUpload key="upload" onPhotoSelected={handlePhotoSelected} />
+            <PhotoUpload
+              key="upload"
+              onPhotoSelected={handlePhotoSelected}
+              onCancel={analysisResult ? handleCancelUpload : undefined}
+            />
           )}
           {stage === AppStage.SCANNING && (
             <Scanning key="scanning" photo={photo} onComplete={handleScanComplete} />

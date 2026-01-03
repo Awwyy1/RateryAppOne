@@ -1,13 +1,14 @@
 
 import React, { useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, Camera, FileText, AlertCircle, X, FlipHorizontal } from 'lucide-react';
+import { Upload, Camera, FileText, AlertCircle, X, FlipHorizontal, ArrowLeft } from 'lucide-react';
 
 interface Props {
   onPhotoSelected: (img: string) => void;
+  onCancel?: () => void;
 }
 
-const PhotoUpload: React.FC<Props> = ({ onPhotoSelected }) => {
+const PhotoUpload: React.FC<Props> = ({ onPhotoSelected, onCancel }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
@@ -108,6 +109,19 @@ const PhotoUpload: React.FC<Props> = ({ onPhotoSelected }) => {
       animate={{ opacity: 1, y: 0 }}
       className="max-w-2xl mx-auto"
     >
+      {/* Back Button */}
+      {onCancel && (
+        <motion.button
+          onClick={onCancel}
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="mb-6 flex items-center gap-2 px-4 py-2 text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all text-sm font-bold"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Results
+        </motion.button>
+      )}
+
       <div className="text-center mb-10">
         <h2 className="text-3xl font-bold tracking-tight mb-2">Upload Your Photo</h2>
         <p className="text-slate-500">High-resolution headshots produce the most accurate DNA scan.</p>
