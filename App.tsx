@@ -104,7 +104,7 @@ const AppContent: React.FC = () => {
             AI Powered
           </span>
           <span className="text-white/20">|</span>
-          <span>Perception Analysis</span>
+          <span>DNA Scanner</span>
         </nav>
 
         {user ? (
