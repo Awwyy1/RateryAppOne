@@ -8,7 +8,7 @@ import Onboarding from './components/Onboarding';
 import Login from './components/Login';
 import PhotoUpload from './components/PhotoUpload';
 import Scanning from './components/Scanning';
-import Dashboard from './components/Dashboard';
+import Cabinet from './components/Cabinet';
 import { LogOut, User } from 'lucide-react';
 
 const AppContent: React.FC = () => {
@@ -65,6 +65,12 @@ const AppContent: React.FC = () => {
     setStage(AppStage.LANDING);
     setPhoto(null);
     setAnalysisResult(null);
+  };
+
+  const handleNewScan = () => {
+    setPhoto(null);
+    setAnalysisResult(null);
+    setStage(AppStage.UPLOAD);
   };
 
   return (
@@ -157,7 +163,13 @@ const AppContent: React.FC = () => {
             <Scanning key="scanning" photo={photo} onComplete={handleScanComplete} />
           )}
           {stage === AppStage.DASHBOARD && (
-            <Dashboard key="dashboard" photo={photo} analysisResult={analysisResult} />
+            <Cabinet
+              key="cabinet"
+              photo={photo}
+              analysisResult={analysisResult}
+              onNewScan={handleNewScan}
+              onSignOut={handleSignOut}
+            />
           )}
         </AnimatePresence>
       </main>
