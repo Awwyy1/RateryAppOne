@@ -2,10 +2,12 @@
 import React, { useState, useRef } from 'react';
 // Import Variants to correctly type motion configurations and ensure literal types like 'spring' are preserved
 import { motion, Variants } from 'framer-motion';
+import html2canvas from 'html2canvas';
 import { MOCK_RESULTS, INSIGHTS } from '../constants';
 import { AnalysisResult } from '../types';
 import RadarChart from './RadarChart';
-import { Download, Share2, Target, Zap, Shield, Cpu, ExternalLink, Check, Copy, X } from 'lucide-react';
+import NeuralIdentityCard from './NeuralIdentityCard';
+import { Download, Share2, Target, Zap, Shield, Cpu, Check, X, Dna } from 'lucide-react';
 
 interface Props {
   photo: string | null;
@@ -16,15 +18,26 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
   const [shareStatus, setShareStatus] = useState<'idle' | 'copied' | 'shared'>('idle');
   const [isDownloading, setIsDownloading] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
   const reportRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   // Use real analysis results if available, otherwise fall back to mocks
   const metrics = analysisResult?.metrics || MOCK_RESULTS;
   const insights = analysisResult?.insights || INSIGHTS;
   const overallScore = analysisResult?.overallScore || 8.4;
 
+  // Get tier based on score
+  const getTier = (score: number) => {
+    if (score >= 9) return 'LEGENDARY';
+    if (score >= 7) return 'EPIC';
+    if (score >= 5) return 'RARE';
+    if (score >= 3) return 'COMMON';
+    return 'BASIC';
+  };
+
   // Share text for social media
-  const getShareText = () => `I scored ${overallScore.toFixed(1)}/10 on my first impression audit! Check out Ratery for your own AI-powered perception analysis.`;
+  const getShareText = () => `Just decoded my Social DNA. Vibe Score: ${overallScore.toFixed(1)}/10. Status: ${getTier(overallScore)}. What is YOUR Social DNA?`;
   const shareUrl = 'https://ratery.cc';
 
   // Open share modal
@@ -65,222 +78,30 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
     setTimeout(() => setShareStatus('idle'), 2000);
   };
 
-  // Download functionality - generates a visual card image
-  const handleDownload = async () => {
+  // Open download modal with card preview
+  const handleDownload = () => {
+    setShowDownloadModal(true);
+  };
+
+  // Actually download the card as PNG
+  const downloadCard = async () => {
+    if (!cardRef.current) return;
     setIsDownloading(true);
 
     try {
-      // Create canvas for the card
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      if (!ctx) throw new Error('Canvas not supported');
-
-      // Card dimensions (optimized for social media sharing)
-      const width = 600;
-      const height = 800;
-      canvas.width = width;
-      canvas.height = height;
-
-      // Background
-      ctx.fillStyle = '#050505';
-      ctx.fillRect(0, 0, width, height);
-
-      // Add subtle grid pattern
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
-      ctx.lineWidth = 1;
-      for (let i = 0; i < width; i += 40) {
-        ctx.beginPath();
-        ctx.moveTo(i, 0);
-        ctx.lineTo(i, height);
-        ctx.stroke();
-      }
-      for (let i = 0; i < height; i += 40) {
-        ctx.beginPath();
-        ctx.moveTo(0, i);
-        ctx.lineTo(width, i);
-        ctx.stroke();
-      }
-
-      // Top border accent
-      const gradient = ctx.createLinearGradient(0, 0, width, 0);
-      gradient.addColorStop(0, '#00f0ff');
-      gradient.addColorStop(1, '#0080ff');
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, width, 4);
-
-      // Logo circle with R
-      const logoX = 40;
-      const logoY = 40;
-      const logoRadius = 20;
-      ctx.beginPath();
-      ctx.arc(logoX + logoRadius, logoY + logoRadius, logoRadius, 0, Math.PI * 2);
-      ctx.fillStyle = '#ffffff';
-      ctx.fill();
-      ctx.fillStyle = '#000000';
-      ctx.font = 'bold 24px Arial';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('R', logoX + logoRadius, logoY + logoRadius + 2);
-
-      // Title
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 14px Arial';
-      ctx.textAlign = 'left';
-      ctx.fillText('RATERY PERCEPTION AUDIT', logoX + logoRadius * 2 + 15, logoY + logoRadius);
-
-      // Decorative line
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(40, 100);
-      ctx.lineTo(width - 40, 100);
-      ctx.stroke();
-
-      // Photo section (if available)
-      let contentStartY = 130;
-
-      if (photo) {
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-
-        await new Promise<void>((resolve, reject) => {
-          img.onload = () => {
-            // Draw photo with rounded corners effect
-            const photoX = 40;
-            const photoY = contentStartY;
-            const photoW = 120;
-            const photoH = 150;
-
-            // Photo background
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
-            ctx.fillRect(photoX - 5, photoY - 5, photoW + 10, photoH + 10);
-
-            // Draw the image
-            ctx.drawImage(img, photoX, photoY, photoW, photoH);
-
-            // Photo border
-            ctx.strokeStyle = 'rgba(0, 240, 255, 0.3)';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(photoX, photoY, photoW, photoH);
-
-            resolve();
-          };
-          img.onerror = () => resolve(); // Continue even if image fails
-          img.src = photo;
-        });
-      }
-
-      // Impact Score section
-      const scoreX = photo ? 180 : 40;
-      const scoreY = contentStartY + 20;
-
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-      ctx.font = '10px Arial';
-      ctx.textAlign = 'left';
-      ctx.fillText('IMPACT SCORE', scoreX, scoreY);
-
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 64px Arial';
-      ctx.fillText(overallScore.toFixed(1), scoreX, scoreY + 60);
-
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-      ctx.font = 'bold 24px Arial';
-      ctx.fillText('/10', scoreX + 100, scoreY + 60);
-
-      // Cyan accent circle
-      ctx.beginPath();
-      ctx.arc(scoreX + 180, scoreY + 40, 25, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(0, 240, 255, 0.5)';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      ctx.fillStyle = 'rgba(0, 240, 255, 0.1)';
-      ctx.fill();
-
-      // Metrics section
-      const metricsStartY = 310;
-
-      // Section header
-      ctx.fillStyle = '#00f0ff';
-      ctx.font = 'bold 12px Arial';
-      ctx.textAlign = 'left';
-      ctx.fillText('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 40, metricsStartY);
-
-      // Draw metrics
-      metrics.forEach((metric, i) => {
-        const y = metricsStartY + 30 + i * 55;
-        const barWidth = 300;
-        const barHeight = 12;
-        const barX = 180;
-
-        // Metric label
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-        ctx.font = '12px Arial';
-        ctx.textAlign = 'left';
-        ctx.fillText(metric.label, 40, y + 10);
-
-        // Background bar
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
-        ctx.fillRect(barX, y, barWidth, barHeight);
-
-        // Value bar with gradient
-        const barGradient = ctx.createLinearGradient(barX, y, barX + barWidth, y);
-        barGradient.addColorStop(0, '#00f0ff');
-        barGradient.addColorStop(1, '#0080ff');
-        ctx.fillStyle = barGradient;
-        ctx.fillRect(barX, y, (metric.value / 100) * barWidth, barHeight);
-
-        // Value text
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 14px Arial';
-        ctx.textAlign = 'right';
-        ctx.fillText(`${metric.value}%`, width - 40, y + 11);
+      const canvas = await html2canvas(cardRef.current, {
+        backgroundColor: '#080808',
+        scale: 2, // Higher quality
+        useCORS: true,
+        allowTaint: true,
       });
 
-      // AI Insights section
-      const insightsY = metricsStartY + 30 + metrics.length * 55 + 20;
-
-      ctx.fillStyle = '#00f0ff';
-      ctx.font = 'bold 12px Arial';
-      ctx.textAlign = 'left';
-      ctx.fillText('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 40, insightsY);
-
-      // Lightbulb emoji and title
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 12px Arial';
-      ctx.fillText('AI Insights:', 40, insightsY + 25);
-
-      // First insight (truncated if too long)
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-      ctx.font = '11px Arial';
-      const firstInsight = insights[0] || '';
-      const truncatedInsight = firstInsight.length > 60 ? firstInsight.substring(0, 60) + '...' : firstInsight;
-      ctx.fillText(`• ${truncatedInsight}`, 40, insightsY + 50);
-
-      // Footer
-      ctx.fillStyle = '#00f0ff';
-      ctx.font = 'bold 12px Arial';
-      ctx.textAlign = 'left';
-      ctx.fillText('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 40, height - 60);
-
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-      ctx.font = '11px Arial';
-      ctx.fillText('ratery.cc', 40, height - 35);
-
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-      ctx.textAlign = 'right';
-      ctx.fillText('Powered by Claude AI', width - 40, height - 35);
-
-      // Bottom border accent
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, height - 4, width, 4);
-
-      // Convert to blob and download
       canvas.toBlob((blob) => {
         if (blob) {
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `ratery-audit-${Date.now()}.png`;
+          a.download = `ratery-dna-card-${Date.now()}.png`;
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
@@ -323,11 +144,11 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
           <div className="relative aspect-[3/4] rounded-3xl overflow-hidden mb-6 border border-white/5 shadow-2xl">
             {photo && <img src={photo} alt="Subject" className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" />}
             <div className="absolute top-4 left-4 flex gap-2 z-20">
-              <span className="px-2 py-1 bg-black/50 backdrop-blur-md rounded text-[8px] font-mono font-bold border border-white/10 uppercase">Identity Verified</span>
+              <span className="px-2 py-1 bg-black/50 backdrop-blur-md rounded text-[8px] font-mono font-bold border border-white/10 uppercase">DNA Verified</span>
             </div>
             {analysisResult && (
               <div className="absolute bottom-4 right-4 z-20">
-                <span className="px-2 py-1 bg-[#00f0ff]/20 backdrop-blur-md rounded text-[8px] font-mono font-bold border border-[#00f0ff]/30 uppercase text-[#00f0ff]">AI Analyzed</span>
+                <span className="px-2 py-1 bg-[#00f0ff]/20 backdrop-blur-md rounded text-[8px] font-mono font-bold border border-[#00f0ff]/30 uppercase text-[#00f0ff]">DNA Decoded</span>
               </div>
             )}
           </div>
@@ -335,7 +156,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
           <div className="space-y-4 relative z-20">
             <div className="flex justify-between items-end">
               <div>
-                <p className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold mb-1">Impact Score</p>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold mb-1">Vibe Score</p>
                 <p className="text-5xl font-black tracking-tighter">{overallScore.toFixed(1)}<span className="text-sm font-bold text-white/20">/10</span></p>
               </div>
               <div className="w-12 h-12 rounded-full border border-[#00f0ff]/30 flex items-center justify-center bg-[#00f0ff]/5">
@@ -360,7 +181,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
                   </>
                 ) : (
                   <>
-                    <Download className="w-4 h-4" /> Download Audit
+                    <Download className="w-4 h-4" /> Download DNA Card
                   </>
                 )}
               </button>
@@ -378,7 +199,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
                   </>
                 ) : (
                   <>
-                    <Share2 className="w-4 h-4" /> Share Results
+                    <Share2 className="w-4 h-4" /> Share My DNA
                   </>
                 )}
               </button>
@@ -392,13 +213,13 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
         <div className="glass p-10 rounded-[2.5rem] flex-1 flex flex-col min-h-[500px] border-white/5">
           <div className="flex justify-between items-start mb-8">
             <div>
-              <h2 className="text-3xl font-black tracking-tighter mb-2">Social Blueprint</h2>
-              <p className="text-white/30 text-xs font-bold uppercase tracking-widest">AI-powered perception mapping</p>
+              <h2 className="text-3xl font-black tracking-tighter mb-2">Your DNA Markers</h2>
+              <p className="text-white/30 text-xs font-bold uppercase tracking-widest">The signals your face sends to the world</p>
             </div>
             <div className="flex gap-4 p-2 bg-black/20 rounded-xl border border-white/5">
               <div className="flex items-center gap-2 px-3 py-1">
                 <div className="w-2 h-2 rounded-full bg-[#00f0ff] shadow-[0_0_8px_#00f0ff]" />
-                <span className="text-[9px] uppercase tracking-widest font-black text-white">Subject</span>
+                <span className="text-[9px] uppercase tracking-widest font-black text-white">You</span>
               </div>
               <div className="flex items-center gap-2 px-3 py-1">
                 <div className="w-2 h-2 rounded-full bg-white/10" />
@@ -434,7 +255,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
       <motion.div variants={bentoItem} className="md:col-span-12 lg:col-span-3 flex flex-col gap-6">
         <div className="glass p-8 rounded-[2.5rem] border-white/5 flex-1">
           <h3 className="text-sm font-black uppercase tracking-[0.3em] mb-8 flex items-center gap-2 text-[#00f0ff]">
-            <Zap className="w-4 h-4" /> Strategy
+            <Zap className="w-4 h-4" /> DNA Insights
           </h3>
           <div className="space-y-8">
             {insights.map((insight, i) => (
@@ -456,26 +277,21 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
 
         <div className="glass p-8 rounded-[2.5rem] bg-[#00f0ff]/5 border-[#00f0ff]/20">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-sm font-black uppercase tracking-[0.3em]">System Health</h3>
+            <h3 className="text-sm font-black uppercase tracking-[0.3em]">Scan Status</h3>
             <Cpu className="w-4 h-4 text-[#00f0ff]" />
           </div>
           <div className="space-y-4">
             <div className="flex justify-between items-center text-[10px] font-mono font-bold text-white/40">
-              <span>ANALYSIS_NODES</span>
-              <span className="text-[#00f0ff]">ONLINE</span>
+              <span>DNA_SCANNER</span>
+              <span className="text-[#00f0ff]">ACTIVE</span>
             </div>
             <div className="flex justify-between items-center text-[10px] font-mono font-bold text-white/40">
-              <span>VERBATIM_CONF</span>
+              <span>ACCURACY</span>
               <span className="text-[#00f0ff]">{analysisResult ? '99.2%' : '94.2%'}</span>
             </div>
             <div className="flex justify-between items-center text-[10px] font-mono font-bold text-white/40">
-              <span>AI_ENGINE</span>
-              <span className="text-green-500">{analysisResult ? 'CLAUDE' : 'STANDBY'}</span>
-            </div>
-            <div className="pt-4">
-              <button className="w-full py-3 bg-white/10 hover:bg-white/20 transition-all rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-2">
-                View Full Logs <ExternalLink className="w-3 h-3" />
-              </button>
+              <span>AI_STATUS</span>
+              <span className="text-green-500">{analysisResult ? 'DECODED' : 'READY'}</span>
             </div>
           </div>
         </div>
@@ -541,7 +357,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-bold">Share Your Results</h3>
+              <h3 className="text-lg font-bold">Share Your DNA</h3>
               <button
                 onClick={() => setShowShareModal(false)}
                 className="p-2 hover:bg-white/10 rounded-full transition-all"
@@ -551,7 +367,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
             </div>
 
             <p className="text-white/40 text-sm mb-6">
-              Share your {overallScore.toFixed(1)}/10 score with friends!
+              Share your Vibe Score of {overallScore.toFixed(1)}/10 with friends!
             </p>
 
             <div className="space-y-3">
@@ -605,9 +421,75 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
             </div>
 
             <p className="text-center text-[10px] text-white/20 mt-6">
-              Your score: {overallScore.toFixed(1)}/10
+              Your Vibe Score: {overallScore.toFixed(1)}/10
             </p>
           </motion.div>
+        </motion.div>
+      )}
+
+      {/* Download Modal with Card Preview */}
+      {showDownloadModal && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-md overflow-y-auto"
+          onClick={() => setShowDownloadModal(false)}
+        >
+          {/* Content container */}
+          <div
+            className="min-h-full w-full flex flex-col items-center py-6 px-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button - inside content, always visible */}
+            <button
+              onClick={() => setShowDownloadModal(false)}
+              className="self-end mb-4 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-full transition-all border border-white/20 flex items-center gap-2"
+            >
+              <X className="w-5 h-5 text-white" />
+              <span className="text-white text-sm font-bold">Close</span>
+            </button>
+
+            {/* Card Preview - scaled down for mobile */}
+            <div ref={cardRef} className="transform scale-[0.8] sm:scale-90 md:scale-100 origin-top shrink-0">
+              <NeuralIdentityCard
+                photo={photo}
+                score={overallScore}
+                metrics={metrics}
+                insights={insights}
+                isStatic={true}
+              />
+            </div>
+
+            {/* Download Button */}
+            <motion.button
+              onClick={downloadCard}
+              disabled={isDownloading}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="mt-4 px-8 py-4 bg-[#00f0ff] text-black font-black rounded-2xl flex items-center gap-3 hover:bg-white transition-all disabled:opacity-50 text-sm uppercase tracking-widest shadow-lg shadow-[#00f0ff]/20"
+            >
+              {isDownloading ? (
+                <>
+                  <motion.div
+                    className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                  />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Download className="w-5 h-5" />
+                  Download Card
+                </>
+              )}
+            </motion.button>
+
+            <p className="text-white/30 text-xs mt-4 text-center mb-6">
+              Tap the button to save your DNA Card
+            </p>
+          </div>
         </motion.div>
       )}
     </motion.div>

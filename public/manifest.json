@@ -1,7 +1,7 @@
 {
-  "name": "Ratery - Audit Your Aura",
+  "name": "Ratery - Reveal Your Social DNA",
   "short_name": "Ratery",
-  "description": "AI-powered perception analysis and first impression audit",
+  "description": "AI analyzes your photo and reveals your Social DNA — the invisible signals you send in the first second",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#050505",
