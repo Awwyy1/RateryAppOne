@@ -78,11 +78,16 @@ const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl overflow-y-auto"
-      onClick={onClose}
+      className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl overflow-y-auto overscroll-contain"
+      style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
     >
+      {/* Background overlay for closing */}
+      <div
+        className="absolute inset-0"
+        onClick={onClose}
+      />
       {/* Scrollable container */}
-      <div className="min-h-full flex items-start md:items-center justify-center p-4 py-8">
+      <div className="relative min-h-full flex items-start md:items-center justify-center p-4 py-8">
         <motion.div
           initial={{ scale: 0.9, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -196,8 +201,8 @@ const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
                       )}
                     </div>
 
-                    {/* Features */}
-                    <ul className="space-y-2 md:space-y-3 mb-4 md:mb-6 flex-grow">
+                    {/* Features - min-height ensures alignment across cards */}
+                    <ul className="space-y-2 md:space-y-3 mb-4 md:mb-6 flex-grow min-h-[120px] md:min-h-[160px]">
                       {plan.features.map((feature, i) => (
                         <li key={i} className="flex items-center gap-2 md:gap-3 text-xs md:text-sm">
                           <Check className={`w-4 h-4 shrink-0 ${
