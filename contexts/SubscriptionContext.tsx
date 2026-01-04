@@ -57,7 +57,7 @@ export const PLANS: PlanInfo[] = [
       'Exclusive DNA Cards',
       'VIP Support'
     ],
-    productId: 'prod_pro_yearly', // Replace with actual Creem product ID
+    productId: 'prod_4boIHh1LCWfxWCK12uL07D',
     bestValue: true
   }
 ];
