@@ -36,32 +36,22 @@ const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
   const handleSubscribe = async () => {
     setIsLoading(true);
     setError(null);
-    try {
-      // Call our API to create checkout session
-      const response = await fetch('/api/create-checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data.checkout_url) {
-          // Redirect to Creem checkout
-          window.location.href = data.checkout_url;
-        } else {
-          setError('Payment service unavailable. Please try again later.');
-        }
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('Checkout API error:', errorData);
-        setError('Could not connect to payment service. Please try again.');
-      }
+    try {
+      // Use Creem.io test payment page directly
+      // The product ID is already configured in the URL
+      const productId = 'prod_vyB0YRaHxUbaw15RrwYWs';
+      const successUrl = encodeURIComponent(`${window.location.origin}/?payment=success`);
+      const cancelUrl = encodeURIComponent(`${window.location.origin}/?payment=cancelled`);
+
+      // Creem.io test payment URL with return parameters
+      const paymentUrl = `https://www.creem.io/test/payment/${productId}?success_url=${successUrl}&cancel_url=${cancelUrl}`;
+
+      // Redirect to payment page
+      window.location.href = paymentUrl;
     } catch (err) {
       console.error('Checkout error:', err);
-      setError('Network error. Please check your connection and try again.');
-    } finally {
+      setError('Could not open payment page. Please try again.');
       setIsLoading(false);
     }
   };
