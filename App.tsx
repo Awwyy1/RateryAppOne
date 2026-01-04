@@ -274,6 +274,7 @@ const AppContent: React.FC = () => {
               analysisResult={analysisResult}
               onNewScan={handleNewScan}
               onSignOut={handleSignOut}
+              onShowPaywall={() => setShowPaywall(true)}
             />
           )}
         </AnimatePresence>

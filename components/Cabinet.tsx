@@ -22,14 +22,19 @@ import {
   ArrowLeft,
   X,
   AlertTriangle,
-  CheckCircle
+  CheckCircle,
+  Crown,
+  Sparkles,
+  Infinity
 } from 'lucide-react';
+import { useSubscription, PLANS } from '../contexts/SubscriptionContext';
 
 interface Props {
   photo: string | null;
   analysisResult: AnalysisResult | null;
   onNewScan: () => void;
   onSignOut: () => void;
+  onShowPaywall?: () => void;
 }
 
 interface ScanHistoryItem {
@@ -66,7 +71,7 @@ const compressPhoto = (base64: string, maxWidth = 400): Promise<string> => {
   });
 };
 
-const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut }) => {
+const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut, onShowPaywall }) => {
   const [activeTab, setActiveTab] = useState<TabType>('results');
   const [scanHistory, setScanHistory] = useState<ScanHistoryItem[]>([]);
   const [saveHistory, setSaveHistory] = useState(true);
@@ -77,6 +82,7 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut 
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const { user } = useAuth();
+  const { currentPlan, isPremium, isPro, scansLeft, monthlyScansUsed, getCurrentPlanInfo } = useSubscription();
 
   // Load history from localStorage
   useEffect(() => {
@@ -449,6 +455,120 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut 
                   <LogOut className="w-4 h-4" />
                   Sign Out
                 </button>
+              </div>
+            </div>
+
+            {/* Subscription Section */}
+            <div className={`glass p-8 rounded-[2rem] border ${
+              isPro ? 'border-amber-500/20' : isPremium ? 'border-[#00f0ff]/20' : 'border-white/5'
+            }`}>
+              <div className="flex items-center gap-3 mb-8">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                  isPro ? 'bg-amber-500/10' : 'bg-[#00f0ff]/10'
+                }`}>
+                  {isPro ? (
+                    <Sparkles className="w-5 h-5 text-amber-400" />
+                  ) : isPremium ? (
+                    <Crown className="w-5 h-5 text-[#00f0ff]" />
+                  ) : (
+                    <Zap className="w-5 h-5 text-[#00f0ff]" />
+                  )}
+                </div>
+                <h3 className="text-lg font-black uppercase tracking-widest">Subscription</h3>
+              </div>
+
+              <div className="space-y-6">
+                {/* Current Plan */}
+                <div className={`p-5 rounded-2xl border ${
+                  isPro
+                    ? 'bg-gradient-to-br from-amber-500/10 to-yellow-500/5 border-amber-500/30'
+                    : isPremium
+                    ? 'bg-gradient-to-br from-[#00f0ff]/10 to-purple-500/5 border-[#00f0ff]/30'
+                    : 'bg-white/5 border-white/10'
+                }`}>
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <p className="text-[10px] text-white/40 uppercase tracking-widest mb-1">Current Plan</p>
+                      <p className={`text-2xl font-black ${
+                        isPro ? 'text-amber-400' : isPremium ? 'text-[#00f0ff]' : 'text-white'
+                      }`}>
+                        {getCurrentPlanInfo().name}
+                      </p>
+                    </div>
+                    <div className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${
+                      isPro
+                        ? 'bg-amber-500/20 text-amber-400'
+                        : isPremium
+                        ? 'bg-[#00f0ff]/20 text-[#00f0ff]'
+                        : 'bg-white/10 text-white/60'
+                    }`}>
+                      {getCurrentPlanInfo().price}{getCurrentPlanInfo().period}
+                    </div>
+                  </div>
+
+                  {/* Scans Info */}
+                  <div className="flex items-center gap-3 text-sm">
+                    {scansLeft === 'unlimited' ? (
+                      <>
+                        <Infinity className="w-4 h-4 text-amber-400" />
+                        <span className="text-amber-400 font-bold">Unlimited Scans</span>
+                      </>
+                    ) : isPremium ? (
+                      <>
+                        <Zap className="w-4 h-4 text-[#00f0ff]" />
+                        <span className="text-white/70">
+                          <span className="font-bold text-[#00f0ff]">{scansLeft}</span> scans remaining this month
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="w-4 h-4 text-white/40" />
+                        <span className="text-white/70">
+                          <span className="font-bold">{scansLeft}</span> free scan{Number(scansLeft) !== 1 ? 's' : ''} left
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Upgrade Button */}
+                {!isPro && onShowPaywall && (
+                  <button
+                    onClick={onShowPaywall}
+                    className={`w-full py-4 rounded-2xl font-bold text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
+                      isPremium
+                        ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-black hover:shadow-lg hover:shadow-amber-500/30'
+                        : 'bg-gradient-to-r from-[#00f0ff] to-cyan-400 text-black hover:shadow-lg hover:shadow-[#00f0ff]/30'
+                    }`}
+                  >
+                    {isPremium ? (
+                      <>
+                        <Sparkles className="w-4 h-4" />
+                        Upgrade to Pro
+                      </>
+                    ) : (
+                      <>
+                        <Crown className="w-4 h-4" />
+                        Upgrade Plan
+                      </>
+                    )}
+                  </button>
+                )}
+
+                {/* Plan Features */}
+                <div className="space-y-2">
+                  <p className="text-[10px] text-white/40 uppercase tracking-widest">Plan Features</p>
+                  <ul className="space-y-2">
+                    {getCurrentPlanInfo().features.map((feature, i) => (
+                      <li key={i} className="flex items-center gap-2 text-sm">
+                        <CheckCircle className={`w-4 h-4 shrink-0 ${
+                          isPro ? 'text-amber-400' : isPremium ? 'text-[#00f0ff]' : 'text-white/40'
+                        }`} />
+                        <span className="text-white/70">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </div>
 
