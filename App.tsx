@@ -155,17 +155,19 @@ const AppContent: React.FC = () => {
         transition={{ type: 'spring', damping: 25, stiffness: 150 }}
       />
 
-      <header className="fixed top-0 left-0 right-0 z-[100] px-10 py-6 flex justify-between items-center backdrop-blur-md border-b border-white/5">
+      <header className="fixed top-0 left-0 right-0 z-[100] px-4 md:px-10 py-4 md:py-6 flex justify-between items-center backdrop-blur-md border-b border-white/5">
+        {/* Logo - left aligned */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="flex items-center gap-3"
+          className="flex items-center gap-2 md:gap-3 shrink-0"
         >
-          <div className="w-10 h-10 bg-white text-black flex items-center justify-center font-black rounded-full text-lg">R</div>
-          <span className="text-sm font-bold tracking-[0.3em] uppercase">Ratery.System</span>
+          <div className="w-8 h-8 md:w-10 md:h-10 bg-white text-black flex items-center justify-center font-black rounded-full text-sm md:text-lg">R</div>
+          <span className="text-xs md:text-sm font-bold tracking-[0.2em] md:tracking-[0.3em] uppercase">Ratery.System</span>
         </motion.div>
 
-        <nav className="hidden md:flex gap-8 text-[10px] font-bold uppercase tracking-widest text-white/40">
+        {/* Center nav - hidden on mobile */}
+        <nav className="hidden lg:flex gap-8 text-[10px] font-bold uppercase tracking-widest text-white/40">
           <span className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 bg-[#00f0ff] rounded-full animate-pulse" />
             AI Powered
@@ -174,50 +176,53 @@ const AppContent: React.FC = () => {
           <span>DNA Scanner</span>
         </nav>
 
+        {/* User controls */}
         {user ? (
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4">
             {/* Premium badge or upgrade button */}
             {isPremium ? (
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-[#00f0ff]/20 to-purple-500/20 border border-[#00f0ff]/30 rounded-full">
-                <Crown className="w-4 h-4 text-[#00f0ff]" />
-                <span className="text-[10px] font-bold uppercase tracking-widest text-[#00f0ff]">Premium</span>
+              <div className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 bg-gradient-to-r from-[#00f0ff]/20 to-purple-500/20 border border-[#00f0ff]/30 rounded-full">
+                <Crown className="w-3 h-3 md:w-4 md:h-4 text-[#00f0ff]" />
+                <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-wider md:tracking-widest text-[#00f0ff]">Premium</span>
               </div>
             ) : (
               <motion.button
                 onClick={() => setShowPaywall(true)}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full hover:border-[#00f0ff]/30 transition-all"
+                className="flex items-center gap-1.5 px-2 md:px-3 py-1 md:py-1.5 bg-white/5 border border-white/10 rounded-full hover:border-[#00f0ff]/30 transition-all"
               >
-                <span className="text-[10px] font-bold uppercase tracking-widest text-white/60">
+                <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-wider text-white/60">
                   {freeScansLeft} free
                 </span>
               </motion.button>
             )}
-            <div className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full">
+            {/* User avatar + name - name hidden on mobile */}
+            <div className="flex items-center gap-2 px-2 md:px-4 py-1.5 md:py-2 bg-white/5 border border-white/10 rounded-full">
               {user.photoURL ? (
-                <img src={user.photoURL} alt="" className="w-6 h-6 rounded-full" />
+                <img src={user.photoURL} alt="" className="w-5 h-5 md:w-6 md:h-6 rounded-full" />
               ) : (
                 <User className="w-4 h-4 text-[#00f0ff]" />
               )}
-              <span className="text-[10px] font-bold uppercase tracking-widest text-white/60 max-w-[100px] truncate">
+              <span className="hidden sm:block text-[10px] font-bold uppercase tracking-widest text-white/60 max-w-[80px] md:max-w-[100px] truncate">
                 {user.displayName || user.email}
               </span>
             </div>
+            {/* Logout button */}
             <motion.button
               onClick={handleSignOut}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="p-2 bg-white/5 border border-white/10 rounded-full hover:bg-red-500/20 hover:border-red-500/30 transition-all"
+              className="p-1.5 md:p-2 bg-white/5 border border-white/10 rounded-full hover:bg-red-500/20 hover:border-red-500/30 transition-all"
             >
-              <LogOut className="w-4 h-4" />
+              <LogOut className="w-3.5 h-3.5 md:w-4 md:h-4" />
             </motion.button>
           </div>
         ) : (
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="px-6 py-2 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-white hover:text-black transition-all"
+            className="px-4 md:px-6 py-1.5 md:py-2 bg-white/5 border border-white/10 rounded-full text-[9px] md:text-[10px] font-bold uppercase tracking-widest hover:bg-white hover:text-black transition-all"
           >
             Access Console
           </motion.button>
