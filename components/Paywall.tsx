@@ -61,7 +61,7 @@ const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[400] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4"
+      className="fixed inset-0 z-[400] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4 overflow-y-auto"
       onClick={onClose}
     >
       <motion.div
@@ -69,19 +69,19 @@ const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.9, opacity: 0, y: 20 }}
         transition={{ type: 'spring', damping: 25 }}
-        className="relative w-full max-w-lg"
+        className="relative w-full max-w-lg my-8"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          className="absolute -top-12 right-0 p-2 text-white/40 hover:text-white transition-all"
-        >
-          <X className="w-6 h-6" />
-        </button>
-
         {/* Card */}
         <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-gradient-to-b from-[#0a0a0a] to-[#050505]">
+          {/* Close button - inside card, always visible */}
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 z-10 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white/60 hover:text-white transition-all"
+          >
+            <X className="w-5 h-5" />
+          </button>
+
           {/* Premium glow effect */}
           <div className="absolute inset-0 bg-gradient-to-br from-[#00f0ff]/10 via-transparent to-purple-500/10 pointer-events-none" />
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-px bg-gradient-to-r from-transparent via-[#00f0ff] to-transparent" />
