@@ -11,7 +11,7 @@ import PhotoUpload from './components/PhotoUpload';
 import Scanning from './components/Scanning';
 import Cabinet from './components/Cabinet';
 import Paywall from './components/Paywall';
-import { LogOut, User, Crown } from 'lucide-react';
+import { LogOut, User, Crown, CheckCircle, X } from 'lucide-react';
 
 const AppContent: React.FC = () => {
   const [stage, setStage] = useState<AppStage>(AppStage.LANDING);
@@ -19,8 +19,25 @@ const AppContent: React.FC = () => {
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [hasCompletedScan, setHasCompletedScan] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
+  const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
   const { user, signOut, loading } = useAuth();
-  const { canScan, incrementScanCount, isPremium, freeScansLeft } = useSubscription();
+  const { canScan, incrementScanCount, isPremium, freeScansLeft, setPremium } = useSubscription();
+
+  // Handle payment redirect
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const paymentStatus = urlParams.get('payment');
+
+    if (paymentStatus === 'success') {
+      // Set user as premium
+      setPremium(true);
+      setShowPaymentSuccess(true);
+      // Clear URL parameter
+      window.history.replaceState({}, '', window.location.pathname);
+      // Auto-hide success message
+      setTimeout(() => setShowPaymentSuccess(false), 5000);
+    }
+  }, [setPremium]);
 
   // Redirect logged-in users with scan history directly to Cabinet
   useEffect(() => {
@@ -260,6 +277,33 @@ const AppContent: React.FC = () => {
       <AnimatePresence>
         {showPaywall && (
           <Paywall onClose={() => setShowPaywall(false)} />
+        )}
+      </AnimatePresence>
+
+      {/* Payment Success Toast */}
+      <AnimatePresence>
+        {showPaymentSuccess && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 50, scale: 0.9 }}
+            transition={{ type: 'spring', damping: 25 }}
+            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[500] px-8 py-5 bg-gradient-to-r from-[#00f0ff]/20 to-purple-500/20 border border-[#00f0ff]/30 backdrop-blur-xl rounded-2xl flex items-center gap-4 shadow-2xl"
+          >
+            <div className="w-12 h-12 rounded-xl bg-[#00f0ff]/20 flex items-center justify-center">
+              <Crown className="w-6 h-6 text-[#00f0ff]" />
+            </div>
+            <div>
+              <p className="font-black text-lg text-white">Welcome to Premium!</p>
+              <p className="text-[#00f0ff]/80 text-sm">Enjoy unlimited scans and all features</p>
+            </div>
+            <button
+              onClick={() => setShowPaymentSuccess(false)}
+              className="ml-4 p-2 hover:bg-white/10 rounded-lg transition-all"
+            >
+              <X className="w-5 h-5 text-white/60" />
+            </button>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
