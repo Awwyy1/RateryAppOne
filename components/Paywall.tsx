@@ -1,18 +1,16 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useSubscription } from '../contexts/SubscriptionContext';
+import { useSubscription, PLANS, PlanType, PlanInfo } from '../contexts/SubscriptionContext';
 import {
   Crown,
   Zap,
   Infinity,
-  Download,
-  BarChart3,
-  Sparkles,
-  Shield,
   Check,
   X,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  Star,
+  Sparkles
 } from 'lucide-react';
 
 interface Props {
@@ -21,38 +19,51 @@ interface Props {
 }
 
 const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
-  const { freeScansLeft, setPremium } = useSubscription();
+  const { currentPlan, scansLeft, setPlan } = useSubscription();
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<PlanType | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const features = [
-    { icon: <Infinity className="w-5 h-5" />, text: 'Unlimited DNA Scans' },
-    { icon: <BarChart3 className="w-5 h-5" />, text: 'Detailed Analytics & Insights' },
-    { icon: <Download className="w-5 h-5" />, text: 'Premium DNA Card Designs' },
-    { icon: <Sparkles className="w-5 h-5" />, text: 'Early Access to New Features' },
-    { icon: <Shield className="w-5 h-5" />, text: 'Priority Support' },
-  ];
+  const handleSelectPlan = async (plan: PlanInfo) => {
+    if (plan.id === 'free' || plan.id === currentPlan) {
+      onClose();
+      return;
+    }
 
-  const handleSubscribe = async () => {
     setIsLoading(true);
+    setSelectedPlan(plan.id);
     setError(null);
 
     try {
-      // Use Creem.io test payment page directly
-      // The product ID is already configured in the URL
-      const productId = 'prod_vyB0YRaHxUbaw15RrwYWs';
-      const successUrl = encodeURIComponent(`${window.location.origin}/?payment=success`);
+      // Use Creem.io test payment page
+      const productId = plan.productId || 'prod_vyB0YRaHxUbaw15RrwYWs';
+      const successUrl = encodeURIComponent(`${window.location.origin}/?payment=success&plan=${plan.id}`);
       const cancelUrl = encodeURIComponent(`${window.location.origin}/?payment=cancelled`);
 
-      // Creem.io test payment URL with return parameters
       const paymentUrl = `https://www.creem.io/test/payment/${productId}?success_url=${successUrl}&cancel_url=${cancelUrl}`;
 
-      // Redirect to payment page
       window.location.href = paymentUrl;
     } catch (err) {
       console.error('Checkout error:', err);
       setError('Could not open payment page. Please try again.');
       setIsLoading(false);
+      setSelectedPlan(null);
+    }
+  };
+
+  const getPlanIcon = (planId: PlanType) => {
+    switch (planId) {
+      case 'free': return <Zap className="w-6 h-6" />;
+      case 'premium': return <Crown className="w-6 h-6" />;
+      case 'pro': return <Sparkles className="w-6 h-6" />;
+    }
+  };
+
+  const getPlanGradient = (planId: PlanType) => {
+    switch (planId) {
+      case 'free': return 'from-gray-500 to-gray-600';
+      case 'premium': return 'from-[#00f0ff] to-cyan-500';
+      case 'pro': return 'from-amber-400 via-yellow-500 to-amber-600';
     }
   };
 
@@ -61,7 +72,7 @@ const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[400] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4 overflow-y-auto"
+      className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 overflow-y-auto"
       onClick={onClose}
     >
       <motion.div
@@ -69,126 +80,178 @@ const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.9, opacity: 0, y: 20 }}
         transition={{ type: 'spring', damping: 25 }}
-        className="relative w-full max-w-lg my-8"
+        className="relative w-full max-w-4xl my-8"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Card */}
-        <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-gradient-to-b from-[#0a0a0a] to-[#050505]">
-          {/* Close button - inside card, always visible */}
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 z-10 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white/60 hover:text-white transition-all"
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute -top-2 -right-2 md:top-0 md:right-0 z-20 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white/60 hover:text-white transition-all"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
+        {/* Header */}
+        <div className="text-center mb-8">
+          <motion.h2
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-3xl md:text-4xl font-black tracking-tight mb-3"
           >
-            <X className="w-5 h-5" />
-          </button>
+            Choose Your <span className="text-[#00f0ff]">Plan</span>
+          </motion.h2>
+          <p className="text-white/50 text-sm md:text-base">
+            {scansLeft === 0 || scansLeft === 'unlimited'
+              ? 'Unlock more scans and premium features'
+              : `You have ${scansLeft} scan${scansLeft !== 1 ? 's' : ''} remaining`}
+          </p>
+        </div>
 
-          {/* Premium glow effect */}
-          <div className="absolute inset-0 bg-gradient-to-br from-[#00f0ff]/10 via-transparent to-purple-500/10 pointer-events-none" />
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-px bg-gradient-to-r from-transparent via-[#00f0ff] to-transparent" />
+        {/* Error Message */}
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl flex items-center gap-3 max-w-md mx-auto"
+          >
+            <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
+            <p className="text-red-400 text-sm">{error}</p>
+          </motion.div>
+        )}
 
-          <div className="relative p-8 md:p-10">
-            {/* Header */}
-            <div className="text-center mb-8">
+        {/* Pricing Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+          {PLANS.map((plan, index) => {
+            const isCurrentPlan = plan.id === currentPlan;
+            const isSelected = selectedPlan === plan.id;
+
+            return (
               <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.2, type: 'spring' }}
-                className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-[#00f0ff] to-purple-500 flex items-center justify-center shadow-lg shadow-[#00f0ff]/30"
-              >
-                <Crown className="w-10 h-10 text-white" />
-              </motion.div>
-
-              <h2 className="text-3xl font-black tracking-tight mb-2">
-                Unlock <span className="text-[#00f0ff]">Premium</span>
-              </h2>
-              <p className="text-white/50 text-sm">
-                {freeScansLeft === 0
-                  ? "You've used all free scans"
-                  : `${freeScansLeft} free scan${freeScansLeft !== 1 ? 's' : ''} remaining`}
-              </p>
-            </div>
-
-            {/* Price */}
-            <div className="text-center mb-8">
-              <div className="inline-flex items-baseline gap-1">
-                <span className="text-5xl font-black">$4.99</span>
-                <span className="text-white/40 text-lg">/month</span>
-              </div>
-              <p className="text-white/30 text-xs mt-2 uppercase tracking-widest">Cancel anytime</p>
-            </div>
-
-            {/* Features */}
-            <div className="space-y-4 mb-8">
-              {features.map((feature, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 + index * 0.1 }}
-                  className="flex items-center gap-4"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-[#00f0ff]/10 border border-[#00f0ff]/20 flex items-center justify-center text-[#00f0ff]">
-                    {feature.icon}
-                  </div>
-                  <span className="text-white/80 font-medium">{feature.text}</span>
-                </motion.div>
-              ))}
-            </div>
-
-            {/* Error Message */}
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
+                key={plan.id}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-4 p-4 bg-red-500/10 border border-red-500/30 rounded-xl flex items-start gap-3"
+                transition={{ delay: index * 0.1 }}
+                className={`relative rounded-3xl border overflow-hidden transition-all ${
+                  plan.popular
+                    ? 'border-[#00f0ff]/50 bg-gradient-to-b from-[#00f0ff]/10 to-transparent scale-[1.02] md:scale-105'
+                    : plan.bestValue
+                    ? 'border-amber-500/50 bg-gradient-to-b from-amber-500/10 to-transparent'
+                    : 'border-white/10 bg-white/5'
+                } ${isCurrentPlan ? 'ring-2 ring-green-500/50' : ''}`}
               >
-                <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-                <p className="text-red-400 text-sm">{error}</p>
+                {/* Badge */}
+                {plan.popular && (
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 py-1 bg-[#00f0ff] text-black text-[10px] font-black uppercase tracking-widest rounded-full">
+                    Popular
+                  </div>
+                )}
+                {plan.bestValue && (
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 py-1 bg-gradient-to-r from-amber-400 to-yellow-500 text-black text-[10px] font-black uppercase tracking-widest rounded-full flex items-center gap-1">
+                    <Star className="w-3 h-3" /> Best Value
+                  </div>
+                )}
+                {isCurrentPlan && (
+                  <div className="absolute top-3 right-3 px-2 py-1 bg-green-500/20 border border-green-500/30 text-green-400 text-[10px] font-bold uppercase tracking-widest rounded-full">
+                    Current
+                  </div>
+                )}
+
+                <div className="p-6 md:p-8">
+                  {/* Plan Icon */}
+                  <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${getPlanGradient(plan.id)} flex items-center justify-center mb-4 shadow-lg`}>
+                    {getPlanIcon(plan.id)}
+                  </div>
+
+                  {/* Plan Name */}
+                  <h3 className="text-xl font-black mb-1">{plan.name}</h3>
+
+                  {/* Price */}
+                  <div className="flex items-baseline gap-1 mb-4">
+                    <span className="text-3xl md:text-4xl font-black">{plan.price}</span>
+                    {plan.period && (
+                      <span className="text-white/40 text-sm">{plan.period}</span>
+                    )}
+                  </div>
+
+                  {/* Scans */}
+                  <div className="flex items-center gap-2 mb-6 text-sm">
+                    {plan.scansLimit === 'unlimited' ? (
+                      <>
+                        <Infinity className="w-4 h-4 text-amber-400" />
+                        <span className="text-amber-400 font-bold">Unlimited Scans</span>
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="w-4 h-4 text-[#00f0ff]" />
+                        <span className="text-white/70">{plan.scansLimit} {plan.scansLimit === 1 ? 'Scan' : 'Scans'}{plan.id === 'premium' ? '/month' : ''}</span>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Features */}
+                  <ul className="space-y-3 mb-6">
+                    {plan.features.map((feature, i) => (
+                      <li key={i} className="flex items-center gap-3 text-sm">
+                        <Check className={`w-4 h-4 shrink-0 ${
+                          plan.id === 'pro' ? 'text-amber-400' :
+                          plan.id === 'premium' ? 'text-[#00f0ff]' : 'text-white/40'
+                        }`} />
+                        <span className="text-white/70">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* CTA Button */}
+                  <motion.button
+                    onClick={() => handleSelectPlan(plan)}
+                    disabled={isLoading || isCurrentPlan}
+                    whileHover={{ scale: isCurrentPlan ? 1 : 1.02 }}
+                    whileTap={{ scale: isCurrentPlan ? 1 : 0.98 }}
+                    className={`w-full py-4 rounded-xl font-bold text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
+                      isCurrentPlan
+                        ? 'bg-white/10 text-white/40 cursor-default'
+                        : plan.id === 'pro'
+                        ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-black hover:shadow-lg hover:shadow-amber-500/30'
+                        : plan.id === 'premium'
+                        ? 'bg-gradient-to-r from-[#00f0ff] to-cyan-400 text-black hover:shadow-lg hover:shadow-[#00f0ff]/30'
+                        : 'bg-white/10 text-white hover:bg-white/20'
+                    }`}
+                  >
+                    {isSelected && isLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : isCurrentPlan ? (
+                      'Current Plan'
+                    ) : plan.id === 'free' ? (
+                      'Continue Free'
+                    ) : (
+                      <>
+                        <Zap className="w-4 h-4" />
+                        {plan.id === 'pro' ? 'Go Pro' : 'Upgrade'}
+                      </>
+                    )}
+                  </motion.button>
+                </div>
               </motion.div>
-            )}
+            );
+          })}
+        </div>
 
-            {/* CTA Button */}
-            <motion.button
-              onClick={handleSubscribe}
-              disabled={isLoading}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full py-5 bg-gradient-to-r from-[#00f0ff] to-cyan-400 text-black font-black rounded-2xl flex items-center justify-center gap-3 hover:shadow-lg hover:shadow-[#00f0ff]/30 transition-all disabled:opacity-50 text-lg uppercase tracking-wider"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-6 h-6 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                <>
-                  <Zap className="w-6 h-6" />
-                  Upgrade Now
-                </>
-              )}
-            </motion.button>
-
-            {/* Trust badges */}
-            <div className="flex items-center justify-center gap-6 mt-6 text-white/30 text-xs">
-              <div className="flex items-center gap-1">
-                <Check className="w-4 h-4 text-green-500" />
-                Secure Payment
-              </div>
-              <div className="flex items-center gap-1">
-                <Check className="w-4 h-4 text-green-500" />
-                Instant Access
-              </div>
-            </div>
-
-            {/* Skip option */}
-            {freeScansLeft > 0 && (
-              <button
-                onClick={onClose}
-                className="w-full mt-4 py-3 text-white/40 hover:text-white/60 text-sm font-medium transition-all"
-              >
-                Maybe later ({freeScansLeft} free scan{freeScansLeft !== 1 ? 's' : ''} left)
-              </button>
-            )}
+        {/* Trust badges */}
+        <div className="flex items-center justify-center gap-8 mt-8 text-white/30 text-xs">
+          <div className="flex items-center gap-2">
+            <Check className="w-4 h-4 text-green-500" />
+            Secure Payment
+          </div>
+          <div className="flex items-center gap-2">
+            <Check className="w-4 h-4 text-green-500" />
+            Cancel Anytime
+          </div>
+          <div className="flex items-center gap-2">
+            <Check className="w-4 h-4 text-green-500" />
+            Instant Access
           </div>
         </div>
       </motion.div>
