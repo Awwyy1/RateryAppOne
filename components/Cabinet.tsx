@@ -20,7 +20,9 @@ import {
   EyeOff,
   Zap,
   ArrowLeft,
-  X
+  X,
+  AlertTriangle,
+  CheckCircle
 } from 'lucide-react';
 
 interface Props {
@@ -70,6 +72,10 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut 
   const [saveHistory, setSaveHistory] = useState(true);
   const [selectedHistoryScan, setSelectedHistoryScan] = useState<ScanHistoryItem | null>(null);
   const [lastSavedPhoto, setLastSavedPhoto] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<'all' | string | null>(null);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
   const { user } = useAuth();
 
   // Load history from localStorage
@@ -132,15 +138,40 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut 
   // Using imported getTier from utils/tiers.ts
   // getTierColor now uses getTierGradient from utils
 
-  const clearHistory = () => {
-    setScanHistory([]);
-    localStorage.removeItem('ratery_scan_history');
+  // Show confirmation before clearing
+  const requestClearHistory = () => {
+    setDeleteTarget('all');
+    setShowDeleteConfirm(true);
   };
 
-  const deleteScan = (id: string) => {
-    const updated = scanHistory.filter(s => s.id !== id);
-    setScanHistory(updated);
-    localStorage.setItem('ratery_scan_history', JSON.stringify(updated));
+  // Show confirmation before deleting single scan
+  const requestDeleteScan = (id: string) => {
+    setDeleteTarget(id);
+    setShowDeleteConfirm(true);
+  };
+
+  // Actually perform the deletion
+  const confirmDelete = () => {
+    if (deleteTarget === 'all') {
+      setScanHistory([]);
+      localStorage.removeItem('ratery_scan_history');
+      setSuccessMessage('All scan history has been deleted');
+    } else if (deleteTarget) {
+      const updated = scanHistory.filter(s => s.id !== deleteTarget);
+      setScanHistory(updated);
+      localStorage.setItem('ratery_scan_history', JSON.stringify(updated));
+      setSuccessMessage('Scan deleted successfully');
+    }
+    setShowDeleteConfirm(false);
+    setDeleteTarget(null);
+    setShowSuccessToast(true);
+    // Auto-hide toast after 3 seconds
+    setTimeout(() => setShowSuccessToast(false), 3000);
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteConfirm(false);
+    setDeleteTarget(null);
   };
 
   const toggleSaveHistory = () => {
@@ -259,7 +290,7 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut 
                 </div>
                 {scanHistory.length > 0 && (
                   <button
-                    onClick={clearHistory}
+                    onClick={requestClearHistory}
                     className="px-4 py-2 text-red-400 hover:bg-red-500/10 rounded-xl text-xs uppercase tracking-widest font-bold transition-all flex items-center gap-2"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -326,7 +357,7 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut 
 
                         {/* Delete Button */}
                         <button
-                          onClick={(e) => { e.stopPropagation(); deleteScan(scan.id); }}
+                          onClick={(e) => { e.stopPropagation(); requestDeleteScan(scan.id); }}
                           className="absolute top-3 right-3 p-2 bg-black/50 backdrop-blur-md rounded-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500/30"
                         >
                           <Trash2 className="w-4 h-4 text-white/60" />
@@ -458,7 +489,7 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut 
 
                 {/* Clear Data */}
                 <button
-                  onClick={clearHistory}
+                  onClick={requestClearHistory}
                   className="w-full py-4 bg-white/5 border border-white/10 text-white/60 font-bold rounded-2xl flex items-center justify-center gap-2 hover:bg-white/10 transition-all text-xs uppercase tracking-widest"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -505,6 +536,109 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut 
                 </div>
               </div>
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[400] flex items-center justify-center p-4"
+          >
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={cancelDelete}
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            />
+
+            {/* Modal */}
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: 'spring', damping: 25 }}
+              className="relative w-full max-w-md bg-[#0a0a0a] rounded-3xl border border-white/10 overflow-hidden shadow-2xl"
+            >
+              {/* Header */}
+              <div className="p-6 pb-4 border-b border-white/10">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-red-500/20 flex items-center justify-center">
+                    <AlertTriangle className="w-6 h-6 text-red-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-black">
+                      {deleteTarget === 'all' ? 'Delete All Data?' : 'Delete Scan?'}
+                    </h3>
+                    <p className="text-white/40 text-sm">This action cannot be undone</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="p-6">
+                <p className="text-white/60 text-sm leading-relaxed">
+                  {deleteTarget === 'all'
+                    ? 'Are you sure you want to delete all your scan history? This will permanently remove all saved scans from your device.'
+                    : 'Are you sure you want to delete this scan? This will permanently remove it from your history.'
+                  }
+                </p>
+              </div>
+
+              {/* Actions */}
+              <div className="p-6 pt-0 flex flex-col sm:flex-row gap-3">
+                <motion.button
+                  onClick={cancelDelete}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex-1 py-4 bg-white/10 border border-white/20 text-white font-bold rounded-2xl text-sm uppercase tracking-widest hover:bg-white/20 transition-all"
+                >
+                  Cancel
+                </motion.button>
+                <motion.button
+                  onClick={confirmDelete}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex-1 py-4 bg-red-500 text-white font-bold rounded-2xl text-sm uppercase tracking-widest hover:bg-red-600 transition-all flex items-center justify-center gap-2"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  {deleteTarget === 'all' ? 'Delete All' : 'Delete'}
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Success Toast */}
+      <AnimatePresence>
+        {showSuccessToast && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 50, scale: 0.9 }}
+            transition={{ type: 'spring', damping: 25 }}
+            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[500] px-6 py-4 bg-green-500/20 border border-green-500/30 backdrop-blur-xl rounded-2xl flex items-center gap-3 shadow-2xl"
+          >
+            <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center">
+              <CheckCircle className="w-5 h-5 text-green-400" />
+            </div>
+            <div>
+              <p className="font-bold text-white">{successMessage}</p>
+              <p className="text-green-400/60 text-xs">Data removed from device</p>
+            </div>
+            <button
+              onClick={() => setShowSuccessToast(false)}
+              className="ml-4 p-2 hover:bg-white/10 rounded-lg transition-all"
+            >
+              <X className="w-4 h-4 text-white/60" />
+            </button>
           </motion.div>
         )}
       </AnimatePresence>

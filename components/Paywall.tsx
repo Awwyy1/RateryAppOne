@@ -11,7 +11,8 @@ import {
   Shield,
   Check,
   X,
-  Loader2
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
 
 interface Props {
@@ -22,6 +23,7 @@ interface Props {
 const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
   const { freeScansLeft, setPremium } = useSubscription();
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const features = [
     { icon: <Infinity className="w-5 h-5" />, text: 'Unlimited DNA Scans' },
@@ -33,6 +35,7 @@ const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
 
   const handleSubscribe = async () => {
     setIsLoading(true);
+    setError(null);
     try {
       // Call our API to create checkout session
       const response = await fetch('/api/create-checkout', {
@@ -47,20 +50,17 @@ const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
         if (data.checkout_url) {
           // Redirect to Creem checkout
           window.location.href = data.checkout_url;
+        } else {
+          setError('Payment service unavailable. Please try again later.');
         }
       } else {
-        // For demo/test: simulate success
-        console.log('Checkout API not available, simulating success');
-        setPremium(true);
-        onSuccess?.();
-        onClose();
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Checkout API error:', errorData);
+        setError('Could not connect to payment service. Please try again.');
       }
-    } catch (error) {
-      console.error('Checkout error:', error);
-      // For demo/test: simulate success
-      setPremium(true);
-      onSuccess?.();
-      onClose();
+    } catch (err) {
+      console.error('Checkout error:', err);
+      setError('Network error. Please check your connection and try again.');
     } finally {
       setIsLoading(false);
     }
@@ -144,6 +144,18 @@ const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
                 </motion.div>
               ))}
             </div>
+
+            {/* Error Message */}
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-4 p-4 bg-red-500/10 border border-red-500/30 rounded-xl flex items-start gap-3"
+              >
+                <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+                <p className="text-red-400 text-sm">{error}</p>
+              </motion.div>
+            )}
 
             {/* CTA Button */}
             <motion.button
