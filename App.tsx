@@ -11,7 +11,7 @@ import PhotoUpload from './components/PhotoUpload';
 import Scanning from './components/Scanning';
 import Cabinet from './components/Cabinet';
 import Paywall from './components/Paywall';
-import { LogOut, User, Crown, CheckCircle, X } from 'lucide-react';
+import { LogOut, User, Crown, CheckCircle, X, Sparkles } from 'lucide-react';
 
 const AppContent: React.FC = () => {
   const [stage, setStage] = useState<AppStage>(AppStage.LANDING);
@@ -21,23 +21,28 @@ const AppContent: React.FC = () => {
   const [showPaywall, setShowPaywall] = useState(false);
   const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
   const { user, signOut, loading } = useAuth();
-  const { canScan, incrementScanCount, isPremium, freeScansLeft, setPremium } = useSubscription();
+  const { canScan, incrementScanCount, isPremium, isPro, scansLeft, currentPlan, setPlan } = useSubscription();
 
   // Handle payment redirect
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const paymentStatus = urlParams.get('payment');
+    const planParam = urlParams.get('plan');
 
     if (paymentStatus === 'success') {
-      // Set user as premium
-      setPremium(true);
+      // Set user plan based on what they purchased
+      if (planParam === 'pro') {
+        setPlan('pro');
+      } else {
+        setPlan('premium');
+      }
       setShowPaymentSuccess(true);
       // Clear URL parameter
       window.history.replaceState({}, '', window.location.pathname);
       // Auto-hide success message
       setTimeout(() => setShowPaymentSuccess(false), 5000);
     }
-  }, [setPremium]);
+  }, [setPlan]);
 
   // Redirect logged-in users with scan history directly to Cabinet
   useEffect(() => {
@@ -179,12 +184,24 @@ const AppContent: React.FC = () => {
         {/* User controls */}
         {user ? (
           <div className="flex items-center gap-2 md:gap-4">
-            {/* Premium badge or upgrade button */}
-            {isPremium ? (
-              <div className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 bg-gradient-to-r from-[#00f0ff]/20 to-purple-500/20 border border-[#00f0ff]/30 rounded-full">
-                <Crown className="w-3 h-3 md:w-4 md:h-4 text-[#00f0ff]" />
-                <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-wider md:tracking-widest text-[#00f0ff]">Premium</span>
+            {/* Plan badge or upgrade button */}
+            {isPro ? (
+              <div className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/30 rounded-full">
+                <Sparkles className="w-3 h-3 md:w-4 md:h-4 text-amber-400" />
+                <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-wider md:tracking-widest text-amber-400">Pro</span>
               </div>
+            ) : isPremium ? (
+              <motion.button
+                onClick={() => setShowPaywall(true)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 bg-gradient-to-r from-[#00f0ff]/20 to-purple-500/20 border border-[#00f0ff]/30 rounded-full"
+              >
+                <Crown className="w-3 h-3 md:w-4 md:h-4 text-[#00f0ff]" />
+                <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-wider md:tracking-widest text-[#00f0ff]">
+                  {scansLeft} left
+                </span>
+              </motion.button>
             ) : (
               <motion.button
                 onClick={() => setShowPaywall(true)}
@@ -193,7 +210,7 @@ const AppContent: React.FC = () => {
                 className="flex items-center gap-1.5 px-2 md:px-3 py-1 md:py-1.5 bg-white/5 border border-white/10 rounded-full hover:border-[#00f0ff]/30 transition-all"
               >
                 <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-wider text-white/60">
-                  {freeScansLeft} free
+                  {scansLeft === 'unlimited' ? '∞' : scansLeft} free
                 </span>
               </motion.button>
             )}
@@ -293,20 +310,34 @@ const AppContent: React.FC = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 50, scale: 0.9 }}
             transition={{ type: 'spring', damping: 25 }}
-            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[500] px-8 py-5 bg-gradient-to-r from-[#00f0ff]/20 to-purple-500/20 border border-[#00f0ff]/30 backdrop-blur-xl rounded-2xl flex items-center gap-4 shadow-2xl"
+            className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-[500] px-6 md:px-8 py-4 md:py-5 backdrop-blur-xl rounded-2xl flex items-center gap-3 md:gap-4 shadow-2xl ${
+              isPro
+                ? 'bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/30'
+                : 'bg-gradient-to-r from-[#00f0ff]/20 to-purple-500/20 border border-[#00f0ff]/30'
+            }`}
           >
-            <div className="w-12 h-12 rounded-xl bg-[#00f0ff]/20 flex items-center justify-center">
-              <Crown className="w-6 h-6 text-[#00f0ff]" />
+            <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center ${
+              isPro ? 'bg-amber-500/20' : 'bg-[#00f0ff]/20'
+            }`}>
+              {isPro ? (
+                <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-amber-400" />
+              ) : (
+                <Crown className="w-5 h-5 md:w-6 md:h-6 text-[#00f0ff]" />
+              )}
             </div>
             <div>
-              <p className="font-black text-lg text-white">Welcome to Premium!</p>
-              <p className="text-[#00f0ff]/80 text-sm">Enjoy unlimited scans and all features</p>
+              <p className="font-black text-base md:text-lg text-white">
+                Welcome to {isPro ? 'Pro' : 'Premium'}!
+              </p>
+              <p className={`text-xs md:text-sm ${isPro ? 'text-amber-400/80' : 'text-[#00f0ff]/80'}`}>
+                {isPro ? 'Enjoy unlimited scans forever' : 'Enjoy 49 scans per month'}
+              </p>
             </div>
             <button
               onClick={() => setShowPaymentSuccess(false)}
-              className="ml-4 p-2 hover:bg-white/10 rounded-lg transition-all"
+              className="ml-2 md:ml-4 p-2 hover:bg-white/10 rounded-lg transition-all"
             >
-              <X className="w-5 h-5 text-white/60" />
+              <X className="w-4 h-4 md:w-5 md:h-5 text-white/60" />
             </button>
           </motion.div>
         )}
