@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useSubscription, PLANS, PlanType, PlanInfo } from '../contexts/SubscriptionContext';
 import {
   Crown,
@@ -19,12 +19,11 @@ interface Props {
 }
 
 const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
-  const { currentPlan, scansLeft, setPlan } = useSubscription();
+  const { currentPlan, scansLeft } = useSubscription();
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<PlanType | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Product IDs for Creem.io
   const PRODUCT_IDS: Record<PlanType, string> = {
     free: '',
     premium: 'prod_vyB0YRaHxUbaw15RrwYWs',
@@ -45,7 +44,6 @@ const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
       const productId = PRODUCT_IDS[plan.id];
       const successUrl = encodeURIComponent(`${window.location.origin}/?payment=success&plan=${plan.id}`);
       const cancelUrl = encodeURIComponent(`${window.location.origin}/?payment=cancelled`);
-
       const paymentUrl = `https://www.creem.io/test/payment/${productId}?success_url=${successUrl}&cancel_url=${cancelUrl}`;
 
       window.location.href = paymentUrl;
@@ -78,42 +76,33 @@ const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl overflow-y-auto overscroll-contain"
-      style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
+      className="fixed inset-0 z-[400] bg-black/90 backdrop-blur-xl overflow-y-auto"
     >
       {/* Background overlay for closing */}
-      <div
-        className="absolute inset-0"
-        onClick={onClose}
-      />
-      {/* Scrollable container */}
-      <div className="relative min-h-full flex items-start md:items-center justify-center p-4 py-8">
+      <div className="fixed inset-0" onClick={onClose} />
+
+      <div className="relative min-h-screen flex items-center justify-center p-4 py-12">
         <motion.div
-          initial={{ scale: 0.9, opacity: 0, y: 20 }}
+          initial={{ scale: 0.95, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.9, opacity: 0, y: 20 }}
-          transition={{ type: 'spring', damping: 25 }}
-          className="relative w-full max-w-4xl"
+          exit={{ scale: 0.95, opacity: 0, y: 20 }}
+          className="relative w-full max-w-5xl bg-white/[0.02] border border-white/5 rounded-[2.5rem] p-6 md:p-12 shadow-2xl"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Close button */}
+          {/* Close button - Fixed positioning relative to modal */}
           <button
             onClick={onClose}
-            className="absolute top-0 right-0 z-20 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white/60 hover:text-white transition-all"
+            className="absolute top-6 right-6 z-20 p-2 bg-white/5 hover:bg-white/10 rounded-full text-white/40 hover:text-white transition-all"
           >
-            <X className="w-5 h-5" />
+            <X className="w-6 h-6" />
           </button>
 
-          {/* Header */}
-          <div className="text-center mb-6 md:mb-8 pr-10">
-            <motion.h2
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-2xl md:text-4xl font-black tracking-tight mb-2 md:mb-3"
-            >
+          {/* Header - Removed pr-10 for perfect centering */}
+          <div className="text-center mb-10 md:mb-16 px-4">
+            <motion.h2 className="text-3xl md:text-5xl font-black tracking-tight mb-4">
               Choose Your <span className="text-[#00f0ff]">Plan</span>
             </motion.h2>
-            <p className="text-white/50 text-xs md:text-base">
+            <p className="text-white/50 text-sm md:text-lg max-w-md mx-auto">
               {scansLeft === 0 || scansLeft === 'unlimited'
                 ? 'Unlock more scans and premium features'
                 : `You have ${scansLeft} scan${scansLeft !== 1 ? 's' : ''} remaining`}
@@ -121,19 +110,22 @@ const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
           </div>
 
           {/* Error Message */}
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-4 md:mb-6 p-3 md:p-4 bg-red-500/10 border border-red-500/30 rounded-xl flex items-center gap-3 max-w-md mx-auto"
-            >
-              <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
-              <p className="text-red-400 text-sm">{error}</p>
-            </motion.div>
-          )}
+          <AnimatePresence>
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mb-8 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-3 max-w-md mx-auto"
+              >
+                <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
+                <p className="text-red-400 text-sm font-medium">{error}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Pricing Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 items-stretch">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-4 items-stretch">
             {PLANS.map((plan, index) => {
               const isCurrentPlan = plan.id === currentPlan;
               const isSelected = selectedPlan === plan.id;
@@ -144,105 +136,85 @@ const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className={`relative rounded-2xl md:rounded-3xl border overflow-visible transition-all flex flex-col ${
+                  className={`relative rounded-[2rem] border transition-all flex flex-col group ${
                     plan.popular
-                      ? 'border-[#00f0ff]/50 bg-gradient-to-b from-[#00f0ff]/10 to-transparent md:scale-105 md:-my-2'
+                      ? 'border-[#00f0ff]/40 bg-white/[0.03] lg:scale-105 lg:z-10 shadow-[0_0_40px_-15px_rgba(0,240,255,0.3)]'
                       : plan.bestValue
-                      ? 'border-amber-500/50 bg-gradient-to-b from-amber-500/10 to-transparent'
-                      : 'border-white/10 bg-white/5'
-                  } ${isCurrentPlan ? 'ring-2 ring-green-500/50' : ''}`}
+                      ? 'border-amber-500/40 bg-white/[0.03] shadow-[0_0_40px_-15px_rgba(245,158,11,0.2)]'
+                      : 'border-white/10 bg-white/[0.02]'
+                  } ${isCurrentPlan ? 'ring-2 ring-green-500/40' : ''}`}
                 >
-                  {/* Badge */}
+                  {/* Badges */}
                   {plan.popular && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-[#00f0ff] text-black text-[10px] font-black uppercase tracking-widest rounded-full whitespace-nowrap z-10">
-                      Popular
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-[#00f0ff] text-black text-[10px] font-black uppercase tracking-tighter rounded-full z-10 shadow-lg shadow-[#00f0ff]/20">
+                      Most Popular
                     </div>
                   )}
                   {plan.bestValue && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-amber-400 to-yellow-500 text-black text-[10px] font-black uppercase tracking-widest rounded-full flex items-center gap-1 whitespace-nowrap z-10">
-                      <Star className="w-3 h-3" /> Best Value
-                    </div>
-                  )}
-                  {isCurrentPlan && !plan.popular && !plan.bestValue && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-green-500/20 border border-green-500/30 text-green-400 text-[10px] font-bold uppercase tracking-widest rounded-full whitespace-nowrap z-10">
-                      Current
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-amber-400 to-yellow-500 text-black text-[10px] font-black uppercase tracking-tighter rounded-full flex items-center gap-1 z-10 shadow-lg shadow-amber-500/20">
+                      <Star className="w-3 h-3 fill-black" /> Best Value
                     </div>
                   )}
 
-                  <div className="p-5 md:p-8 pt-6 md:pt-10 flex flex-col flex-grow">
-                    {/* Plan Icon */}
-                    <div className={`w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-gradient-to-br ${getPlanGradient(plan.id)} flex items-center justify-center mb-3 md:mb-4 shadow-lg`}>
-                      {getPlanIcon(plan.id)}
+                  <div className="p-8 flex flex-col flex-grow">
+                    {/* Icon & Name */}
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${getPlanGradient(plan.id)} flex items-center justify-center shadow-inner`}>
+                        {getPlanIcon(plan.id)}
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold">{plan.name}</h3>
+                        <p className="text-white/30 text-xs uppercase tracking-widest font-bold">Level {index + 1}</p>
+                      </div>
                     </div>
-
-                    {/* Plan Name */}
-                    <h3 className="text-lg md:text-xl font-black mb-1">{plan.name}</h3>
 
                     {/* Price */}
-                    <div className="flex items-baseline gap-1 mb-3 md:mb-4">
-                      <span className="text-2xl md:text-4xl font-black">{plan.price}</span>
+                    <div className="flex items-baseline gap-1 mb-6">
+                      <span className="text-4xl font-black tracking-tight">{plan.price}</span>
                       {plan.period && (
-                        <span className="text-white/40 text-sm">{plan.period}</span>
+                        <span className="text-white/40 text-sm font-medium">{plan.period}</span>
                       )}
                     </div>
 
-                    {/* Scans */}
-                    <div className="flex items-center gap-2 mb-4 md:mb-6 text-sm">
-                      {plan.scansLimit === 'unlimited' ? (
-                        <>
-                          <Infinity className="w-4 h-4 text-amber-400" />
-                          <span className="text-amber-400 font-bold">Unlimited Scans</span>
-                        </>
-                      ) : (
-                        <>
-                          <Zap className="w-4 h-4 text-[#00f0ff]" />
-                          <span className="text-white/70">{plan.scansLimit} {plan.scansLimit === 1 ? 'Scan' : 'Scans'}{plan.id === 'premium' ? '/month' : ''}</span>
-                        </>
-                      )}
-                    </div>
-
-                    {/* Features - min-height ensures alignment across cards */}
-                    <ul className="space-y-2 md:space-y-3 mb-4 md:mb-6 flex-grow min-h-[120px] md:min-h-[160px]">
+                    {/* Features List - flex-grow pushes button to bottom */}
+                    <ul className="space-y-4 mb-8 flex-grow">
                       {plan.features.map((feature, i) => (
-                        <li key={i} className="flex items-center gap-2 md:gap-3 text-xs md:text-sm">
-                          <Check className={`w-4 h-4 shrink-0 ${
-                            plan.id === 'pro' ? 'text-amber-400' :
-                            plan.id === 'premium' ? 'text-[#00f0ff]' : 'text-white/40'
-                          }`} />
-                          <span className="text-white/70">{feature}</span>
+                        <li key={i} className="flex items-start gap-3 text-sm">
+                          <div className={`mt-0.5 shrink-0 p-0.5 rounded-full ${
+                            plan.id === 'pro' ? 'bg-amber-500/20 text-amber-400' :
+                            plan.id === 'premium' ? 'bg-[#00f0ff]/20 text-[#00f0ff]' : 'bg-white/10 text-white/40'
+                          }`}>
+                            <Check className="w-3 h-3" />
+                          </div>
+                          <span className="text-white/70 leading-tight">{feature}</span>
                         </li>
                       ))}
                     </ul>
 
-                    {/* CTA Button - pushed to bottom */}
+                    {/* CTA Button */}
                     <motion.button
                       onClick={() => handleSelectPlan(plan)}
                       disabled={isLoading || isCurrentPlan}
-                      whileHover={{ scale: isCurrentPlan ? 1 : 1.02 }}
-                      whileTap={{ scale: isCurrentPlan ? 1 : 0.98 }}
-                      className={`w-full py-3 md:py-4 rounded-xl font-bold text-xs md:text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-2 mt-auto ${
+                      whileHover={!isCurrentPlan ? { scale: 1.02, y: -2 } : {}}
+                      whileTap={!isCurrentPlan ? { scale: 0.98 } : {}}
+                      className={`w-full py-4 rounded-2xl font-black text-xs uppercase tracking-[0.15em] transition-all flex items-center justify-center gap-2 ${
                         isCurrentPlan
-                          ? 'bg-white/10 text-white/40 cursor-default'
+                          ? 'bg-green-500/10 text-green-500 border border-green-500/20 cursor-default'
                           : plan.id === 'pro'
-                          ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-black hover:shadow-lg hover:shadow-amber-500/30'
+                          ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-black shadow-xl shadow-amber-500/20'
                           : plan.id === 'premium'
-                          ? 'bg-gradient-to-r from-[#00f0ff] to-cyan-400 text-black hover:shadow-lg hover:shadow-[#00f0ff]/30'
+                          ? 'bg-gradient-to-r from-[#00f0ff] to-cyan-400 text-black shadow-xl shadow-[#00f0ff]/20'
                           : 'bg-white/10 text-white hover:bg-white/20'
                       }`}
                     >
                       {isSelected && isLoading ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          Processing...
-                        </>
+                        <Loader2 className="w-5 h-5 animate-spin" />
                       ) : isCurrentPlan ? (
-                        'Current Plan'
-                      ) : plan.id === 'free' ? (
-                        'Continue Free'
+                        'Active Plan'
                       ) : (
                         <>
-                          <Zap className="w-4 h-4" />
-                          {plan.id === 'pro' ? 'Go Pro' : 'Upgrade'}
+                          <Zap className={`w-4 h-4 ${plan.id === 'free' ? 'hidden' : ''}`} />
+                          {plan.id === 'free' ? 'Continue Free' : plan.id === 'pro' ? 'Get Pro Access' : 'Upgrade Now'}
                         </>
                       )}
                     </motion.button>
@@ -252,19 +224,16 @@ const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
             })}
           </div>
 
-          {/* Trust badges */}
-          <div className="flex flex-wrap items-center justify-center gap-4 md:gap-8 mt-6 md:mt-8 text-white/30 text-[10px] md:text-xs">
-            <div className="flex items-center gap-1 md:gap-2">
-              <Check className="w-3 h-3 md:w-4 md:h-4 text-green-500" />
-              Secure Payment
+          {/* Footer Trust Badges */}
+          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 mt-12 pt-8 border-t border-white/5 text-white/30 text-[10px] uppercase font-bold tracking-[0.2em]">
+            <div className="flex items-center gap-2 italic">
+              <Check className="w-4 h-4 text-green-500" /> Secure Payment
             </div>
-            <div className="flex items-center gap-1 md:gap-2">
-              <Check className="w-3 h-3 md:w-4 md:h-4 text-green-500" />
-              Cancel Anytime
+            <div className="flex items-center gap-2 italic">
+              <Check className="w-4 h-4 text-green-500" /> Cancel Anytime
             </div>
-            <div className="flex items-center gap-1 md:gap-2">
-              <Check className="w-3 h-3 md:w-4 md:h-4 text-green-500" />
-              Instant Access
+            <div className="flex items-center gap-2 italic">
+              <Check className="w-4 h-4 text-green-500" /> Instant Setup
             </div>
           </div>
         </motion.div>
