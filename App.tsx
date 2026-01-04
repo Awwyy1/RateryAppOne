@@ -3,20 +3,24 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useSpring, useMotionValue } from 'framer-motion';
 import { AppStage, AnalysisResult } from './types';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { SubscriptionProvider, useSubscription } from './contexts/SubscriptionContext';
 import Landing from './components/Landing';
 import Onboarding from './components/Onboarding';
 import Login from './components/Login';
 import PhotoUpload from './components/PhotoUpload';
 import Scanning from './components/Scanning';
 import Cabinet from './components/Cabinet';
-import { LogOut, User } from 'lucide-react';
+import Paywall from './components/Paywall';
+import { LogOut, User, Crown } from 'lucide-react';
 
 const AppContent: React.FC = () => {
   const [stage, setStage] = useState<AppStage>(AppStage.LANDING);
   const [photo, setPhoto] = useState<string | null>(null);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [hasCompletedScan, setHasCompletedScan] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
   const { user, signOut, loading } = useAuth();
+  const { canScan, incrementScanCount, isPremium, freeScansLeft } = useSubscription();
 
   // Redirect logged-in users with scan history directly to Cabinet
   useEffect(() => {
@@ -70,6 +74,11 @@ const AppContent: React.FC = () => {
   const handleLoginSuccess = () => setStage(AppStage.UPLOAD);
 
   const handlePhotoSelected = (img: string) => {
+    // Check if user can scan (premium or has free scans left)
+    if (!canScan) {
+      setShowPaywall(true);
+      return;
+    }
     setPhoto(img);
     setStage(AppStage.SCANNING);
   };
@@ -81,6 +90,8 @@ const AppContent: React.FC = () => {
       setStage(AppStage.UPLOAD);
       return;
     }
+    // Increment scan count for non-premium users
+    incrementScanCount();
     setAnalysisResult(result);
     setHasCompletedScan(true);
     setStage(AppStage.DASHBOARD);
@@ -148,6 +159,24 @@ const AppContent: React.FC = () => {
 
         {user ? (
           <div className="flex items-center gap-4">
+            {/* Premium badge or upgrade button */}
+            {isPremium ? (
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-[#00f0ff]/20 to-purple-500/20 border border-[#00f0ff]/30 rounded-full">
+                <Crown className="w-4 h-4 text-[#00f0ff]" />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-[#00f0ff]">Premium</span>
+              </div>
+            ) : (
+              <motion.button
+                onClick={() => setShowPaywall(true)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full hover:border-[#00f0ff]/30 transition-all"
+              >
+                <span className="text-[10px] font-bold uppercase tracking-widest text-white/60">
+                  {freeScansLeft} free
+                </span>
+              </motion.button>
+            )}
             <div className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full">
               {user.photoURL ? (
                 <img src={user.photoURL} alt="" className="w-6 h-6 rounded-full" />
@@ -226,6 +255,13 @@ const AppContent: React.FC = () => {
           ©2025 Ratery Intelligence Corp // All Rights Reserved
         </div>
       </footer>
+
+      {/* Paywall Modal */}
+      <AnimatePresence>
+        {showPaywall && (
+          <Paywall onClose={() => setShowPaywall(false)} />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
@@ -233,7 +269,9 @@ const AppContent: React.FC = () => {
 const App: React.FC = () => {
   return (
     <AuthProvider>
-      <AppContent />
+      <SubscriptionProvider>
+        <AppContent />
+      </SubscriptionProvider>
     </AuthProvider>
   );
 };
