@@ -18,6 +18,30 @@ const AppContent: React.FC = () => {
   const [hasCompletedScan, setHasCompletedScan] = useState(false);
   const { user, signOut, loading } = useAuth();
 
+  // Redirect logged-in users with scan history directly to Cabinet
+  useEffect(() => {
+    if (!loading && user) {
+      // Check if user has scan history
+      const savedHistory = localStorage.getItem('ratery_scan_history');
+      if (savedHistory) {
+        try {
+          const history = JSON.parse(savedHistory);
+          if (Array.isArray(history) && history.length > 0) {
+            setHasCompletedScan(true);
+            setStage(AppStage.DASHBOARD);
+            return;
+          }
+        } catch (e) {
+          // Ignore parse errors
+        }
+      }
+      // User is logged in but no history - go to upload
+      if (stage === AppStage.LANDING) {
+        setStage(AppStage.UPLOAD);
+      }
+    }
+  }, [user, loading]);
+
   // Mouse tracking for custom cursor and spotlight
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
