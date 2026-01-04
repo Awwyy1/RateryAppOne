@@ -7,7 +7,8 @@ import { MOCK_RESULTS, INSIGHTS } from '../constants';
 import { AnalysisResult } from '../types';
 import RadarChart from './RadarChart';
 import NeuralIdentityCard from './NeuralIdentityCard';
-import { Download, Share2, Target, Zap, Shield, Cpu, Check, X, Dna } from 'lucide-react';
+import { getTier, getTierInfo, getNextTier } from '../utils/tiers';
+import { Download, Share2, Target, Zap, Shield, Cpu, Check, X, Dna, TrendingUp } from 'lucide-react';
 
 interface Props {
   photo: string | null;
@@ -27,14 +28,9 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
   const insights = analysisResult?.insights || INSIGHTS;
   const overallScore = analysisResult?.overallScore || 8.4;
 
-  // Get tier based on score
-  const getTier = (score: number) => {
-    if (score >= 9) return 'LEGENDARY';
-    if (score >= 7) return 'EPIC';
-    if (score >= 5) return 'RARE';
-    if (score >= 3) return 'COMMON';
-    return 'BASIC';
-  };
+  // Get tier info for display
+  const tierInfo = getTierInfo(getTier(overallScore));
+  const nextTierInfo = getNextTier(overallScore);
 
   // Share text for social media
   const getShareText = () => `Just decoded my Social DNA. Vibe Score: ${overallScore.toFixed(1)}/10. Status: ${getTier(overallScore)}. What is YOUR Social DNA?`;

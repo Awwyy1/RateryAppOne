@@ -247,7 +247,7 @@ const PhotoUpload: React.FC<Props> = ({ onPhotoSelected, onCancel }) => {
         <div>
           <h4 className="text-xs font-bold text-amber-500 uppercase tracking-widest mb-1">Privacy Notice</h4>
           <p className="text-[11px] text-slate-400 leading-normal">
-            Your image is processed temporarily to decode your Social DNA and is not stored or used for training. All data is purged after session termination.
+            Your scan history is stored locally on your device. Photos are never uploaded to our servers and are not used for training.
           </p>
         </div>
       </div>

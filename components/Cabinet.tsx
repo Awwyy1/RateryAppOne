@@ -4,6 +4,7 @@ import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { AnalysisResult, MetricData } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import Dashboard from './Dashboard';
+import { getTier, getTierGradient } from '../utils/tiers';
 import {
   BarChart3,
   Clock,
@@ -128,23 +129,8 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut 
     }
   }, [analysisResult, photo, saveHistory, lastSavedPhoto]);
 
-  const getTier = (score: number) => {
-    if (score >= 9) return 'LEGENDARY';
-    if (score >= 7) return 'EPIC';
-    if (score >= 5) return 'RARE';
-    if (score >= 3) return 'COMMON';
-    return 'BASIC';
-  };
-
-  const getTierColor = (tier: string) => {
-    switch (tier) {
-      case 'LEGENDARY': return 'from-amber-500 to-yellow-300';
-      case 'EPIC': return 'from-purple-500 to-pink-400';
-      case 'RARE': return 'from-blue-500 to-cyan-400';
-      case 'COMMON': return 'from-green-500 to-emerald-400';
-      default: return 'from-gray-500 to-gray-400';
-    }
-  };
+  // Using imported getTier from utils/tiers.ts
+  // getTierColor now uses getTierGradient from utils
 
   const clearHistory = () => {
     setScanHistory([]);
@@ -327,7 +313,7 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut 
                         <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
                           <div>
                             <p className="text-3xl font-black">{scan.score.toFixed(1)}</p>
-                            <p className={`text-[10px] font-black uppercase tracking-widest bg-gradient-to-r ${getTierColor(scan.tier)} bg-clip-text text-transparent`}>
+                            <p className={`text-[10px] font-black uppercase tracking-widest bg-gradient-to-r ${getTierGradient(scan.tier)} bg-clip-text text-transparent`}>
                               {scan.tier}
                             </p>
                           </div>
