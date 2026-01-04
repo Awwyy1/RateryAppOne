@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ratery-v8';
+const CACHE_NAME = 'ratery-v9';
 const urlsToCache = [
   '/',
   '/index.html',
