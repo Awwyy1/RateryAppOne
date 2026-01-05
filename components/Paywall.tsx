@@ -1,17 +1,7 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { useSubscription, PLANS, PlanType, PlanInfo } from '../contexts/SubscriptionContext';
-import {
-  Crown,
-  Zap,
-  Infinity,
-  Check,
-  X,
-  Loader2,
-  AlertCircle,
-  Star,
-  Sparkles
-} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Check, Zap, Crown, Sparkles, Star, X, Loader2, AlertCircle } from 'lucide-react';
+import { useSubscription, PLANS, PlanType, BillingCycle } from '../contexts/SubscriptionContext';
 
 interface Props {
   onClose: () => void;
@@ -19,31 +9,32 @@ interface Props {
 }
 
 const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
-  const { currentPlan, scansLeft, setPlan } = useSubscription();
+  const { currentPlan } = useSubscription();
+  const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<PlanType | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Product IDs for Creem.io
-  const PRODUCT_IDS: Record<PlanType, string> = {
-    free: '',
-    premium: 'prod_vyB0YRaHxUbaw15RrwYWs',
-    pro: 'prod_4boIHh1LCWfxWCK12uL07D'
-  };
-
-  const handleSelectPlan = async (plan: PlanInfo) => {
-    if (plan.id === 'free' || plan.id === currentPlan) {
+  const handleSelectPlan = async (planId: PlanType) => {
+    if (planId === 'free' || planId === currentPlan) {
       onClose();
       return;
     }
 
+    const plan = PLANS.find(p => p.id === planId);
+    if (!plan || !plan.productIds) return;
+
     setIsLoading(true);
-    setSelectedPlan(plan.id);
+    setSelectedPlan(planId);
     setError(null);
 
     try {
-      const productId = PRODUCT_IDS[plan.id];
-      const successUrl = encodeURIComponent(`${window.location.origin}/?payment=success&plan=${plan.id}`);
+      const productId = plan.productIds[billingCycle];
+      if (!productId) {
+        throw new Error('Product ID not found');
+      }
+
+      const successUrl = encodeURIComponent(`${window.location.origin}/?payment=success&plan=${planId}`);
       const cancelUrl = encodeURIComponent(`${window.location.origin}/?payment=cancelled`);
 
       const paymentUrl = `https://www.creem.io/test/payment/${productId}?success_url=${successUrl}&cancel_url=${cancelUrl}`;
@@ -65,11 +56,20 @@ const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
     }
   };
 
-  const getPlanGradient = (planId: PlanType) => {
+  const getPlanColor = (planId: PlanType) => {
     switch (planId) {
-      case 'free': return 'from-gray-500 to-gray-600';
-      case 'premium': return 'from-[#00f0ff] to-cyan-500';
-      case 'pro': return 'from-amber-400 via-yellow-500 to-amber-600';
+      case 'free': return '#4ADE80';
+      case 'premium': return '#00f0ff';
+      case 'pro': return '#ffb800';
+    }
+  };
+
+  const getButtonText = (planId: PlanType) => {
+    if (planId === currentPlan) return 'ACTIVE PLAN';
+    switch (planId) {
+      case 'free': return 'ACTIVE PLAN';
+      case 'premium': return 'UPGRADE NOW';
+      case 'pro': return 'GET PRO ACCESS';
     }
   };
 
@@ -82,192 +82,247 @@ const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
       style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
     >
       {/* Background overlay for closing */}
-      <div
-        className="absolute inset-0"
+      <div className="absolute inset-0" onClick={onClose} />
+
+      {/* Close button */}
+      <button
         onClick={onClose}
-      />
-      {/* Scrollable container */}
-      <div className="relative min-h-full flex items-start md:items-center justify-center p-4 py-8">
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0, y: 20 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.9, opacity: 0, y: 20 }}
-          transition={{ type: 'spring', damping: 25 }}
-          className="relative w-full max-w-4xl"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Close button */}
-          <button
-            onClick={onClose}
-            className="absolute top-0 right-0 z-20 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white/60 hover:text-white transition-all"
+        className="fixed top-4 right-4 z-[500] p-3 bg-white/10 hover:bg-white/20 rounded-full text-white/60 hover:text-white transition-all"
+      >
+        <X className="w-6 h-6" />
+      </button>
+
+      {/* Content */}
+      <div className="relative max-w-7xl mx-auto py-12 px-4" onClick={(e) => e.stopPropagation()}>
+        <div className="text-center mb-16">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/5 bg-white/5 text-[10px] uppercase tracking-[0.3em] font-bold text-[#00f0ff] mb-8"
           >
-            <X className="w-5 h-5" />
-          </button>
+            Licensing Protocols
+          </motion.div>
+          <h2 className="text-5xl md:text-7xl font-black tracking-tighter mb-6">Choose Your <span className="text-[#00f0ff]">Plan</span></h2>
+          <p className="text-white/40 uppercase tracking-[0.2em] text-sm font-bold mb-12">Unlock more scans and neural depth</p>
 
-          {/* Header */}
-          <div className="text-center mb-6 md:mb-8 pr-10">
-            <motion.h2
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-2xl md:text-4xl font-black tracking-tight mb-2 md:mb-3"
-            >
-              Choose Your <span className="text-[#00f0ff]">Plan</span>
-            </motion.h2>
-            <p className="text-white/50 text-xs md:text-base">
-              {scansLeft === 0 || scansLeft === 'unlimited'
-                ? 'Unlock more scans and premium features'
-                : `You have ${scansLeft} scan${scansLeft !== 1 ? 's' : ''} remaining`}
-            </p>
-          </div>
+          {/* Billing Toggle */}
+          <div className="flex flex-col items-center gap-4">
+            <div className="flex items-center p-1.5 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-xl relative">
+              <motion.div
+                className="absolute h-[calc(100%-12px)] rounded-xl bg-white shadow-xl z-0"
+                initial={false}
+                animate={{
+                  width: billingCycle === 'monthly' ? '92px' : '100px',
+                  x: billingCycle === 'monthly' ? 0 : 92
+                }}
+                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              />
+              <button
+                onClick={() => setBillingCycle('monthly')}
+                className={`relative z-10 px-6 py-2.5 text-[10px] font-black uppercase tracking-widest transition-colors ${billingCycle === 'monthly' ? 'text-black' : 'text-white/40'}`}
+              >
+                Monthly
+              </button>
+              <button
+                onClick={() => setBillingCycle('yearly')}
+                className={`relative z-10 px-6 py-2.5 text-[10px] font-black uppercase tracking-widest transition-colors ${billingCycle === 'yearly' ? 'text-black' : 'text-white/40'}`}
+              >
+                Yearly
+              </button>
 
-          {/* Error Message */}
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-4 md:mb-6 p-3 md:p-4 bg-red-500/10 border border-red-500/30 rounded-xl flex items-center gap-3 max-w-md mx-auto"
-            >
-              <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
-              <p className="text-red-400 text-sm">{error}</p>
-            </motion.div>
-          )}
+              {/* 35% OFF Badge */}
+              <motion.div
+                initial={{ scale: 0.95, y: 0 }}
+                animate={{ scale: [0.95, 1.05, 0.95], y: [0, -2, 0] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute right-2 -top-9 z-[20]"
+              >
+                <div className="relative">
+                  <div className="absolute inset-0 bg-[#00f0ff] blur-md opacity-30 rounded-lg animate-pulse" />
+                  <div className="relative bg-[#00f0ff] text-black text-[9px] font-black px-3 py-1.5 rounded-lg uppercase tracking-tighter shadow-2xl border border-white/20 whitespace-nowrap">
+                     35% OFF
+                  </div>
+                  <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#00f0ff] rotate-45 border-r border-b border-white/10" />
+                </div>
+              </motion.div>
+            </div>
 
-          {/* Pricing Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 items-stretch">
-            {PLANS.map((plan, index) => {
-              const isCurrentPlan = plan.id === currentPlan;
-              const isSelected = selectedPlan === plan.id;
-
-              return (
+            <AnimatePresence mode="wait">
+              {billingCycle === 'yearly' ? (
                 <motion.div
-                  key={plan.id}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className={`relative rounded-2xl md:rounded-3xl border overflow-visible transition-all flex flex-col ${
-                    plan.popular
-                      ? 'border-[#00f0ff]/50 bg-gradient-to-b from-[#00f0ff]/10 to-transparent md:scale-105 md:-my-2'
-                      : plan.bestValue
-                      ? 'border-amber-500/50 bg-gradient-to-b from-amber-500/10 to-transparent'
-                      : 'border-white/10 bg-white/5'
-                  } ${isCurrentPlan ? 'ring-2 ring-green-500/50' : ''}`}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="flex items-center gap-2 text-[#00f0ff] text-[10px] font-black uppercase tracking-[0.2em]"
                 >
-                  {/* Badge */}
-                  {plan.popular && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-[#00f0ff] text-black text-[10px] font-black uppercase tracking-widest rounded-full whitespace-nowrap z-10">
-                      Popular
-                    </div>
-                  )}
-                  {plan.bestValue && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-amber-400 to-yellow-500 text-black text-[10px] font-black uppercase tracking-widest rounded-full flex items-center gap-1 whitespace-nowrap z-10">
-                      <Star className="w-3 h-3" /> Best Value
-                    </div>
-                  )}
-                  {isCurrentPlan && !plan.popular && !plan.bestValue && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-green-500/20 border border-green-500/30 text-green-400 text-[10px] font-bold uppercase tracking-widest rounded-full whitespace-nowrap z-10">
-                      Current
-                    </div>
-                  )}
+                  <Zap className="w-3 h-3 fill-current" />
+                  Billed Annually — Maximum Efficiency
+                </motion.div>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-white/10 text-[9px] font-black uppercase tracking-[0.3em]"
+                >
+                  Monthly Flexibility Protocol Active
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
 
-                  <div className="p-5 md:p-8 pt-6 md:pt-10 flex flex-col flex-grow">
-                    {/* Plan Icon */}
-                    <div className={`w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-gradient-to-br ${getPlanGradient(plan.id)} flex items-center justify-center mb-3 md:mb-4 shadow-lg`}>
+        {/* Error Message */}
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 p-4 bg-red-500/10 border border-red-500/30 rounded-xl flex items-center gap-3 max-w-md mx-auto"
+          >
+            <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
+            <p className="text-red-400 text-sm">{error}</p>
+          </motion.div>
+        )}
+
+        {/* Pricing Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+          {PLANS.map((plan) => {
+            const isCurrentPlan = plan.id === currentPlan;
+            const isSelected = selectedPlan === plan.id;
+            const color = getPlanColor(plan.id);
+
+            return (
+              <motion.div
+                key={plan.id}
+                whileHover={{ y: -12 }}
+                className={`relative rounded-[2rem] md:rounded-[3.5rem] p-6 md:p-10 flex flex-col border border-white/5 transition-all duration-500 backdrop-blur-sm ${
+                  plan.popular ? 'ring-1 ring-[#00f0ff]/30 bg-[#00f0ff]/[0.02]' :
+                  plan.bestValue ? 'ring-1 ring-[#ffb800]/30 bg-[#ffb800]/[0.02]' : 'bg-white/[0.02]'
+                }`}
+              >
+                {/* Badge */}
+                {plan.popular && (
+                  <div
+                    className="absolute -top-4 left-1/2 -translate-x-1/2 text-black text-[9px] font-black px-5 py-2 rounded-full uppercase tracking-widest shadow-xl whitespace-nowrap"
+                    style={{ backgroundColor: color }}
+                  >
+                    MOST POPULAR
+                  </div>
+                )}
+                {plan.bestValue && (
+                  <div
+                    className="absolute -top-4 left-1/2 -translate-x-1/2 text-black text-[9px] font-black px-5 py-2 rounded-full uppercase tracking-widest flex items-center gap-1.5 shadow-xl whitespace-nowrap"
+                    style={{ backgroundColor: color }}
+                  >
+                    <Star className="w-3 h-3 fill-current" />
+                    BEST VALUE
+                  </div>
+                )}
+
+                <div className="mb-10">
+                  <div className="flex items-center gap-4 mb-10">
+                    <div
+                      className="w-14 h-14 md:w-16 md:h-16 rounded-[1.25rem] bg-white/5 flex items-center justify-center border border-white/10"
+                      style={{ color }}
+                    >
                       {getPlanIcon(plan.id)}
                     </div>
-
-                    {/* Plan Name */}
-                    <h3 className="text-lg md:text-xl font-black mb-1">{plan.name}</h3>
-
-                    {/* Price */}
-                    <div className="flex items-baseline gap-1 mb-3 md:mb-4">
-                      <span className="text-2xl md:text-4xl font-black">{plan.price}</span>
-                      {plan.period && (
-                        <span className="text-white/40 text-sm">{plan.period}</span>
-                      )}
+                    <div className="flex flex-col">
+                      <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tight leading-none mb-1.5">{plan.name}</h3>
+                      <span className="text-[10px] font-mono opacity-30 uppercase tracking-[0.3em] font-bold">{plan.level}</span>
                     </div>
-
-                    {/* Scans */}
-                    <div className="flex items-center gap-2 mb-4 md:mb-6 text-sm">
-                      {plan.scansLimit === 'unlimited' ? (
-                        <>
-                          <Infinity className="w-4 h-4 text-amber-400" />
-                          <span className="text-amber-400 font-bold">Unlimited Scans</span>
-                        </>
-                      ) : (
-                        <>
-                          <Zap className="w-4 h-4 text-[#00f0ff]" />
-                          <span className="text-white/70">{plan.scansLimit} {plan.scansLimit === 1 ? 'Scan' : 'Scans'}{plan.id === 'premium' ? '/month' : ''}</span>
-                        </>
-                      )}
-                    </div>
-
-                    {/* Features - min-height ensures alignment across cards */}
-                    <ul className="space-y-2 md:space-y-3 mb-4 md:mb-6 flex-grow min-h-[120px] md:min-h-[160px]">
-                      {plan.features.map((feature, i) => (
-                        <li key={i} className="flex items-center gap-2 md:gap-3 text-xs md:text-sm">
-                          <Check className={`w-4 h-4 shrink-0 ${
-                            plan.id === 'pro' ? 'text-amber-400' :
-                            plan.id === 'premium' ? 'text-[#00f0ff]' : 'text-white/40'
-                          }`} />
-                          <span className="text-white/70">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-
-                    {/* CTA Button - pushed to bottom */}
-                    <motion.button
-                      onClick={() => handleSelectPlan(plan)}
-                      disabled={isLoading || isCurrentPlan}
-                      whileHover={{ scale: isCurrentPlan ? 1 : 1.02 }}
-                      whileTap={{ scale: isCurrentPlan ? 1 : 0.98 }}
-                      className={`w-full py-3 md:py-4 rounded-xl font-bold text-xs md:text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-2 mt-auto ${
-                        isCurrentPlan
-                          ? 'bg-white/10 text-white/40 cursor-default'
-                          : plan.id === 'pro'
-                          ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-black hover:shadow-lg hover:shadow-amber-500/30'
-                          : plan.id === 'premium'
-                          ? 'bg-gradient-to-r from-[#00f0ff] to-cyan-400 text-black hover:shadow-lg hover:shadow-[#00f0ff]/30'
-                          : 'bg-white/10 text-white hover:bg-white/20'
-                      }`}
-                    >
-                      {isSelected && isLoading ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          Processing...
-                        </>
-                      ) : isCurrentPlan ? (
-                        'Current Plan'
-                      ) : plan.id === 'free' ? (
-                        'Continue Free'
-                      ) : (
-                        <>
-                          <Zap className="w-4 h-4" />
-                          {plan.id === 'pro' ? 'Go Pro' : 'Upgrade'}
-                        </>
-                      )}
-                    </motion.button>
                   </div>
-                </motion.div>
-              );
-            })}
-          </div>
 
-          {/* Trust badges */}
-          <div className="flex flex-wrap items-center justify-center gap-4 md:gap-8 mt-6 md:mt-8 text-white/30 text-[10px] md:text-xs">
-            <div className="flex items-center gap-1 md:gap-2">
-              <Check className="w-3 h-3 md:w-4 md:h-4 text-green-500" />
-              Secure Payment
-            </div>
-            <div className="flex items-center gap-1 md:gap-2">
-              <Check className="w-3 h-3 md:w-4 md:h-4 text-green-500" />
-              Cancel Anytime
-            </div>
-            <div className="flex items-center gap-1 md:gap-2">
-              <Check className="w-3 h-3 md:w-4 md:h-4 text-green-500" />
-              Instant Access
-            </div>
-          </div>
-        </motion.div>
+                  <div className="flex flex-col">
+                    <div className="flex items-baseline gap-2">
+                      <AnimatePresence mode="wait">
+                        <motion.span
+                          key={billingCycle}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          className="text-5xl md:text-6xl font-black tracking-tighter"
+                        >
+                          {plan.prices[billingCycle]}
+                        </motion.span>
+                      </AnimatePresence>
+
+                      <div className="flex flex-col gap-1">
+                        {plan.id !== 'free' && (
+                          <span className="text-white/20 text-sm font-bold uppercase">
+                            {billingCycle === 'monthly' ? '/mo' : '/yr'}
+                          </span>
+                        )}
+                        <AnimatePresence>
+                          {billingCycle === 'yearly' && plan.id !== 'free' && (
+                            <motion.div
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0.8 }}
+                              className="text-[#00f0ff] text-[8px] font-black uppercase tracking-tighter leading-none"
+                            >
+                              DISCOUNTED
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    </div>
+                    {billingCycle === 'yearly' && plan.id !== 'free' && (
+                      <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest mt-1">Billed Annually</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Features */}
+                <div className="space-y-4 md:space-y-5 mb-10 md:mb-14 flex-1">
+                  {plan.features.map((f, i) => (
+                    <div key={i} className="flex items-center gap-3 md:gap-4 text-[12px] md:text-[13px] font-bold text-white/60">
+                      <div
+                        className="w-5 h-5 rounded-full flex items-center justify-center border border-white/10 flex-shrink-0"
+                        style={{ color }}
+                      >
+                        <Check className="w-3 h-3" />
+                      </div>
+                      <span className={i === 1 ? "text-white font-black" : ""}>{f}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* CTA Button */}
+                <button
+                  onClick={() => handleSelectPlan(plan.id)}
+                  disabled={isLoading || isCurrentPlan}
+                  className={`w-full py-5 md:py-6 rounded-[1.25rem] md:rounded-[1.5rem] font-black text-[10px] md:text-[11px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 ${
+                    isCurrentPlan
+                      ? 'bg-white/5 text-white/40 cursor-default border border-white/5'
+                      : plan.id === 'premium'
+                      ? 'bg-[#00f0ff] text-black shadow-[0_10px_40px_rgba(0,240,255,0.2)] hover:scale-[1.02]'
+                      : plan.id === 'pro'
+                      ? 'bg-[#ffb800] text-black shadow-[0_10px_40px_rgba(255,184,0,0.2)] hover:scale-[1.02]'
+                      : 'bg-white/5 text-white/40 cursor-default border border-white/5'
+                  }`}
+                >
+                  {isSelected && isLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      {plan.id !== 'free' && !isCurrentPlan && <Zap className="w-4 h-4 fill-current" />}
+                      {getButtonText(plan.id)}
+                    </>
+                  )}
+                </button>
+              </motion.div>
+            );
+          })}
+        </div>
+
+        {/* Footer */}
+        <div className="mt-16 md:mt-20 text-center max-w-2xl mx-auto">
+          <p className="text-[9px] md:text-[10px] text-white/20 font-bold uppercase tracking-[0.3em] md:tracking-[0.4em] leading-relaxed">
+            Neural audit credits reset every 30 days. Unused scans in yearly plans rollover to the next month within the active period.
+          </p>
+        </div>
       </div>
     </motion.div>
   );

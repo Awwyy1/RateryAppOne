@@ -2,15 +2,16 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { useAuth } from './AuthContext';
 
 export type PlanType = 'free' | 'premium' | 'pro';
+export type BillingCycle = 'monthly' | 'yearly';
 
 export interface PlanInfo {
   id: PlanType;
   name: string;
-  price: string;
-  period: string;
+  level: string;
+  prices: { monthly: string; yearly: string };
   scansLimit: number | 'unlimited';
   features: string[];
-  productId?: string;
+  productIds?: { monthly?: string; yearly?: string };
   popular?: boolean;
   bestValue?: boolean;
 }
@@ -19,11 +20,12 @@ export const PLANS: PlanInfo[] = [
   {
     id: 'free',
     name: 'Free',
-    price: '$0',
-    period: '',
+    level: 'LEVEL 1',
+    prices: { monthly: '$0', yearly: '$0' },
     scansLimit: 1,
     features: [
       '1 DNA Scan',
+      '3 DNA Markers',
       'Basic Analysis',
       'Social DNA Score'
     ]
@@ -31,33 +33,39 @@ export const PLANS: PlanInfo[] = [
   {
     id: 'premium',
     name: 'Premium',
-    price: '$4.99',
-    period: '/month',
+    level: 'LEVEL 2',
+    prices: { monthly: '$4.99', yearly: '$38.99' },
     scansLimit: 49,
     features: [
       '49 Scans per Month',
+      '7 DNA Markers',
       'Detailed Analytics',
       'Tier Rankings',
-      'History & Insights',
-      'Priority Support'
+      'History & Insights'
     ],
-    productId: 'prod_vyB0YRaHxUbaw15RrwYWs',
+    productIds: {
+      monthly: 'prod_vyB0YRaHxUbaw15RrwYWs',
+      yearly: 'prod_vyB0YRaHxUbaw15RrwYWs' // TODO: Add yearly product ID
+    },
     popular: true
   },
   {
     id: 'pro',
     name: 'Pro',
-    price: '$17.99',
-    period: '/year',
+    level: 'LEVEL 3',
+    prices: { monthly: '$6.99', yearly: '$54.99' },
     scansLimit: 'unlimited',
     features: [
       'Unlimited Scans',
+      '16 DNA Markers',
       'All Premium Features',
       'Early Access',
-      'Exclusive DNA Cards',
-      'VIP Support'
+      'Exclusive DNA Cards'
     ],
-    productId: 'prod_4boIHh1LCWfxWCK12uL07D',
+    productIds: {
+      monthly: 'prod_4boIHh1LCWfxWCK12uL07D',
+      yearly: 'prod_4boIHh1LCWfxWCK12uL07D' // TODO: Add yearly product ID
+    },
     bestValue: true
   }
 ];
