@@ -102,30 +102,30 @@ const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
           >
             Social DNA Plans
           </motion.div>
-          <h2 className="text-3xl md:text-5xl font-black tracking-tighter mb-3">Choose Your <span className="text-[#00f0ff]">Plan</span></h2>
-          <p className="text-white/40 uppercase tracking-[0.15em] text-xs font-bold mb-6">Unlock more scans and DNA markers</p>
+          <h2 className="text-3xl md:text-5xl font-black tracking-tighter mb-2">Choose Your <span className="text-[#00f0ff]">Plan</span></h2>
+          <p className="text-white/30 uppercase tracking-[0.2em] text-[8px] font-bold mb-6">Unlock more scans and DNA markers</p>
 
           {/* Billing Toggle */}
           <div className="flex flex-col items-center gap-3">
             <div className="flex items-center p-1 bg-white/5 border border-white/10 rounded-xl backdrop-blur-xl relative">
               <motion.div
-                className="absolute h-[calc(100%-8px)] rounded-lg bg-white shadow-xl z-0"
+                className="absolute h-[calc(100%-8px)] rounded-lg bg-white shadow-xl z-0 left-1"
                 initial={false}
                 animate={{
-                  width: billingCycle === 'monthly' ? '80px' : '80px',
-                  x: billingCycle === 'monthly' ? 0 : 80
+                  width: '76px',
+                  x: billingCycle === 'monthly' ? 0 : 76
                 }}
                 transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               />
               <button
                 onClick={() => setBillingCycle('monthly')}
-                className={`relative z-10 px-5 py-2 text-[9px] font-black uppercase tracking-widest transition-colors ${billingCycle === 'monthly' ? 'text-black' : 'text-white/40'}`}
+                className={`relative z-10 w-[76px] py-2 text-[9px] font-black uppercase tracking-wider transition-colors text-center ${billingCycle === 'monthly' ? 'text-black' : 'text-white/40'}`}
               >
                 Monthly
               </button>
               <button
                 onClick={() => setBillingCycle('yearly')}
-                className={`relative z-10 px-5 py-2 text-[9px] font-black uppercase tracking-widest transition-colors ${billingCycle === 'yearly' ? 'text-black' : 'text-white/40'}`}
+                className={`relative z-10 w-[76px] py-2 text-[9px] font-black uppercase tracking-wider transition-colors text-center ${billingCycle === 'yearly' ? 'text-black' : 'text-white/40'}`}
               >
                 Yearly
               </button>
@@ -176,7 +176,7 @@ const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
         )}
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 items-stretch">
           {PLANS.map((plan) => {
             const isCurrentPlan = plan.id === currentPlan;
             const isSelected = selectedPlan === plan.id;
@@ -185,8 +185,8 @@ const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
             return (
               <motion.div
                 key={plan.id}
-                whileHover={{ y: -8 }}
-                className={`relative rounded-2xl md:rounded-3xl p-5 md:p-6 flex flex-col border border-white/5 transition-all duration-500 backdrop-blur-sm ${
+                whileHover={{ y: -6 }}
+                className={`relative rounded-2xl md:rounded-3xl p-5 md:p-7 flex flex-col border border-white/5 transition-all duration-500 backdrop-blur-sm ${
                   plan.popular ? 'ring-1 ring-[#00f0ff]/30 bg-[#00f0ff]/[0.02]' :
                   plan.bestValue ? 'ring-1 ring-[#ffb800]/30 bg-[#ffb800]/[0.02]' : 'bg-white/[0.02]'
                 }`}
@@ -210,8 +210,8 @@ const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
                   </div>
                 )}
 
-                <div className="mb-6">
-                  <div className="flex items-center gap-3 mb-6">
+                <div className="mb-5">
+                  <div className="flex items-center gap-3 mb-5">
                     <div
                       className="w-11 h-11 md:w-12 md:h-12 rounded-xl bg-white/5 flex items-center justify-center border border-white/10"
                       style={{ color }}
@@ -264,7 +264,7 @@ const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
                 </div>
 
                 {/* Features */}
-                <div className="space-y-3 mb-6 flex-1">
+                <div className="space-y-2.5 mb-5 flex-1">
                   {plan.features.map((f, i) => (
                     <div key={i} className="flex items-center gap-2.5 text-[11px] md:text-[12px] font-bold text-white/60">
                       <div
