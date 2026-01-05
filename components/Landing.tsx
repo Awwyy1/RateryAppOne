@@ -40,7 +40,7 @@ const Landing: React.FC<Props> = ({ onStart }) => {
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00f0ff] opacity-75"></span>
           <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00f0ff]"></span>
         </span>
-        AI-Powered DNA Scanner
+        20-Tier Ranking System
       </motion.div>
 
       <motion.h1
@@ -67,7 +67,7 @@ const Landing: React.FC<Props> = ({ onStart }) => {
           className="group relative px-10 py-5 bg-white text-black font-extrabold rounded-full overflow-hidden transition-all shadow-[0_0_40px_rgba(255,255,255,0.2)]"
         >
           <span className="relative z-10 flex items-center gap-2 uppercase tracking-tighter text-lg">
-            Scan My DNA <ArrowUpRight className="w-5 h-5 group-hover:rotate-45 transition-transform" />
+            Scan <ArrowUpRight className="w-5 h-5 group-hover:rotate-45 transition-transform" />
           </span>
           <div className="absolute inset-0 bg-[#00f0ff] translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
         </motion.button>
