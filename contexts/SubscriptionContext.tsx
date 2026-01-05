@@ -44,8 +44,8 @@ export const PLANS: PlanInfo[] = [
       'History & Insights'
     ],
     productIds: {
-      monthly: 'prod_vyB0YRaHxUbaw15RrwYWs',
-      yearly: 'prod_vyB0YRaHxUbaw15RrwYWs' // TODO: Add yearly product ID
+      monthly: 'prod_3vXfS9qVc8XM8PkK8Cb2Mx',
+      yearly: 'prod_Y33LqGJyK35FUiJ5sb74V'
     },
     popular: true
   },
@@ -63,8 +63,8 @@ export const PLANS: PlanInfo[] = [
       'Exclusive DNA Cards'
     ],
     productIds: {
-      monthly: 'prod_4boIHh1LCWfxWCK12uL07D',
-      yearly: 'prod_4boIHh1LCWfxWCK12uL07D' // TODO: Add yearly product ID
+      monthly: 'prod_2oVK1PibW3x3o1ZviEIfsI',
+      yearly: 'prod_12zU7JgI8i47pxfkyfPKLg'
     },
     bestValue: true
   }
