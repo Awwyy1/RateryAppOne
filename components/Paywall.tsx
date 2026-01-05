@@ -102,8 +102,8 @@ const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
           >
             Social DNA Plans
           </motion.div>
-          <h2 className="text-3xl md:text-5xl font-black tracking-tighter mb-2">Choose Your <span className="text-[#00f0ff]">Plan</span></h2>
-          <p className="text-white/30 uppercase tracking-[0.2em] text-[8px] font-bold mb-6">Unlock more scans and DNA markers</p>
+          <h2 className="text-3xl md:text-5xl font-black tracking-tighter mb-3">Choose Your <span className="text-[#00f0ff]">Plan</span></h2>
+          <p className="text-white/30 uppercase tracking-[0.2em] text-[8px] font-bold mb-8 md:mb-10">Unlock more scans and DNA markers</p>
 
           {/* Billing Toggle */}
           <div className="flex flex-col items-center gap-3">
