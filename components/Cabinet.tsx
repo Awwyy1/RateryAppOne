@@ -82,7 +82,7 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut,
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const { user } = useAuth();
-  const { currentPlan, isPremium, isPro, scansLeft, monthlyScansUsed, getCurrentPlanInfo } = useSubscription();
+  const { currentPlan, isPremium, isPro, scansLeft, monthlyScansUsed, getCurrentPlanInfo, setPlan } = useSubscription();
 
   // Load history from localStorage
   useEffect(() => {
@@ -568,6 +568,31 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut,
                       </li>
                     ))}
                   </ul>
+                </div>
+
+                {/* Test Mode - Manual Plan Switch */}
+                <div className="mt-6 pt-6 border-t border-white/10">
+                  <p className="text-[10px] text-white/40 uppercase tracking-widest mb-3">Test Mode</p>
+                  <div className="flex flex-wrap gap-2">
+                    {PLANS.map((plan) => (
+                      <button
+                        key={plan.id}
+                        onClick={() => setPlan(plan.id)}
+                        className={`px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
+                          currentPlan === plan.id
+                            ? plan.id === 'pro'
+                              ? 'bg-amber-500 text-black'
+                              : plan.id === 'premium'
+                              ? 'bg-[#00f0ff] text-black'
+                              : 'bg-white/20 text-white'
+                            : 'bg-white/5 text-white/40 hover:bg-white/10'
+                        }`}
+                      >
+                        {plan.name}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-[9px] text-white/20 mt-2">Для тестирования функций разных планов</p>
                 </div>
               </div>
             </div>

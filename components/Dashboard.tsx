@@ -353,7 +353,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
                           {metric.value >= metric.benchmark ? '↑' : '↓'} {Math.abs(metric.value - metric.benchmark)}
                         </span>
                       </div>
-                      <p className="text-[9px] md:text-[10px] text-white/30 mt-2 md:mt-3 leading-relaxed hidden sm:block">{metric.description}</p>
+                      <p className="text-[8px] md:text-[10px] text-white/30 mt-2 md:mt-3 leading-relaxed line-clamp-3">{metric.description}</p>
                     </>
                   ) : (
                     <>
