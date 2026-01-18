@@ -71,22 +71,22 @@ If the image IS a valid human face photo, analyze it and respond with:
   "isValidFace": true,
   "overallScore": 8.2,
   "metrics": [
-    {"label": "Trust", "value": 85, "benchmark": 72, "description": "Brief explanation of score"},
-    {"label": "Magnetism", "value": 78, "benchmark": 65, "description": "Brief explanation"},
-    {"label": "Spark", "value": 90, "benchmark": 78, "description": "Brief explanation"},
-    {"label": "Warmth", "value": 65, "benchmark": 70, "description": "Brief explanation"},
-    {"label": "Power", "value": 82, "benchmark": 68, "description": "Brief explanation"},
-    {"label": "Mystery", "value": 75, "benchmark": 60, "description": "Brief explanation"},
-    {"label": "Sophistication", "value": 79, "benchmark": 65, "description": "Brief explanation"},
-    {"label": "Drive", "value": 85, "benchmark": 70, "description": "Brief explanation"},
-    {"label": "Vibe", "value": 77, "benchmark": 68, "description": "Brief explanation"},
-    {"label": "Prestige", "value": 73, "benchmark": 62, "description": "Brief explanation"},
-    {"label": "Strictness", "value": 68, "benchmark": 55, "description": "Brief explanation"},
-    {"label": "Openness", "value": 81, "benchmark": 72, "description": "Brief explanation"},
-    {"label": "Pragmatism", "value": 74, "benchmark": 65, "description": "Brief explanation"},
-    {"label": "Resilience", "value": 86, "benchmark": 70, "description": "Brief explanation"},
-    {"label": "Congruence", "value": 82, "benchmark": 75, "description": "Brief explanation"},
-    {"label": "Stature", "value": 78, "benchmark": 68, "description": "Brief explanation"}
+    {"label": "Trust", "value": 85, "benchmark": 72, "description": "Your relaxed eye contact and natural smile create an immediate sense of reliability."},
+    {"label": "Magnetism", "value": 78, "benchmark": 65, "description": "Strong facial symmetry and engaging expression naturally draw people's attention."},
+    {"label": "Spark", "value": 90, "benchmark": 78, "description": "Unique combination of intensity in your gaze and warmth makes you highly memorable."},
+    {"label": "Warmth", "value": 65, "benchmark": 70, "description": "Subtle tension in your expression slightly reduces perceived approachability."},
+    {"label": "Power", "value": 82, "benchmark": 68, "description": "Defined jawline and direct gaze project strong confidence and authority."},
+    {"label": "Mystery", "value": 75, "benchmark": 60, "description": "Depth in your eyes and composed expression create an intriguing presence."},
+    {"label": "Sophistication", "value": 79, "benchmark": 65, "description": "Refined features and poised demeanor suggest cultural awareness and taste."},
+    {"label": "Drive", "value": 85, "benchmark": 70, "description": "Focused gaze and forward-leaning energy convey strong ambition and determination."},
+    {"label": "Vibe", "value": 77, "benchmark": 68, "description": "Overall energy feels grounded yet dynamic, creating positive first impressions."},
+    {"label": "Prestige", "value": 73, "benchmark": 62, "description": "Your presentation and composure signal someone of notable standing."},
+    {"label": "Strictness", "value": 68, "benchmark": 55, "description": "Structured expression indicates discipline without appearing rigid."},
+    {"label": "Openness", "value": 81, "benchmark": 72, "description": "Relaxed brow and attentive eyes show genuine curiosity and receptiveness."},
+    {"label": "Pragmatism", "value": 74, "benchmark": 65, "description": "Grounded expression suggests practical, no-nonsense approach to life."},
+    {"label": "Resilience", "value": 86, "benchmark": 70, "description": "Strong facial structure and calm demeanor project inner strength."},
+    {"label": "Congruence", "value": 82, "benchmark": 75, "description": "Expression and features align naturally, suggesting authenticity."},
+    {"label": "Stature", "value": 78, "benchmark": 68, "description": "Overall presence commands attention and respect in social settings."}
   ],
   "insights": [
     "Specific insight about their appearance",
@@ -94,6 +94,13 @@ If the image IS a valid human face photo, analyze it and respond with:
     "Third observation or recommendation"
   ]
 }
+
+IMPORTANT FOR DESCRIPTIONS:
+- Each description must be UNIQUE and SPECIFIC to this person's actual facial features
+- Explain WHY they received that score based on what you observe
+- Reference specific features: eyes, smile, jawline, expression, gaze, etc.
+- Keep each description 10-20 words, insightful and personalized
+- Avoid generic phrases - make it feel like a personal reading
 
 Evaluate these 16 DNA metrics on a scale of 0-100:
 1. Trust - How reliable and trustworthy does the person appear at first glance?
@@ -118,7 +125,7 @@ RESPOND ONLY WITH VALID JSON, no markdown, no code blocks.`;
     // Call Claude API with vision
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
-      max_tokens: 1024,
+      max_tokens: 2048,
       messages: [
         {
           role: 'user',
