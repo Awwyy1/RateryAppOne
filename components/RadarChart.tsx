@@ -47,15 +47,25 @@ const RadarChart: React.FC<Props> = ({ metrics }) => {
     const ctx = chartRef.current.getContext('2d');
     if (!ctx) return;
 
-    // Only use visible metrics based on plan
-    const visibleMetrics = metrics.slice(0, visibleMarkersCount);
+    // Always show 16 labels on the radar grid
+    // Visible markers get their names, locked markers get "???"
+    const labels = metrics.map((m, index) =>
+      index < visibleMarkersCount ? m.label.toUpperCase() : '???'
+    );
 
-    // Create labels only for visible markers
-    const labels = visibleMetrics.map(m => m.label.toUpperCase());
+    // Data: visible markers get their values, locked markers get 0 (no polygon line to them)
+    const visibleData = metrics.map((m, index) =>
+      index < visibleMarkersCount ? m.value : 0
+    );
 
-    // Create data only for visible markers
-    const visibleData = visibleMetrics.map(m => m.value);
-    const benchmarkData = visibleMetrics.map(m => m.benchmark);
+    const benchmarkData = metrics.map((m, index) =>
+      index < visibleMarkersCount ? m.benchmark : 0
+    );
+
+    // Point styling: visible = cyan dots, locked = invisible
+    const pointRadius = metrics.map((_, index) =>
+      index < visibleMarkersCount ? 4 : 0
+    );
 
     const config: ChartConfiguration<'radar'> = {
       type: 'radar',
@@ -71,8 +81,8 @@ const RadarChart: React.FC<Props> = ({ metrics }) => {
             pointBackgroundColor: '#00f0ff',
             pointBorderColor: '#050505',
             pointBorderWidth: 2,
-            pointRadius: 4,
-            pointHoverRadius: 6,
+            pointRadius: pointRadius,
+            pointHoverRadius: pointRadius.map(r => r > 0 ? 6 : 0),
           },
           {
             label: 'BASELINE',
@@ -93,7 +103,11 @@ const RadarChart: React.FC<Props> = ({ metrics }) => {
             angleLines: { color: 'rgba(255,255,255,0.05)' },
             grid: { color: 'rgba(255,255,255,0.05)' },
             pointLabels: {
-              color: 'rgba(255,255,255,0.4)',
+              color: (context) => {
+                return context.index < visibleMarkersCount
+                  ? 'rgba(255,255,255,0.5)'
+                  : 'rgba(255,255,255,0.15)';
+              },
               font: { size: 9, family: 'JetBrains Mono', weight: 'bold' },
               padding: 15
             },
@@ -109,7 +123,8 @@ const RadarChart: React.FC<Props> = ({ metrics }) => {
             titleFont: { family: 'JetBrains Mono' },
             bodyFont: { family: 'JetBrains Mono' },
             borderColor: 'rgba(255,255,255,0.1)',
-            borderWidth: 1
+            borderWidth: 1,
+            filter: (tooltipItem) => tooltipItem.dataIndex < visibleMarkersCount
           }
         }
       }
