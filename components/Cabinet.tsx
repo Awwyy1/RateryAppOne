@@ -592,7 +592,7 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut,
                       </button>
                     ))}
                   </div>
-                  <p className="text-[9px] text-white/20 mt-2">Для тестирования функций разных планов</p>
+                  <p className="text-[9px] text-white/20 mt-2">For testing plan features</p>
                 </div>
               </div>
             </div>
