@@ -76,7 +76,17 @@ If the image IS a valid human face photo, analyze it and respond with:
     {"label": "Spark", "value": 90, "benchmark": 78, "description": "Brief explanation"},
     {"label": "Warmth", "value": 65, "benchmark": 70, "description": "Brief explanation"},
     {"label": "Power", "value": 82, "benchmark": 68, "description": "Brief explanation"},
-    {"label": "Mystery", "value": 75, "benchmark": 60, "description": "Brief explanation"}
+    {"label": "Mystery", "value": 75, "benchmark": 60, "description": "Brief explanation"},
+    {"label": "Sophistication", "value": 79, "benchmark": 65, "description": "Brief explanation"},
+    {"label": "Drive", "value": 85, "benchmark": 70, "description": "Brief explanation"},
+    {"label": "Vibe", "value": 77, "benchmark": 68, "description": "Brief explanation"},
+    {"label": "Prestige", "value": 73, "benchmark": 62, "description": "Brief explanation"},
+    {"label": "Strictness", "value": 68, "benchmark": 55, "description": "Brief explanation"},
+    {"label": "Openness", "value": 81, "benchmark": 72, "description": "Brief explanation"},
+    {"label": "Pragmatism", "value": 74, "benchmark": 65, "description": "Brief explanation"},
+    {"label": "Resilience", "value": 86, "benchmark": 70, "description": "Brief explanation"},
+    {"label": "Congruence", "value": 82, "benchmark": 75, "description": "Brief explanation"},
+    {"label": "Stature", "value": 78, "benchmark": 68, "description": "Brief explanation"}
   ],
   "insights": [
     "Specific insight about their appearance",
@@ -85,13 +95,23 @@ If the image IS a valid human face photo, analyze it and respond with:
   ]
 }
 
-Evaluate these metrics on a scale of 0-100:
+Evaluate these 16 DNA metrics on a scale of 0-100:
 1. Trust - How reliable and trustworthy does the person appear at first glance?
 2. Magnetism - How much do they naturally draw attention and interest?
 3. Spark - How memorable and distinctive is their presence?
 4. Warmth - How approachable and friendly do they seem?
 5. Power - How much confidence and authority do they project?
 6. Mystery - How intriguing and interesting do they appear?
+7. Sophistication - How refined and cultured do they appear?
+8. Drive - How ambitious and determined do they seem?
+9. Vibe - What is their overall energy and aura?
+10. Prestige - How high-status do they appear?
+11. Strictness - How disciplined and serious do they look?
+12. Openness - How receptive and curious do they seem?
+13. Pragmatism - How practical and grounded do they appear?
+14. Resilience - How strong and enduring do they seem?
+15. Congruence - How authentic and consistent do they appear?
+16. Stature - What is their overall presence and standing?
 
 RESPOND ONLY WITH VALID JSON, no markdown, no code blocks.`;
 

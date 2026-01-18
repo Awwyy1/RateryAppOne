@@ -3,12 +3,13 @@ import React, { useState, useRef } from 'react';
 // Import Variants to correctly type motion configurations and ensure literal types like 'spring' are preserved
 import { motion, Variants } from 'framer-motion';
 import html2canvas from 'html2canvas';
-import { MOCK_RESULTS, INSIGHTS } from '../constants';
+import { MOCK_RESULTS, INSIGHTS, MARKERS_BY_PLAN } from '../constants';
 import { AnalysisResult } from '../types';
 import RadarChart from './RadarChart';
 import NeuralIdentityCard from './NeuralIdentityCard';
 import { getTier, getTierInfo, getNextTier } from '../utils/tiers';
-import { Download, Share2, Target, Zap, Shield, Cpu, Check, X, Dna, TrendingUp } from 'lucide-react';
+import { Download, Share2, Target, Zap, Shield, Cpu, Check, X, Dna, TrendingUp, Lock, Crown } from 'lucide-react';
+import { useSubscription } from '../contexts/SubscriptionContext';
 
 interface Props {
   photo: string | null;
@@ -22,11 +23,16 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const reportRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+  const { currentPlan } = useSubscription();
 
   // Use real analysis results if available, otherwise fall back to mocks
   const metrics = analysisResult?.metrics || MOCK_RESULTS;
   const insights = analysisResult?.insights || INSIGHTS;
   const overallScore = analysisResult?.overallScore || 8.4;
+
+  // Determine how many markers to show based on plan
+  const visibleMarkersCount = MARKERS_BY_PLAN[currentPlan] || 3;
+  const isMarkerVisible = (index: number) => index < visibleMarkersCount;
 
   // Get tier info for display
   const tierInfo = getTierInfo(getTier(overallScore));
@@ -206,20 +212,22 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
 
       {/* Main Analysis Radar - Card 2 */}
       <motion.div variants={bentoItem} className="md:col-span-8 lg:col-span-6 flex flex-col">
-        <div className="glass p-10 rounded-[2.5rem] flex-1 flex flex-col min-h-[500px] border-white/5">
-          <div className="flex justify-between items-start mb-8">
+        <div className="glass p-5 md:p-10 rounded-[2rem] md:rounded-[2.5rem] flex-1 flex flex-col min-h-[400px] md:min-h-[500px] border-white/5">
+          <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6 md:mb-8">
             <div>
-              <h2 className="text-3xl font-black tracking-tighter mb-2">Your DNA Markers</h2>
-              <p className="text-white/30 text-xs font-bold uppercase tracking-widest">The signals your face sends to the world</p>
+              <h2 className="text-xl md:text-3xl font-black tracking-tighter mb-1 md:mb-2">Your DNA Markers</h2>
+              <p className="text-white/30 text-[10px] md:text-xs font-bold uppercase tracking-widest">
+                {visibleMarkersCount} of {metrics.length} markers unlocked
+              </p>
             </div>
-            <div className="flex gap-4 p-2 bg-black/20 rounded-xl border border-white/5">
-              <div className="flex items-center gap-2 px-3 py-1">
-                <div className="w-2 h-2 rounded-full bg-[#00f0ff] shadow-[0_0_8px_#00f0ff]" />
-                <span className="text-[9px] uppercase tracking-widest font-black text-white">You</span>
+            <div className="flex gap-2 md:gap-4 p-1.5 md:p-2 bg-black/20 rounded-lg md:rounded-xl border border-white/5">
+              <div className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1">
+                <div className="w-1.5 md:w-2 h-1.5 md:h-2 rounded-full bg-[#00f0ff] shadow-[0_0_8px_#00f0ff]" />
+                <span className="text-[8px] md:text-[9px] uppercase tracking-widest font-black text-white">You</span>
               </div>
-              <div className="flex items-center gap-2 px-3 py-1">
-                <div className="w-2 h-2 rounded-full bg-white/10" />
-                <span className="text-[9px] uppercase tracking-widest font-black text-white/40">Baseline</span>
+              <div className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1">
+                <div className="w-1.5 md:w-2 h-1.5 md:h-2 rounded-full bg-white/10" />
+                <span className="text-[8px] md:text-[9px] uppercase tracking-widest font-black text-white/40">Baseline</span>
               </div>
             </div>
           </div>
@@ -228,11 +236,11 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
             <RadarChart metrics={metrics} />
           </div>
 
-          <div className="mt-8 pt-8 border-t border-white/5 grid grid-cols-3 gap-4">
+          <div className="mt-8 pt-8 border-t border-white/5 grid grid-cols-3 gap-2 md:gap-4">
             {metrics.slice(0, 3).map((res, i) => (
               <div key={i}>
-                <p className="text-[9px] uppercase tracking-widest text-white/30 font-bold mb-2">{res.label}</p>
-                <p className="text-xl font-black tracking-tighter">{res.value}%</p>
+                <p className="text-[8px] md:text-[9px] uppercase tracking-widest text-white/30 font-bold mb-2">{res.label}</p>
+                <p className="text-lg md:text-xl font-black tracking-tighter">{res.value}%</p>
                 <div className="w-full h-1 bg-white/5 mt-2 rounded-full overflow-hidden">
                   <motion.div
                     className="h-full bg-[#00f0ff]"
@@ -295,44 +303,110 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
 
       {/* Detailed Metrics Section */}
       <motion.div variants={bentoItem} className="md:col-span-12">
-        <div className="glass p-8 rounded-[2.5rem] border-white/5">
-          <h3 className="text-sm font-black uppercase tracking-[0.3em] mb-8 flex items-center gap-2">
-            <Shield className="w-4 h-4 text-[#00f0ff]" /> Detailed Breakdown
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-            {metrics.map((metric, i) => (
-              <motion.div
-                key={metric.label}
-                className="p-4 bg-white/5 rounded-2xl border border-white/5 hover:border-[#00f0ff]/30 transition-all group"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
-              >
-                <p className="text-[9px] uppercase tracking-widest text-white/30 font-bold mb-2">{metric.label}</p>
-                <div className="flex items-end gap-2 mb-3">
-                  <span className="text-3xl font-black text-white group-hover:text-[#00f0ff] transition-colors">{metric.value}</span>
-                  <span className="text-xs text-white/20 mb-1">/ 100</span>
-                </div>
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
-                    <motion.div
-                      className="h-full bg-[#00f0ff]"
-                      initial={{ width: 0 }}
-                      animate={{ width: `${metric.value}%` }}
-                      transition={{ duration: 1, delay: 0.5 + i * 0.1 }}
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-between items-center text-[8px] text-white/20">
-                  <span>Benchmark: {metric.benchmark}</span>
-                  <span className={metric.value >= metric.benchmark ? 'text-green-500' : 'text-amber-500'}>
-                    {metric.value >= metric.benchmark ? '↑' : '↓'} {Math.abs(metric.value - metric.benchmark)}
-                  </span>
-                </div>
-                <p className="text-[10px] text-white/30 mt-3 leading-relaxed">{metric.description}</p>
-              </motion.div>
-            ))}
+        <div className="glass p-4 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border-white/5">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8">
+            <h3 className="text-xs md:text-sm font-black uppercase tracking-[0.2em] md:tracking-[0.3em] flex items-center gap-2">
+              <Shield className="w-4 h-4 text-[#00f0ff]" /> Detailed Breakdown
+            </h3>
+            <div className="flex items-center gap-2 text-[10px] text-white/40">
+              <span className="px-2 py-1 bg-[#00f0ff]/10 rounded-lg text-[#00f0ff] font-bold">
+                {visibleMarkersCount}/{metrics.length} Markers Unlocked
+              </span>
+            </div>
           </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 md:gap-6">
+            {metrics.map((metric, i) => {
+              const isVisible = isMarkerVisible(i);
+
+              return (
+                <motion.div
+                  key={metric.label}
+                  className={`p-3 md:p-4 rounded-xl md:rounded-2xl border transition-all ${
+                    isVisible
+                      ? 'bg-white/5 border-white/5 hover:border-[#00f0ff]/30 group'
+                      : 'bg-white/[0.02] border-white/[0.03] relative overflow-hidden'
+                  }`}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                >
+                  {isVisible ? (
+                    <>
+                      <p className="text-[8px] md:text-[9px] uppercase tracking-widest text-white/30 font-bold mb-2">{metric.label}</p>
+                      <div className="flex items-end gap-1 md:gap-2 mb-2 md:mb-3">
+                        <span className="text-2xl md:text-3xl font-black text-white group-hover:text-[#00f0ff] transition-colors">{metric.value}</span>
+                        <span className="text-[10px] md:text-xs text-white/20 mb-1">/ 100</span>
+                      </div>
+                      <div className="flex items-center gap-2 mb-2 md:mb-3">
+                        <div className="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
+                          <motion.div
+                            className="h-full bg-[#00f0ff]"
+                            initial={{ width: 0 }}
+                            animate={{ width: `${metric.value}%` }}
+                            transition={{ duration: 1, delay: 0.5 + i * 0.05 }}
+                          />
+                        </div>
+                      </div>
+                      <div className="flex justify-between items-center text-[7px] md:text-[8px] text-white/20">
+                        <span>Benchmark: {metric.benchmark}</span>
+                        <span className={metric.value >= metric.benchmark ? 'text-green-500' : 'text-amber-500'}>
+                          {metric.value >= metric.benchmark ? '↑' : '↓'} {Math.abs(metric.value - metric.benchmark)}
+                        </span>
+                      </div>
+                      <p className="text-[9px] md:text-[10px] text-white/30 mt-2 md:mt-3 leading-relaxed hidden sm:block">{metric.description}</p>
+                    </>
+                  ) : (
+                    <>
+                      {/* Locked marker */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent" />
+                      <p className="text-[8px] md:text-[9px] uppercase tracking-widest text-white/15 font-bold mb-2">???</p>
+                      <div className="flex items-end gap-1 md:gap-2 mb-2 md:mb-3">
+                        <span className="text-2xl md:text-3xl font-black text-white/10">??</span>
+                        <span className="text-[10px] md:text-xs text-white/10 mb-1">/ 100</span>
+                      </div>
+                      <div className="flex items-center gap-2 mb-2 md:mb-3">
+                        <div className="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
+                          <div className="h-full w-1/2 bg-white/5" />
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-center gap-1 text-[8px] text-white/20 mt-2">
+                        <Lock className="w-3 h-3" />
+                        <span>Locked</span>
+                      </div>
+                    </>
+                  )}
+                </motion.div>
+              );
+            })}
+          </div>
+
+          {/* Upgrade prompt if not all markers visible */}
+          {visibleMarkersCount < metrics.length && (
+            <motion.div
+              className="mt-6 md:mt-8 p-4 md:p-6 bg-gradient-to-r from-[#00f0ff]/5 to-purple-500/5 rounded-xl md:rounded-2xl border border-[#00f0ff]/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              <div className="flex items-center gap-3 md:gap-4">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-[#00f0ff]/10 flex items-center justify-center shrink-0">
+                  <Crown className="w-5 h-5 md:w-6 md:h-6 text-[#00f0ff]" />
+                </div>
+                <div>
+                  <p className="font-bold text-sm md:text-base text-white">Unlock All {metrics.length} DNA Markers</p>
+                  <p className="text-[10px] md:text-xs text-white/40">
+                    {currentPlan === 'free'
+                      ? 'Upgrade to Premium for 7 markers, or Pro for all 16'
+                      : 'Upgrade to Pro for all 16 DNA markers'}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 text-[9px] md:text-[10px] text-[#00f0ff] font-bold uppercase tracking-widest">
+                <Zap className="w-3 h-3" />
+                <span>{metrics.length - visibleMarkersCount} markers locked</span>
+              </div>
+            </motion.div>
+          )}
         </div>
       </motion.div>
 
