@@ -321,7 +321,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
               return (
                 <motion.div
                   key={metric.label}
-                  className={`p-3 md:p-4 rounded-xl md:rounded-2xl border transition-all ${
+                  className={`p-3 md:p-4 rounded-xl md:rounded-2xl border transition-all min-h-[180px] md:min-h-[200px] flex flex-col ${
                     isVisible
                       ? 'bg-white/5 border-white/5 hover:border-[#00f0ff]/30 group'
                       : 'bg-white/[0.02] border-white/[0.03] relative overflow-hidden'

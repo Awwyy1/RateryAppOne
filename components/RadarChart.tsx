@@ -47,24 +47,15 @@ const RadarChart: React.FC<Props> = ({ metrics }) => {
     const ctx = chartRef.current.getContext('2d');
     if (!ctx) return;
 
-    // Create labels - show "???" for locked markers
-    const labels = metrics.map((m, index) =>
-      index < visibleMarkersCount ? m.label.toUpperCase() : '???'
-    );
+    // Only use visible metrics based on plan
+    const visibleMetrics = metrics.slice(0, visibleMarkersCount);
 
-    // Create data - show 0 for locked markers (or a small value to show the outline)
-    const visibleData = metrics.map((m, index) =>
-      index < visibleMarkersCount ? m.value : 50
-    );
+    // Create labels only for visible markers
+    const labels = visibleMetrics.map(m => m.label.toUpperCase());
 
-    const benchmarkData = metrics.map((m, index) =>
-      index < visibleMarkersCount ? m.benchmark : 50
-    );
-
-    // Point colors - cyan for visible, gray for locked
-    const pointColors = metrics.map((_, index) =>
-      index < visibleMarkersCount ? '#00f0ff' : 'rgba(255,255,255,0.1)'
-    );
+    // Create data only for visible markers
+    const visibleData = visibleMetrics.map(m => m.value);
+    const benchmarkData = visibleMetrics.map(m => m.benchmark);
 
     const config: ChartConfiguration<'radar'> = {
       type: 'radar',
@@ -77,11 +68,11 @@ const RadarChart: React.FC<Props> = ({ metrics }) => {
             backgroundColor: 'rgba(0, 240, 255, 0.15)',
             borderColor: '#00f0ff',
             borderWidth: 2,
-            pointBackgroundColor: pointColors,
+            pointBackgroundColor: '#00f0ff',
             pointBorderColor: '#050505',
             pointBorderWidth: 2,
-            pointRadius: metrics.map((_, index) => index < visibleMarkersCount ? 4 : 2),
-            pointHoverRadius: metrics.map((_, index) => index < visibleMarkersCount ? 6 : 2),
+            pointRadius: 4,
+            pointHoverRadius: 6,
           },
           {
             label: 'BASELINE',
@@ -102,10 +93,7 @@ const RadarChart: React.FC<Props> = ({ metrics }) => {
             angleLines: { color: 'rgba(255,255,255,0.05)' },
             grid: { color: 'rgba(255,255,255,0.05)' },
             pointLabels: {
-              color: (context) => {
-                const index = context.index;
-                return index < visibleMarkersCount ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.15)';
-              },
+              color: 'rgba(255,255,255,0.4)',
               font: { size: 9, family: 'JetBrains Mono', weight: 'bold' },
               padding: 15
             },
@@ -121,19 +109,7 @@ const RadarChart: React.FC<Props> = ({ metrics }) => {
             titleFont: { family: 'JetBrains Mono' },
             bodyFont: { family: 'JetBrains Mono' },
             borderColor: 'rgba(255,255,255,0.1)',
-            borderWidth: 1,
-            filter: (tooltipItem) => {
-              // Hide tooltip for locked markers
-              return tooltipItem.dataIndex < visibleMarkersCount;
-            },
-            callbacks: {
-              label: (context) => {
-                if (context.dataIndex >= visibleMarkersCount) {
-                  return 'Upgrade to unlock';
-                }
-                return `${context.dataset.label}: ${context.raw}`;
-              }
-            }
+            borderWidth: 1
           }
         }
       }
