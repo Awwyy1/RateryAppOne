@@ -551,7 +551,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
             <button
               onClick={downloadCard}
               disabled={isDownloading}
-              className="mt-6 px-8 py-4 bg-[#00f0ff] text-black font-black rounded-2xl flex items-center gap-3 hover:bg-white transition-all disabled:opacity-50 text-sm uppercase tracking-widest"
+              className="-mt-16 px-8 py-4 bg-[#00f0ff] text-black font-black rounded-2xl flex items-center gap-3 hover:bg-white transition-all disabled:opacity-50 text-sm uppercase tracking-widest"
             >
               {isDownloading ? (
                 <>
