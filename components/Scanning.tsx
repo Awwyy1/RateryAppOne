@@ -202,8 +202,8 @@ const Scanning: React.FC<Props> = ({ photo, onComplete }) => {
             <p className="text-xs text-white">0.00{Math.floor(Math.random() * 999)}</p>
           </div>
           <div className="space-y-1">
-            <p className="text-[8px] text-white/30 uppercase tracking-widest">Packet_Loss</p>
-            <p className="text-xs text-red-500">0.00%</p>
+            <p className="text-[8px] text-white/30 uppercase tracking-widest">Neural_Sync</p>
+            <p className="text-xs text-green-500">{(95 + Math.random() * 4.9).toFixed(1)}%</p>
           </div>
         </div>
 

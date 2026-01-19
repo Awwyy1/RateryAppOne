@@ -519,26 +519,24 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-md overflow-y-auto"
+          onClick={() => setShowDownloadModal(false)}
+          className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-md flex items-start justify-center overflow-y-auto py-8"
         >
-          {/* Header with Close Button */}
-          <div className="sticky top-0 z-[210] bg-black/80 backdrop-blur-md border-b border-white/10 px-4 py-4">
-            <div className="max-w-lg mx-auto flex items-center justify-between">
-              <h3 className="text-sm font-bold uppercase tracking-widest text-white/60">Download Card</h3>
-              <button
-                onClick={() => setShowDownloadModal(false)}
-                className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-all border border-white/20 text-sm font-bold"
-              >
-                <X className="w-4 h-4" />
-                Close
-              </button>
-            </div>
-          </div>
+          {/* Close button - fixed position, always visible */}
+          <button
+            onClick={() => setShowDownloadModal(false)}
+            className="fixed top-4 right-4 z-[220] p-3 bg-white text-black rounded-full hover:bg-[#00f0ff] transition-all shadow-lg"
+          >
+            <X className="w-6 h-6" />
+          </button>
 
-          {/* Content container */}
-          <div className="w-full flex flex-col items-center py-8 px-4">
-            {/* Card Preview - scaled down for mobile */}
-            <div ref={cardRef} className="transform scale-[0.75] sm:scale-85 md:scale-95 origin-top shrink-0">
+          {/* Content - clicking here doesn't close */}
+          <div
+            className="flex flex-col items-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Card Preview */}
+            <div ref={cardRef} className="transform scale-[0.65] sm:scale-75 md:scale-85 origin-top">
               <NeuralIdentityCard
                 photo={photo}
                 score={overallScore}
@@ -554,7 +552,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
               disabled={isDownloading}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="mt-6 px-8 py-4 bg-[#00f0ff] text-black font-black rounded-2xl flex items-center gap-3 hover:bg-white transition-all disabled:opacity-50 text-sm uppercase tracking-widest shadow-lg shadow-[#00f0ff]/20"
+              className="mt-4 px-8 py-4 bg-[#00f0ff] text-black font-black rounded-2xl flex items-center gap-3 hover:bg-white transition-all disabled:opacity-50 text-sm uppercase tracking-widest shadow-lg shadow-[#00f0ff]/20"
             >
               {isDownloading ? (
                 <>
@@ -573,8 +571,8 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
               )}
             </motion.button>
 
-            <p className="text-white/30 text-xs mt-4 text-center">
-              Save your DNA Card as image
+            <p className="text-white/30 text-xs mt-3 text-center">
+              Tap outside or X to close
             </p>
           </div>
         </motion.div>
