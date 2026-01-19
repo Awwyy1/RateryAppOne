@@ -55,7 +55,7 @@ const Landing: React.FC<Props> = ({ onStart }) => {
         variants={item}
         className="max-w-2xl text-center text-white/40 text-lg md:text-xl font-medium leading-relaxed mb-12 md:mb-16 px-4"
       >
-        Your face sends invisible signals every second. AI decodes them and shows how the world really sees you.
+        You send invisible signals every second. AI decodes them and shows how the world really sees you.
       </motion.p>
 
       {/* Button Container */}

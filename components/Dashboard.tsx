@@ -1,10 +1,10 @@
 
 import React, { useState, useRef } from 'react';
 // Import Variants to correctly type motion configurations and ensure literal types like 'spring' are preserved
-import { motion, Variants } from 'framer-motion';
+import { motion, Variants, AnimatePresence } from 'framer-motion';
 import html2canvas from 'html2canvas';
 import { MOCK_RESULTS, INSIGHTS, MARKERS_BY_PLAN } from '../constants';
-import { AnalysisResult } from '../types';
+import { AnalysisResult, MetricData } from '../types';
 import RadarChart from './RadarChart';
 import NeuralIdentityCard from './NeuralIdentityCard';
 import { getTier, getTierInfo, getNextTier } from '../utils/tiers';
@@ -21,6 +21,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
   const [isDownloading, setIsDownloading] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [selectedMetric, setSelectedMetric] = useState<MetricData | null>(null);
   const reportRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const { currentPlan } = useSubscription();
@@ -314,21 +315,24 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
               </span>
             </div>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 md:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
             {metrics.map((metric, i) => {
               const isVisible = isMarkerVisible(i);
 
               return (
                 <motion.div
                   key={metric.label}
-                  className={`p-3 md:p-4 rounded-xl md:rounded-2xl border transition-all min-h-[180px] md:min-h-[200px] flex flex-col ${
+                  onClick={() => isVisible && setSelectedMetric(metric)}
+                  className={`p-3 md:p-4 rounded-xl md:rounded-2xl border transition-all min-h-[140px] md:min-h-[160px] flex flex-col cursor-pointer ${
                     isVisible
-                      ? 'bg-white/5 border-white/5 hover:border-[#00f0ff]/30 group'
-                      : 'bg-white/[0.02] border-white/[0.03] relative overflow-hidden'
+                      ? 'bg-white/5 border-white/5 hover:border-[#00f0ff]/30 hover:bg-white/[0.08] group'
+                      : 'bg-white/[0.02] border-white/[0.03] relative overflow-hidden cursor-default'
                   }`}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
+                  whileHover={isVisible ? { scale: 1.02 } : {}}
+                  whileTap={isVisible ? { scale: 0.98 } : {}}
                 >
                   {isVisible ? (
                     <>
@@ -347,13 +351,13 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
                           />
                         </div>
                       </div>
-                      <div className="flex justify-between items-center text-[7px] md:text-[8px] text-white/20">
-                        <span>Benchmark: {metric.benchmark}</span>
+                      <div className="flex justify-between items-center text-[7px] md:text-[8px] text-white/20 mt-auto">
+                        <span>vs {metric.benchmark}</span>
                         <span className={metric.value >= metric.benchmark ? 'text-green-500' : 'text-amber-500'}>
                           {metric.value >= metric.benchmark ? '↑' : '↓'} {Math.abs(metric.value - metric.benchmark)}
                         </span>
                       </div>
-                      <p className="text-[8px] md:text-[10px] text-white/30 mt-2 md:mt-3 leading-relaxed line-clamp-3">{metric.description}</p>
+                      <p className="text-[8px] text-[#00f0ff]/60 mt-2 font-medium">Tap for details</p>
                     </>
                   ) : (
                     <>
@@ -369,7 +373,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
                           <div className="h-full w-1/2 bg-white/5" />
                         </div>
                       </div>
-                      <div className="flex items-center justify-center gap-1 text-[8px] text-white/20 mt-2">
+                      <div className="flex items-center justify-center gap-1 text-[8px] text-white/20 mt-auto">
                         <Lock className="w-3 h-3" />
                         <span>Locked</span>
                       </div>
@@ -562,6 +566,85 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
           </div>
         </motion.div>
       )}
+
+      {/* Metric Detail Popup */}
+      <AnimatePresence>
+        {selectedMetric && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] flex items-end md:items-center justify-center bg-black/80 backdrop-blur-sm"
+            onClick={() => setSelectedMetric(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 50 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 50 }}
+              className="relative w-full max-w-md max-h-[85vh] overflow-y-auto bg-[#0a0a0a] border border-white/10 rounded-t-3xl md:rounded-3xl p-6 md:p-8"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <p className="text-[10px] uppercase tracking-widest text-[#00f0ff] font-bold mb-2">DNA Marker</p>
+                  <h2 className="text-2xl md:text-3xl font-black tracking-tight">
+                    {selectedMetric.label}
+                  </h2>
+                </div>
+                <button
+                  onClick={() => setSelectedMetric(null)}
+                  className="p-2 text-white/40 hover:text-white transition-colors -mr-2 -mt-1"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              {/* Score Display */}
+              <div className="flex items-end gap-3 mb-6">
+                <span className="text-5xl font-black text-[#00f0ff]">{selectedMetric.value}</span>
+                <span className="text-xl text-white/30 mb-2">/ 100</span>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="h-2 bg-white/5 rounded-full overflow-hidden mb-6">
+                <motion.div
+                  className="h-full bg-gradient-to-r from-[#00f0ff] to-[#00f0ff]/50"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${selectedMetric.value}%` }}
+                  transition={{ duration: 0.5 }}
+                />
+              </div>
+
+              {/* Benchmark Comparison */}
+              <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl mb-6">
+                <div>
+                  <p className="text-[10px] uppercase tracking-widest text-white/40 font-bold">Benchmark</p>
+                  <p className="text-lg font-bold">{selectedMetric.benchmark}</p>
+                </div>
+                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${
+                  selectedMetric.value >= selectedMetric.benchmark
+                    ? 'bg-green-500/10 text-green-500'
+                    : 'bg-amber-500/10 text-amber-500'
+                }`}>
+                  <TrendingUp className={`w-4 h-4 ${selectedMetric.value < selectedMetric.benchmark ? 'rotate-180' : ''}`} />
+                  <span className="font-bold text-sm">
+                    {selectedMetric.value >= selectedMetric.benchmark ? '+' : ''}{selectedMetric.value - selectedMetric.benchmark}
+                  </span>
+                </div>
+              </div>
+
+              {/* Description */}
+              <div>
+                <p className="text-[10px] uppercase tracking-widest text-white/40 font-bold mb-3">Analysis</p>
+                <p className="text-white/70 leading-relaxed">
+                  {selectedMetric.description}
+                </p>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };
