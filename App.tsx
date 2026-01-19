@@ -292,7 +292,7 @@ const AppContent: React.FC = () => {
           <span className="text-[8px] uppercase tracking-widest text-white/20 vertical-text mt-4">Active</span>
         </div>
         <div className="text-[9px] uppercase tracking-[0.4em] text-white/20 font-mono">
-          ©2025 Ratery Intelligence Corp // All Rights Reserved
+          ©2025 Ratery
         </div>
       </footer>
 

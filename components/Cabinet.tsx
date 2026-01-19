@@ -658,26 +658,22 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut,
             </div>
 
             {/* About Section */}
-            <div className="lg:col-span-2 glass p-8 rounded-[2rem] border border-white/5">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-[#00f0ff]/10 flex items-center justify-center">
-                  <Dna className="w-5 h-5 text-[#00f0ff]" />
+            <div className="glass p-6 rounded-[2rem] border border-white/5">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 rounded-lg bg-[#00f0ff]/10 flex items-center justify-center">
+                  <Dna className="w-4 h-4 text-[#00f0ff]" />
                 </div>
-                <h3 className="text-lg font-black uppercase tracking-widest">About Ratery</h3>
+                <h3 className="text-sm font-black uppercase tracking-widest">About</h3>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="p-4 bg-white/5 rounded-xl border border-white/5 group hover:border-[#00f0ff]/30 transition-all">
-                  <p className="text-[10px] text-white/40 uppercase tracking-widest mb-2">Version</p>
-                  <p className="font-bold group-hover:text-[#00f0ff] transition-all">1.0.0</p>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
+                  <span className="text-[10px] text-white/40 uppercase tracking-widest">Version</span>
+                  <span className="font-bold text-sm">1.0.0</span>
                 </div>
-                <div className="p-4 bg-white/5 rounded-xl border border-white/5 group hover:border-[#00f0ff]/30 transition-all">
-                  <p className="text-[10px] text-white/40 uppercase tracking-widest mb-2">AI Model</p>
-                  <p className="font-bold group-hover:text-[#00f0ff] transition-all">Claude Vision</p>
-                </div>
-                <div className="p-4 bg-white/5 rounded-xl border border-white/5 group hover:border-[#00f0ff]/30 transition-all">
-                  <p className="text-[10px] text-white/40 uppercase tracking-widest mb-2">Built By</p>
-                  <p className="font-bold group-hover:text-[#00f0ff] transition-all">Ratery Intelligence</p>
+                <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
+                  <span className="text-[10px] text-white/40 uppercase tracking-widest">AI</span>
+                  <span className="font-bold text-sm">Claude Vision</span>
                 </div>
               </div>
             </div>
