@@ -520,23 +520,24 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={() => setShowDownloadModal(false)}
-          className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-md flex items-start justify-center overflow-y-auto py-8"
+          className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-md flex items-start justify-center overflow-y-auto py-4"
         >
-          {/* Close button - fixed position, always visible */}
-          <button
-            onClick={() => setShowDownloadModal(false)}
-            className="fixed top-4 right-4 z-[220] p-3 bg-white text-black rounded-full hover:bg-[#00f0ff] transition-all shadow-lg"
-          >
-            <X className="w-6 h-6" />
-          </button>
-
-          {/* Content - clicking here doesn't close */}
+          {/* Content */}
           <div
-            className="flex flex-col items-center"
+            className="flex flex-col items-center w-full max-w-lg px-4"
             onClick={(e) => e.stopPropagation()}
           >
+            {/* Back Button - always visible at top */}
+            <button
+              onClick={() => setShowDownloadModal(false)}
+              className="self-start mb-4 flex items-center gap-2 px-4 py-3 bg-white text-black font-bold rounded-xl hover:bg-[#00f0ff] transition-all"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              Back to Results
+            </button>
+
             {/* Card Preview */}
-            <div ref={cardRef} className="transform scale-[0.65] sm:scale-75 md:scale-85 origin-top">
+            <div ref={cardRef} className="transform scale-[0.6] sm:scale-70 md:scale-80 origin-top">
               <NeuralIdentityCard
                 photo={photo}
                 score={overallScore}
@@ -570,10 +571,6 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
                 </>
               )}
             </motion.button>
-
-            <p className="text-white/30 text-xs mt-3 text-center">
-              Tap outside or X to close
-            </p>
           </div>
         </motion.div>
       )}
