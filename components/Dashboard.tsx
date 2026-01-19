@@ -104,7 +104,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `ratery-dna-card-${Date.now()}.png`;
+          a.download = `RATERY-DNA-CARD.png`;
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
@@ -551,7 +551,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
             <button
               onClick={downloadCard}
               disabled={isDownloading}
-              className="-mt-16 px-8 py-4 bg-[#00f0ff] text-black font-black rounded-2xl flex items-center gap-3 hover:bg-white transition-all disabled:opacity-50 text-sm uppercase tracking-widest"
+              className="-mt-40 px-8 py-4 bg-[#00f0ff] text-black font-black rounded-2xl flex items-center gap-3 hover:bg-white transition-all disabled:opacity-50 text-sm uppercase tracking-widest"
             >
               {isDownloading ? (
                 <>
