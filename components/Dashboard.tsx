@@ -537,7 +537,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
             </button>
 
             {/* Card Preview */}
-            <div ref={cardRef} className="transform scale-[0.6] sm:scale-70 md:scale-80 origin-top">
+            <div ref={cardRef} className="transform scale-[0.6] sm:scale-[0.7] md:scale-[0.8] origin-top">
               <NeuralIdentityCard
                 photo={photo}
                 score={overallScore}
