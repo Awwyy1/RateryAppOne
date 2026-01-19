@@ -78,21 +78,18 @@ const PhotoUpload: React.FC<Props> = ({ onPhotoSelected, onCancel }) => {
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
 
-        // Wait for video to be ready
-        videoRef.current.onloadedmetadata = () => {
-          if (videoRef.current) {
-            videoRef.current.play()
-              .then(() => {
-                setIsCameraReady(true);
-                setIsSwitching(false);
-              })
-              .catch((err) => {
-                console.error('Video play error:', err);
-                setCameraError('Unable to start video stream.');
-                setIsSwitching(false);
-              });
-          }
-        };
+        // Try to play immediately
+        try {
+          await videoRef.current.play();
+        } catch (playErr) {
+          console.log('Autoplay blocked, user interaction needed');
+        }
+
+        // Set ready after short delay - don't wait for events that may not fire
+        setTimeout(() => {
+          setIsCameraReady(true);
+          setIsSwitching(false);
+        }, 500);
       }
 
       setShowCamera(true);
@@ -111,23 +108,16 @@ const PhotoUpload: React.FC<Props> = ({ onPhotoSelected, onCancel }) => {
   };
 
   const capturePhoto = () => {
-    if (!isCameraReady) {
-      setCameraError('Camera is not ready yet. Please wait.');
-      return;
-    }
-
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
 
-      // Check if video has dimensions
-      if (video.videoWidth === 0 || video.videoHeight === 0) {
-        setCameraError('Camera feed not ready. Please wait a moment and try again.');
-        return;
-      }
+      // Use video dimensions, fallback to defaults
+      const width = video.videoWidth || 640;
+      const height = video.videoHeight || 480;
 
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+      canvas.width = width;
+      canvas.height = height;
 
       const ctx = canvas.getContext('2d');
       if (ctx) {
@@ -136,7 +126,7 @@ const PhotoUpload: React.FC<Props> = ({ onPhotoSelected, onCancel }) => {
           ctx.translate(canvas.width, 0);
           ctx.scale(-1, 1);
         }
-        ctx.drawImage(video, 0, 0);
+        ctx.drawImage(video, 0, 0, width, height);
 
         const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
         stopCamera();
@@ -200,20 +190,6 @@ const PhotoUpload: React.FC<Props> = ({ onPhotoSelected, onCancel }) => {
             />
             <canvas ref={canvasRef} className="hidden" />
 
-            {/* Loading overlay */}
-            {!isCameraReady && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/80">
-                <div className="flex flex-col items-center gap-3">
-                  <motion.div
-                    className="w-8 h-8 border-2 border-[#00f0ff]/30 border-t-[#00f0ff] rounded-full"
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                  />
-                  <span className="text-xs text-white/60">Initializing camera...</span>
-                </div>
-              </div>
-            )}
-
             {/* Camera Controls */}
             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4">
               <button
@@ -230,8 +206,7 @@ const PhotoUpload: React.FC<Props> = ({ onPhotoSelected, onCancel }) => {
 
               <button
                 onClick={capturePhoto}
-                disabled={!isCameraReady}
-                className="w-16 h-16 bg-white rounded-full flex items-center justify-center hover:bg-[#00f0ff] transition-all shadow-lg disabled:opacity-50 disabled:hover:bg-white"
+                className="w-16 h-16 bg-white rounded-full flex items-center justify-center hover:bg-[#00f0ff] transition-all shadow-lg"
               >
                 <div className="w-12 h-12 border-4 border-black/20 rounded-full" />
               </button>
@@ -247,8 +222,8 @@ const PhotoUpload: React.FC<Props> = ({ onPhotoSelected, onCancel }) => {
             {/* HUD Overlay */}
             <div className="absolute inset-0 pointer-events-none">
               <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 bg-black/50 backdrop-blur-md rounded-lg">
-                <span className={`w-2 h-2 rounded-full ${isCameraReady ? 'bg-red-500 animate-pulse' : 'bg-yellow-500'}`} />
-                <span className="text-[10px] font-mono uppercase">{isCameraReady ? 'Live' : 'Loading'}</span>
+                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                <span className="text-[10px] font-mono uppercase">Live</span>
               </div>
 
               {/* Face guide overlay */}
