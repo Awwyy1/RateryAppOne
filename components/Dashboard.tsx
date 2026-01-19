@@ -517,15 +517,15 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
       {showDownloadModal && (
         <div
           onClick={() => setShowDownloadModal(false)}
-          className="fixed inset-0 z-[200] bg-black/95 flex flex-col items-center justify-center px-4"
+          className="fixed inset-0 z-[200] bg-black/95 flex items-center justify-center overflow-x-hidden overflow-y-auto"
         >
-          {/* Close button */}
+          {/* Close button - centered at top */}
           <button
             onClick={(e) => {
               e.stopPropagation();
               setShowDownloadModal(false);
             }}
-            className="absolute top-4 right-4 px-4 py-2 bg-white text-black font-bold rounded-xl flex items-center gap-2"
+            className="absolute top-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-white text-black font-bold rounded-xl flex items-center gap-2 z-10"
           >
             <X className="w-5 h-5" />
             Close
@@ -533,11 +533,11 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
 
           {/* Card + Button grouped together */}
           <div
-            className="flex flex-col items-center"
+            className="flex flex-col items-center justify-center w-full max-w-full px-4"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Card Preview - no scale transform */}
-            <div ref={cardRef} className="max-w-[360px]">
+            {/* Card Preview - responsive width */}
+            <div ref={cardRef} className="max-w-[90vw] sm:max-w-[360px]">
               <NeuralIdentityCard
                 photo={photo}
                 score={overallScore}
@@ -547,11 +547,11 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
               />
             </div>
 
-            {/* Download Button - directly under card */}
+            {/* Download Button - centered under card */}
             <button
               onClick={downloadCard}
               disabled={isDownloading}
-              className="mt-4 px-8 py-4 bg-[#00f0ff] text-black font-black rounded-2xl flex items-center gap-3 hover:bg-white transition-all disabled:opacity-50 text-sm uppercase tracking-widest"
+              className="mt-4 w-[280px] max-w-[90vw] py-4 bg-[#00f0ff] text-black font-black rounded-2xl flex items-center justify-center gap-3 hover:bg-white transition-all disabled:opacity-50 text-sm uppercase tracking-widest"
             >
               {isDownloading ? (
                 <>
