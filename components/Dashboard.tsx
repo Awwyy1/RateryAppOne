@@ -517,27 +517,27 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
       {showDownloadModal && (
         <div
           onClick={() => setShowDownloadModal(false)}
-          className="fixed inset-0 z-[200] bg-black/95 flex flex-col items-center justify-start overflow-y-auto pt-20 pb-8 px-4"
+          className="fixed inset-0 z-[200] bg-black/95 flex flex-col items-center justify-center px-4"
         >
-          {/* Back button at top */}
+          {/* Close button */}
           <button
             onClick={(e) => {
               e.stopPropagation();
               setShowDownloadModal(false);
             }}
-            className="mb-6 px-6 py-3 bg-white text-black font-bold rounded-xl flex items-center gap-2"
+            className="absolute top-4 right-4 px-4 py-2 bg-white text-black font-bold rounded-xl flex items-center gap-2"
           >
             <X className="w-5 h-5" />
             Close
           </button>
 
-          {/* Content */}
+          {/* Card + Button grouped together */}
           <div
             className="flex flex-col items-center"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Card Preview */}
-            <div ref={cardRef} style={{ transform: 'scale(0.7)', transformOrigin: 'top center' }}>
+            {/* Card Preview - no scale transform */}
+            <div ref={cardRef} className="max-w-[360px]">
               <NeuralIdentityCard
                 photo={photo}
                 score={overallScore}
@@ -547,11 +547,11 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
               />
             </div>
 
-            {/* Download Button */}
+            {/* Download Button - directly under card */}
             <button
               onClick={downloadCard}
               disabled={isDownloading}
-              className="-mt-40 px-8 py-4 bg-[#00f0ff] text-black font-black rounded-2xl flex items-center gap-3 hover:bg-white transition-all disabled:opacity-50 text-sm uppercase tracking-widest"
+              className="mt-4 px-8 py-4 bg-[#00f0ff] text-black font-black rounded-2xl flex items-center gap-3 hover:bg-white transition-all disabled:opacity-50 text-sm uppercase tracking-widest"
             >
               {isDownloading ? (
                 <>
