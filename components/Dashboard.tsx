@@ -8,7 +8,7 @@ import { AnalysisResult, MetricData } from '../types';
 import RadarChart from './RadarChart';
 import NeuralIdentityCard from './NeuralIdentityCard';
 import { getTier, getTierInfo, getNextTier } from '../utils/tiers';
-import { Download, Share2, Target, Zap, Shield, Cpu, Check, X, Dna, TrendingUp, Lock, Crown } from 'lucide-react';
+import { Download, Share2, Target, Zap, Shield, Cpu, Check, X, Dna, TrendingUp, Lock, Crown, ArrowLeft } from 'lucide-react';
 import { useSubscription } from '../contexts/SubscriptionContext';
 
 interface Props {
