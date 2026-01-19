@@ -122,8 +122,8 @@ const Login: React.FC<Props> = ({ onSuccess }) => {
                 <Shield className="w-4 h-4 text-[#00f0ff]" />
               </div>
               <div>
-                <p className="text-xs font-bold text-white/80">End-to-End Encryption</p>
-                <p className="text-[10px] text-white/30">AES-256 bit protection</p>
+                <p className="text-xs font-bold text-white/80">Secure Processing</p>
+                <p className="text-[10px] text-white/30">Photos analyzed and discarded</p>
               </div>
             </div>
 
@@ -132,8 +132,8 @@ const Login: React.FC<Props> = ({ onSuccess }) => {
                 <UserCheck className="w-4 h-4 text-[#00f0ff]" />
               </div>
               <div>
-                <p className="text-xs font-bold text-white/80">Session Isolation</p>
-                <p className="text-[10px] text-white/30">Data purged after analysis</p>
+                <p className="text-xs font-bold text-white/80">Local Storage</p>
+                <p className="text-[10px] text-white/30">Your data stays on your device</p>
               </div>
             </div>
           </div>
