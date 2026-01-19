@@ -527,8 +527,8 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
             }}
             className="mb-6 px-6 py-3 bg-white text-black font-bold rounded-xl flex items-center gap-2"
           >
-            <ArrowLeft className="w-5 h-5" />
-            Back to Results
+            <X className="w-5 h-5" />
+            Close
           </button>
 
           {/* Content */}
