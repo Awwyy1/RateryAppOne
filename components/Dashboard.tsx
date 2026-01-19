@@ -515,28 +515,29 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
 
       {/* Download Modal with Card Preview */}
       {showDownloadModal && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+        <div
           onClick={() => setShowDownloadModal(false)}
-          className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-md flex items-start justify-center overflow-y-auto py-8"
+          className="fixed inset-0 z-[200] bg-black/95 flex flex-col items-center justify-start overflow-y-auto pt-20 pb-8 px-4"
         >
-          {/* Close button - fixed position, always visible */}
+          {/* Back button at top */}
           <button
-            onClick={() => setShowDownloadModal(false)}
-            className="fixed top-4 right-4 z-[220] p-3 bg-white text-black rounded-full hover:bg-[#00f0ff] transition-all shadow-lg"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowDownloadModal(false);
+            }}
+            className="mb-6 px-6 py-3 bg-white text-black font-bold rounded-xl flex items-center gap-2"
           >
-            <X className="w-6 h-6" />
+            <ArrowLeft className="w-5 h-5" />
+            Back to Results
           </button>
 
-          {/* Content - clicking here doesn't close */}
+          {/* Content */}
           <div
             className="flex flex-col items-center"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Card Preview */}
-            <div ref={cardRef} className="transform scale-[0.65] sm:scale-75 md:scale-85 origin-top">
+            <div ref={cardRef} style={{ transform: 'scale(0.7)', transformOrigin: 'top center' }}>
               <NeuralIdentityCard
                 photo={photo}
                 score={overallScore}
@@ -547,20 +548,14 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
             </div>
 
             {/* Download Button */}
-            <motion.button
+            <button
               onClick={downloadCard}
               disabled={isDownloading}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="mt-4 px-8 py-4 bg-[#00f0ff] text-black font-black rounded-2xl flex items-center gap-3 hover:bg-white transition-all disabled:opacity-50 text-sm uppercase tracking-widest shadow-lg shadow-[#00f0ff]/20"
+              className="mt-6 px-8 py-4 bg-[#00f0ff] text-black font-black rounded-2xl flex items-center gap-3 hover:bg-white transition-all disabled:opacity-50 text-sm uppercase tracking-widest"
             >
               {isDownloading ? (
                 <>
-                  <motion.div
-                    className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full"
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                  />
+                  <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
                   Generating...
                 </>
               ) : (
@@ -569,13 +564,9 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
                   Download Card
                 </>
               )}
-            </motion.button>
-
-            <p className="text-white/30 text-xs mt-3 text-center">
-              Tap outside or X to close
-            </p>
+            </button>
           </div>
-        </motion.div>
+        </div>
       )}
 
       {/* Metric Detail Popup */}
