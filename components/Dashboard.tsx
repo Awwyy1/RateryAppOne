@@ -167,6 +167,18 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
               </div>
             </div>
 
+            {/* Status/Tier Display */}
+            <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
+              <div>
+                <p className="text-[8px] uppercase tracking-widest text-white/40 font-bold">Status</p>
+                <p className="text-lg font-black" style={{ color: tierInfo.color }}>{tierInfo.name}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-[8px] uppercase tracking-widest text-white/40 font-bold">Match</p>
+                <p className="text-lg font-black text-white">{(overallScore * 10).toFixed(1)}%</p>
+              </div>
+            </div>
+
             <div className="pt-4 border-t border-white/5 space-y-2">
               <button
                 onClick={handleDownload}
@@ -510,19 +522,19 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
           className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-md overflow-y-auto"
           onClick={() => setShowDownloadModal(false)}
         >
+          {/* Fixed Close button - always visible */}
+          <button
+            onClick={() => setShowDownloadModal(false)}
+            className="fixed top-4 right-4 z-[210] p-3 bg-white/10 hover:bg-white/20 rounded-full transition-all border border-white/20"
+          >
+            <X className="w-6 h-6 text-white" />
+          </button>
+
           {/* Content container */}
           <div
-            className="min-h-full w-full flex flex-col items-center py-6 px-4"
+            className="min-h-full w-full flex flex-col items-center py-16 px-4"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Close button - inside content, always visible */}
-            <button
-              onClick={() => setShowDownloadModal(false)}
-              className="self-end mb-4 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-full transition-all border border-white/20 flex items-center gap-2"
-            >
-              <X className="w-5 h-5 text-white" />
-              <span className="text-white text-sm font-bold">Close</span>
-            </button>
 
             {/* Card Preview - scaled down for mobile */}
             <div ref={cardRef} className="transform scale-[0.8] sm:scale-90 md:scale-100 origin-top shrink-0">
@@ -574,14 +586,14 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] flex items-end md:items-center justify-center bg-black/80 backdrop-blur-sm"
+            className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
             onClick={() => setSelectedMetric(null)}
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 50 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 50 }}
-              className="relative w-full max-w-md max-h-[85vh] overflow-y-auto bg-[#0a0a0a] border border-white/10 rounded-t-3xl md:rounded-3xl p-6 md:p-8"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative w-full max-w-md max-h-[80vh] overflow-y-auto bg-[#0a0a0a] border border-white/10 rounded-3xl p-6 md:p-8"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
