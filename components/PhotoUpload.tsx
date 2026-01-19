@@ -1,7 +1,7 @@
 
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, Camera, FileText, AlertCircle, X, FlipHorizontal, ArrowLeft } from 'lucide-react';
+import { Upload, Camera, FileText, AlertCircle, X, FlipHorizontal, ArrowLeft, RefreshCw } from 'lucide-react';
 
 interface Props {
   onPhotoSelected: (img: string) => void;
@@ -13,6 +13,8 @@ const PhotoUpload: React.FC<Props> = ({ onPhotoSelected, onCancel }) => {
   const [showCamera, setShowCamera] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
+  const [isCameraReady, setIsCameraReady] = useState(false);
+  const [isSwitching, setIsSwitching] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -42,47 +44,87 @@ const PhotoUpload: React.FC<Props> = ({ onPhotoSelected, onCancel }) => {
     }
   };
 
-  const startCamera = async () => {
-    setCameraError(null);
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: facingMode,
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        }
-      });
-
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-      }
-      setShowCamera(true);
-    } catch (err) {
-      console.error('Camera error:', err);
-      setCameraError('Unable to access camera. Please check permissions or use file upload instead.');
-    }
-  };
-
   const stopCamera = useCallback(() => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
     }
     setShowCamera(false);
+    setIsCameraReady(false);
+  }, []);
+
+  const startCamera = useCallback(async (mode: 'user' | 'environment') => {
+    setCameraError(null);
+    setIsCameraReady(false);
+
+    // Stop existing stream first
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: { ideal: mode },
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        },
+        audio: false
+      });
+
+      streamRef.current = stream;
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+
+        // Wait for video to be ready
+        videoRef.current.onloadedmetadata = () => {
+          if (videoRef.current) {
+            videoRef.current.play()
+              .then(() => {
+                setIsCameraReady(true);
+                setIsSwitching(false);
+              })
+              .catch((err) => {
+                console.error('Video play error:', err);
+                setCameraError('Unable to start video stream.');
+                setIsSwitching(false);
+              });
+          }
+        };
+      }
+
+      setShowCamera(true);
+    } catch (err) {
+      console.error('Camera error:', err);
+      setCameraError('Unable to access camera. Please check permissions or use file upload instead.');
+      setIsSwitching(false);
+    }
   }, []);
 
   const switchCamera = async () => {
-    stopCamera();
-    setFacingMode(prev => prev === 'user' ? 'environment' : 'user');
-    setTimeout(() => startCamera(), 100);
+    setIsSwitching(true);
+    const newMode = facingMode === 'user' ? 'environment' : 'user';
+    setFacingMode(newMode);
+    await startCamera(newMode);
   };
 
   const capturePhoto = () => {
+    if (!isCameraReady) {
+      setCameraError('Camera is not ready yet. Please wait.');
+      return;
+    }
+
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
+
+      // Check if video has dimensions
+      if (video.videoWidth === 0 || video.videoHeight === 0) {
+        setCameraError('Camera feed not ready. Please wait a moment and try again.');
+        return;
+      }
 
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
@@ -101,6 +143,19 @@ const PhotoUpload: React.FC<Props> = ({ onPhotoSelected, onCancel }) => {
         onPhotoSelected(dataUrl);
       }
     }
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
+
+  const handleStartCamera = () => {
+    startCamera(facingMode);
   };
 
   return (
@@ -145,18 +200,38 @@ const PhotoUpload: React.FC<Props> = ({ onPhotoSelected, onCancel }) => {
             />
             <canvas ref={canvasRef} className="hidden" />
 
+            {/* Loading overlay */}
+            {!isCameraReady && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/80">
+                <div className="flex flex-col items-center gap-3">
+                  <motion.div
+                    className="w-8 h-8 border-2 border-[#00f0ff]/30 border-t-[#00f0ff] rounded-full"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                  />
+                  <span className="text-xs text-white/60">Initializing camera...</span>
+                </div>
+              </div>
+            )}
+
             {/* Camera Controls */}
             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4">
               <button
                 onClick={switchCamera}
-                className="p-3 bg-white/10 backdrop-blur-md rounded-full border border-white/20 hover:bg-white/20 transition-all"
+                disabled={isSwitching}
+                className="p-3 bg-white/10 backdrop-blur-md rounded-full border border-white/20 hover:bg-white/20 transition-all disabled:opacity-50"
               >
-                <FlipHorizontal className="w-5 h-5" />
+                {isSwitching ? (
+                  <RefreshCw className="w-5 h-5 animate-spin" />
+                ) : (
+                  <FlipHorizontal className="w-5 h-5" />
+                )}
               </button>
 
               <button
                 onClick={capturePhoto}
-                className="w-16 h-16 bg-white rounded-full flex items-center justify-center hover:bg-[#00f0ff] transition-all shadow-lg"
+                disabled={!isCameraReady}
+                className="w-16 h-16 bg-white rounded-full flex items-center justify-center hover:bg-[#00f0ff] transition-all shadow-lg disabled:opacity-50 disabled:hover:bg-white"
               >
                 <div className="w-12 h-12 border-4 border-black/20 rounded-full" />
               </button>
@@ -172,8 +247,8 @@ const PhotoUpload: React.FC<Props> = ({ onPhotoSelected, onCancel }) => {
             {/* HUD Overlay */}
             <div className="absolute inset-0 pointer-events-none">
               <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 bg-black/50 backdrop-blur-md rounded-lg">
-                <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                <span className="text-[10px] font-mono uppercase">Live</span>
+                <span className={`w-2 h-2 rounded-full ${isCameraReady ? 'bg-red-500 animate-pulse' : 'bg-yellow-500'}`} />
+                <span className="text-[10px] font-mono uppercase">{isCameraReady ? 'Live' : 'Loading'}</span>
               </div>
 
               {/* Face guide overlay */}
@@ -207,7 +282,7 @@ const PhotoUpload: React.FC<Props> = ({ onPhotoSelected, onCancel }) => {
 
             <div className="flex gap-4" onClick={(e) => e.stopPropagation()}>
               <button
-                onClick={(e) => { e.stopPropagation(); startCamera(); }}
+                onClick={(e) => { e.stopPropagation(); handleStartCamera(); }}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-xs font-semibold hover:bg-white/10 transition-all"
               >
                 <Camera className="w-4 h-4" /> Use Camera
