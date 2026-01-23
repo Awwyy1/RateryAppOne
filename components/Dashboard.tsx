@@ -519,23 +519,22 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
     onClick={() => setShowDownloadModal(false)}
     className="fixed inset-0 z-[200] bg-black/95 overflow-y-auto"
   >
-    {/* Центрирующий контейнер с отступами */}
-    <div className="min-h-full flex flex-col items-center justify-center py-8 px-4">
-      {/* Контейнер для карточки с кнопкой */}
-      <div
-        className="relative"
-        onClick={(e) => e.stopPropagation()}
+    {/* Sticky Close button - всегда видна */}
+    <div className="sticky top-0 z-10 flex justify-end p-4 pt-20">
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setShowDownloadModal(false);
+        }}
+        className="w-12 h-12 bg-white text-black font-bold rounded-full shadow-2xl hover:scale-110 transition-transform flex items-center justify-center"
       >
-        {/* Close button - над карточкой справа */}
-        <div className="flex justify-end mb-3">
-          <button
-            onClick={() => setShowDownloadModal(false)}
-            className="w-10 h-10 bg-white/10 hover:bg-white text-white hover:text-black font-bold rounded-full transition-all flex items-center justify-center backdrop-blur-sm border border-white/20"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+        <X className="w-6 h-6" />
+      </button>
+    </div>
 
+    {/* Контейнер для карточки */}
+    <div className="flex flex-col items-center px-4 pb-8 -mt-8">
+      <div onClick={(e) => e.stopPropagation()}>
         {/* Card Preview */}
         <div
           ref={cardRef}
