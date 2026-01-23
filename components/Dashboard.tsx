@@ -514,64 +514,60 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
       )}
 
       {/* Download Modal with Card Preview */}
-      {showDownloadModal && (
-        <div
-          onClick={() => setShowDownloadModal(false)}
-          className="fixed inset-0 z-[200] bg-black/95 flex items-center justify-center overflow-hidden p-4"
-        >
-          {/* Close button - fixed position top right */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowDownloadModal(false);
-            }}
-            className="absolute top-24 right-5 px-4 py-2 bg-white text-black font-bold rounded-xl flex items-center gap-2 z-50 shadow-lg"
-          >
-            <X className="w-5 h-5" />
-            Close
-          </button>
+{showDownloadModal && (
+  <div
+    onClick={() => setShowDownloadModal(false)}
+    className="fixed inset-0 z-[200] bg-black/95 flex items-center justify-center overflow-hidden p-4"
+  >
+    {/* Card + Button + Close grouped together */}
+    <div
+      className="relative flex flex-col items-center gap-4"
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* Close button - positioned relative to card */}
+      <button
+        onClick={() => setShowDownloadModal(false)}
+        className="absolute -top-12 right-0 md:top-0 md:-right-16 p-3 bg-white/10 hover:bg-white text-white hover:text-black font-bold rounded-full transition-all z-10 backdrop-blur-sm border border-white/20"
+      >
+        <X className="w-5 h-5" />
+      </button>
 
-          {/* Card + Button grouped together */}
-          <div
-            className="flex flex-col items-center gap-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Card Preview - responsive sizing without transform */}
-            <div
-              ref={cardRef}
-              className="w-full"
-              style={{ maxWidth: 'min(90vw, 400px)' }}
-            >
-              <NeuralIdentityCard
-                photo={photo}
-                score={overallScore}
-                metrics={metrics}
-                insights={insights}
-                isStatic={true}
-              />
-            </div>
+      {/* Card Preview */}
+      <div
+        ref={cardRef}
+        className="w-full"
+        style={{ maxWidth: 'min(90vw, 400px)' }}
+      >
+        <NeuralIdentityCard
+          photo={photo}
+          score={overallScore}
+          metrics={metrics}
+          insights={insights}
+          isStatic={true}
+        />
+      </div>
 
-            {/* Download Button - matches card width */}
-            <button
-              onClick={downloadCard}
-              disabled={isDownloading}
-              className="w-full max-w-[320px] py-4 bg-[#00f0ff] text-black font-black rounded-2xl flex items-center justify-center gap-3 hover:bg-white transition-all disabled:opacity-50 text-sm uppercase tracking-widest"
-            >
-              {isDownloading ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Download className="w-5 h-5" />
-                  Download Card
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Download Button */}
+      <button
+        onClick={downloadCard}
+        disabled={isDownloading}
+        className="w-full max-w-[400px] py-4 bg-[#00f0ff] text-black font-black rounded-2xl flex items-center justify-center gap-3 hover:bg-white transition-all disabled:opacity-50 text-sm uppercase tracking-widest"
+      >
+        {isDownloading ? (
+          <>
+            <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+            Generating...
+          </>
+        ) : (
+          <>
+            <Download className="w-5 h-5" />
+            Download Card
+          </>
+        )}
+      </button>
+    </div>
+  </div>
+)}
 
       {/* Metric Detail Popup */}
       <AnimatePresence>
