@@ -519,19 +519,22 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
     onClick={() => setShowDownloadModal(false)}
     className="fixed inset-0 z-[200] bg-black/95 flex items-center justify-center overflow-hidden p-4"
   >
-    {/* Card + Button + Close grouped together */}
+    {/* Close button - FIXED to viewport, always visible */}
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        setShowDownloadModal(false);
+      }}
+      className="fixed top-4 right-4 md:top-8 md:right-8 p-3 bg-white text-black font-bold rounded-full z-[210] shadow-xl hover:scale-110 transition-transform"
+    >
+      <X className="w-6 h-6" />
+    </button>
+
+    {/* Card + Download Button */}
     <div
-      className="relative flex flex-col items-center gap-4"
+      className="flex flex-col items-center gap-4"
       onClick={(e) => e.stopPropagation()}
     >
-      {/* Close button - positioned relative to card */}
-      <button
-        onClick={() => setShowDownloadModal(false)}
-        className="absolute -top-12 right-0 md:top-0 md:-right-16 p-3 bg-white/10 hover:bg-white text-white hover:text-black font-bold rounded-full transition-all z-10 backdrop-blur-sm border border-white/20"
-      >
-        <X className="w-5 h-5" />
-      </button>
-
       {/* Card Preview */}
       <div
         ref={cardRef}
