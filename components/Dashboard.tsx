@@ -525,7 +525,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
               e.stopPropagation();
               setShowDownloadModal(false);
             }}
-            className="absolute top-5 right-5 px-4 py-2 bg-white text-black font-bold rounded-xl flex items-center gap-2 z-50 shadow-lg"
+            className="absolute top-24 right-5 px-4 py-2 bg-white text-black font-bold rounded-xl flex items-center gap-2 z-50 shadow-lg"
           >
             <X className="w-5 h-5" />
             Close
