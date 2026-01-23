@@ -517,29 +517,25 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
 {showDownloadModal && (
   <div
     onClick={() => setShowDownloadModal(false)}
-    className="fixed inset-0 z-[200] bg-black/95 flex items-center justify-center overflow-hidden p-4"
+    className="fixed inset-0 z-[200] bg-black flex items-center justify-center p-4 pt-24"
   >
-    {/* Close button - FIXED to viewport, always visible */}
-    <button
-      onClick={(e) => {
-        e.stopPropagation();
-        setShowDownloadModal(false);
-      }}
-      className="fixed top-4 right-4 md:top-8 md:right-8 p-3 bg-white text-black font-bold rounded-full z-[210] shadow-xl hover:scale-110 transition-transform"
-    >
-      <X className="w-6 h-6" />
-    </button>
-
-    {/* Card + Download Button */}
+    {/* Контейнер для карточки с кнопкой */}
     <div
-      className="flex flex-col items-center gap-4"
+      className="relative"
       onClick={(e) => e.stopPropagation()}
     >
+      {/* Close button - привязана к контейнеру */}
+      <button
+        onClick={() => setShowDownloadModal(false)}
+        className="absolute -top-3 -right-3 w-10 h-10 bg-white text-black font-bold rounded-full z-10 shadow-xl hover:scale-110 transition-transform flex items-center justify-center"
+      >
+        <X className="w-5 h-5" />
+      </button>
+
       {/* Card Preview */}
       <div
         ref={cardRef}
-        className="w-full"
-        style={{ maxWidth: 'min(90vw, 400px)' }}
+        style={{ width: 'min(90vw, 400px)' }}
       >
         <NeuralIdentityCard
           photo={photo}
@@ -554,7 +550,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
       <button
         onClick={downloadCard}
         disabled={isDownloading}
-        className="w-full max-w-[400px] py-4 bg-[#00f0ff] text-black font-black rounded-2xl flex items-center justify-center gap-3 hover:bg-white transition-all disabled:opacity-50 text-sm uppercase tracking-widest"
+        className="w-full mt-4 py-4 bg-[#00f0ff] text-black font-black rounded-2xl flex items-center justify-center gap-3 hover:bg-white transition-all disabled:opacity-50 text-sm uppercase tracking-widest"
       >
         {isDownloading ? (
           <>
