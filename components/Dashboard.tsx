@@ -517,53 +517,58 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
 {showDownloadModal && (
   <div
     onClick={() => setShowDownloadModal(false)}
-    className="fixed inset-0 z-[200] bg-black flex items-center justify-center p-4 pt-24"
+    className="fixed inset-0 z-[200] bg-black/95 overflow-y-auto"
   >
-    {/* Контейнер для карточки с кнопкой */}
-    <div
-      className="relative"
-      onClick={(e) => e.stopPropagation()}
-    >
-      {/* Close button - привязана к контейнеру */}
-      <button
-        onClick={() => setShowDownloadModal(false)}
-        className="absolute -top-3 -right-3 w-10 h-10 bg-white text-black font-bold rounded-full z-10 shadow-xl hover:scale-110 transition-transform flex items-center justify-center"
-      >
-        <X className="w-5 h-5" />
-      </button>
-
-      {/* Card Preview */}
+    {/* Центрирующий контейнер с отступами */}
+    <div className="min-h-full flex flex-col items-center justify-center py-8 px-4">
+      {/* Контейнер для карточки с кнопкой */}
       <div
-        ref={cardRef}
-        style={{ width: 'min(90vw, 400px)' }}
+        className="relative"
+        onClick={(e) => e.stopPropagation()}
       >
-        <NeuralIdentityCard
-          photo={photo}
-          score={overallScore}
-          metrics={metrics}
-          insights={insights}
-          isStatic={true}
-        />
-      </div>
+        {/* Close button - над карточкой справа */}
+        <div className="flex justify-end mb-3">
+          <button
+            onClick={() => setShowDownloadModal(false)}
+            className="w-10 h-10 bg-white/10 hover:bg-white text-white hover:text-black font-bold rounded-full transition-all flex items-center justify-center backdrop-blur-sm border border-white/20"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
-      {/* Download Button */}
-      <button
-        onClick={downloadCard}
-        disabled={isDownloading}
-        className="w-full mt-4 py-4 bg-[#00f0ff] text-black font-black rounded-2xl flex items-center justify-center gap-3 hover:bg-white transition-all disabled:opacity-50 text-sm uppercase tracking-widest"
-      >
-        {isDownloading ? (
-          <>
-            <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-            Generating...
-          </>
-        ) : (
-          <>
-            <Download className="w-5 h-5" />
-            Download Card
-          </>
-        )}
-      </button>
+        {/* Card Preview */}
+        <div
+          ref={cardRef}
+          style={{ width: 'min(90vw, 400px)' }}
+        >
+          <NeuralIdentityCard
+            photo={photo}
+            score={overallScore}
+            metrics={metrics}
+            insights={insights}
+            isStatic={true}
+          />
+        </div>
+
+        {/* Download Button */}
+        <button
+          onClick={downloadCard}
+          disabled={isDownloading}
+          className="w-full mt-4 py-4 bg-[#00f0ff] text-black font-black rounded-2xl flex items-center justify-center gap-3 hover:bg-white transition-all disabled:opacity-50 text-sm uppercase tracking-widest"
+        >
+          {isDownloading ? (
+            <>
+              <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+              Generating...
+            </>
+          ) : (
+            <>
+              <Download className="w-5 h-5" />
+              Download Card
+            </>
+          )}
+        </button>
+      </div>
     </div>
   </div>
 )}
