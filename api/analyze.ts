@@ -66,27 +66,52 @@ If the image is NOT a valid human face photo, respond with EXACTLY this JSON:
   "validationMessage": "[Explain why this image cannot be analyzed - e.g., 'This appears to be a landscape photo' or 'No human face detected']"
 }
 
+CRITICAL SCORING GUIDELINES - READ CAREFULLY:
+1. USE THE FULL SCORE RANGE: Scores should range from 25-95, NOT just 65-90
+2. AVERAGE PERSON = 50-55, not 75. Most people should score 45-65.
+3. Only exceptional individuals (models, celebrities, highly attractive people) should score 80+
+4. BE REALISTIC AND DISCRIMINATING - users want honest assessment, not flattery
+
+APPEARANCE FACTORS THAT MUST AFFECT SCORES:
+- GROOMING: Hair condition, facial hair maintenance, skin care, overall cleanliness
+- PRESENTATION: Clothing quality, style, appropriateness visible in frame
+- HEALTH INDICATORS: Skin quality, eye clarity, signs of wellness or neglect
+- SOCIAL STATUS SIGNALS: Overall polished vs unkempt appearance
+
+METRICS HEAVILY AFFECTED BY APPEARANCE:
+- Prestige: Unkempt/homeless appearance = 25-40, Average = 45-55, Well-groomed professional = 65-80
+- Sophistication: Disheveled = 20-35, Average = 45-55, Refined/elegant = 70-85
+- Stature: Poor presentation = 25-40, Average = 45-55, Commanding presence = 70-85
+- Power: Weak/neglected appearance = 30-45, Average = 50-60, Strong/confident = 70-85
+- Magnetism: Unappealing presentation = 25-40, Average = 45-55, Attractive/magnetic = 70-90
+
+SCORING EXAMPLES:
+- Homeless/unkempt person: Overall 3.5-5.0, most metrics 30-50
+- Average everyday person: Overall 5.0-6.5, most metrics 45-60
+- Attractive well-groomed person: Overall 6.5-8.0, most metrics 60-75
+- Model/exceptional appearance: Overall 8.0-9.5, most metrics 75-90
+
 If the image IS a valid human face photo, analyze it and respond with:
 {
   "isValidFace": true,
-  "overallScore": 8.2,
+  "overallScore": 6.2,
   "metrics": [
-    {"label": "Trust", "value": 85, "benchmark": 72, "description": "Your relaxed eye contact and natural smile create an immediate sense of reliability."},
-    {"label": "Magnetism", "value": 78, "benchmark": 65, "description": "Strong facial symmetry and engaging expression naturally draw people's attention."},
-    {"label": "Spark", "value": 90, "benchmark": 78, "description": "Unique combination of intensity in your gaze and warmth makes you highly memorable."},
-    {"label": "Warmth", "value": 65, "benchmark": 70, "description": "Subtle tension in your expression slightly reduces perceived approachability."},
-    {"label": "Power", "value": 82, "benchmark": 68, "description": "Defined jawline and direct gaze project strong confidence and authority."},
-    {"label": "Mystery", "value": 75, "benchmark": 60, "description": "Depth in your eyes and composed expression create an intriguing presence."},
-    {"label": "Sophistication", "value": 79, "benchmark": 65, "description": "Refined features and poised demeanor suggest cultural awareness and taste."},
-    {"label": "Drive", "value": 85, "benchmark": 70, "description": "Focused gaze and forward-leaning energy convey strong ambition and determination."},
-    {"label": "Vibe", "value": 77, "benchmark": 68, "description": "Overall energy feels grounded yet dynamic, creating positive first impressions."},
-    {"label": "Prestige", "value": 73, "benchmark": 62, "description": "Your presentation and composure signal someone of notable standing."},
-    {"label": "Strictness", "value": 68, "benchmark": 55, "description": "Structured expression indicates discipline without appearing rigid."},
-    {"label": "Openness", "value": 81, "benchmark": 72, "description": "Relaxed brow and attentive eyes show genuine curiosity and receptiveness."},
-    {"label": "Pragmatism", "value": 74, "benchmark": 65, "description": "Grounded expression suggests practical, no-nonsense approach to life."},
-    {"label": "Resilience", "value": 86, "benchmark": 70, "description": "Strong facial structure and calm demeanor project inner strength."},
-    {"label": "Congruence", "value": 82, "benchmark": 75, "description": "Expression and features align naturally, suggesting authenticity."},
-    {"label": "Stature", "value": 78, "benchmark": 68, "description": "Overall presence commands attention and respect in social settings."}
+    {"label": "Trust", "value": 58, "benchmark": 50, "description": "Your relaxed eye contact and natural smile create an immediate sense of reliability."},
+    {"label": "Magnetism", "value": 52, "benchmark": 50, "description": "Neutral presence - neither particularly drawing nor repelling attention."},
+    {"label": "Spark", "value": 55, "benchmark": 50, "description": "Some distinctive features make you reasonably memorable."},
+    {"label": "Warmth", "value": 60, "benchmark": 50, "description": "Approachable expression suggests friendliness."},
+    {"label": "Power", "value": 48, "benchmark": 50, "description": "Average confidence projection, room for more assertive presence."},
+    {"label": "Mystery", "value": 45, "benchmark": 50, "description": "Straightforward appearance, what you see is what you get."},
+    {"label": "Sophistication", "value": 50, "benchmark": 50, "description": "Average refinement level for general population."},
+    {"label": "Drive", "value": 55, "benchmark": 50, "description": "Some signs of determination visible in expression."},
+    {"label": "Vibe", "value": 52, "benchmark": 50, "description": "Neutral energy, neither particularly positive nor negative."},
+    {"label": "Prestige", "value": 48, "benchmark": 50, "description": "Average status signals, typical everyday presentation."},
+    {"label": "Strictness", "value": 50, "benchmark": 50, "description": "Balanced between relaxed and disciplined appearance."},
+    {"label": "Openness", "value": 58, "benchmark": 50, "description": "Receptive expression suggests willingness to engage."},
+    {"label": "Pragmatism", "value": 52, "benchmark": 50, "description": "Grounded, practical appearance."},
+    {"label": "Resilience", "value": 55, "benchmark": 50, "description": "Reasonable inner strength visible."},
+    {"label": "Congruence", "value": 60, "benchmark": 50, "description": "Expression and features align authentically."},
+    {"label": "Stature", "value": 50, "benchmark": 50, "description": "Average overall presence for general population."}
   ],
   "insights": [
     "Specific insight about their appearance",
@@ -98,27 +123,28 @@ If the image IS a valid human face photo, analyze it and respond with:
 IMPORTANT FOR DESCRIPTIONS:
 - Each description must be UNIQUE and SPECIFIC to this person's actual facial features
 - Explain WHY they received that score based on what you observe
-- Reference specific features: eyes, smile, jawline, expression, gaze, etc.
+- Reference specific features: eyes, smile, jawline, expression, gaze, grooming, presentation
 - Keep each description 10-20 words, insightful and personalized
-- Avoid generic phrases - make it feel like a personal reading
+- BE HONEST - if grooming is poor, mention it affects the score
+- Avoid generic flattery - users want real feedback
 
 Evaluate these 16 DNA metrics on a scale of 0-100:
 1. Trust - How reliable and trustworthy does the person appear at first glance?
-2. Magnetism - How much do they naturally draw attention and interest?
+2. Magnetism - How much do they naturally draw attention and interest? (Factor in attractiveness)
 3. Spark - How memorable and distinctive is their presence?
 4. Warmth - How approachable and friendly do they seem?
-5. Power - How much confidence and authority do they project?
+5. Power - How much confidence and authority do they project? (Factor in presentation)
 6. Mystery - How intriguing and interesting do they appear?
-7. Sophistication - How refined and cultured do they appear?
+7. Sophistication - How refined and cultured do they appear? (Heavily factor grooming/style)
 8. Drive - How ambitious and determined do they seem?
 9. Vibe - What is their overall energy and aura?
-10. Prestige - How high-status do they appear?
+10. Prestige - How high-status do they appear? (Heavily factor presentation/grooming)
 11. Strictness - How disciplined and serious do they look?
 12. Openness - How receptive and curious do they seem?
 13. Pragmatism - How practical and grounded do they appear?
 14. Resilience - How strong and enduring do they seem?
 15. Congruence - How authentic and consistent do they appear?
-16. Stature - What is their overall presence and standing?
+16. Stature - What is their overall presence and standing? (Factor in overall appearance quality)
 
 RESPOND ONLY WITH VALID JSON, no markdown, no code blocks.`;
 
