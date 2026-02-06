@@ -257,7 +257,7 @@ const AppContent: React.FC = () => {
         )}
       </header>
 
-      <main className="pt-24 md:pt-32 pb-24 md:pb-20 px-4 md:px-6 max-w-7xl mx-auto relative z-10">
+      <main className="pt-24 md:pt-32 pb-8 px-4 md:px-6 max-w-7xl mx-auto relative z-10">
         <AnimatePresence mode="wait">
           {stage === AppStage.LANDING && (
             <Landing key="landing" onStart={handleStart} />
@@ -297,34 +297,22 @@ const AppContent: React.FC = () => {
         </AnimatePresence>
       </main>
 
-      <footer className="fixed bottom-0 left-0 right-0 z-[100] px-4 md:px-10 py-3 md:py-4 flex justify-between items-center border-t border-white/5 backdrop-blur-sm bg-[#050505]/80">
-        <div className="hidden md:flex items-center gap-2">
-          <div className="w-1 h-6 bg-white/10 rounded-full overflow-hidden">
-            <motion.div
-              className="w-full bg-[#00f0ff]"
-              animate={{ height: ['0%', '100%'] }}
-              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-            />
-          </div>
-          <span className="text-[8px] uppercase tracking-widest text-white/20 font-bold">Active</span>
-        </div>
-        <div className="flex items-center gap-4 md:gap-6 pointer-events-auto">
-          <button
-            onClick={() => handleShowLegal(AppStage.PRIVACY)}
-            className="text-[8px] md:text-[9px] uppercase tracking-[0.2em] text-white/20 font-mono hover:text-[#00f0ff] transition-colors"
-          >
-            Privacy
-          </button>
-          <button
-            onClick={() => handleShowLegal(AppStage.TERMS)}
-            className="text-[8px] md:text-[9px] uppercase tracking-[0.2em] text-white/20 font-mono hover:text-[#00f0ff] transition-colors"
-          >
-            Terms
-          </button>
-          <span className="text-[8px] md:text-[9px] uppercase tracking-[0.3em] text-white/20 font-mono">
-            ©2026 Ratery
-          </span>
-        </div>
+      <footer className="relative z-10 px-4 md:px-10 py-4 mt-8 flex justify-center items-center gap-4 md:gap-6 border-t border-white/5">
+        <button
+          onClick={() => handleShowLegal(AppStage.PRIVACY)}
+          className="text-[8px] md:text-[9px] uppercase tracking-[0.2em] text-white/20 font-mono hover:text-[#00f0ff] transition-colors"
+        >
+          Privacy
+        </button>
+        <button
+          onClick={() => handleShowLegal(AppStage.TERMS)}
+          className="text-[8px] md:text-[9px] uppercase tracking-[0.2em] text-white/20 font-mono hover:text-[#00f0ff] transition-colors"
+        >
+          Terms
+        </button>
+        <span className="text-[8px] md:text-[9px] uppercase tracking-[0.3em] text-white/20 font-mono">
+          ©2026 Ratery
+        </span>
       </footer>
 
       {/* Paywall Modal */}
