@@ -5,7 +5,9 @@ export enum AppStage {
   LOGIN = 'LOGIN',
   UPLOAD = 'UPLOAD',
   SCANNING = 'SCANNING',
-  DASHBOARD = 'DASHBOARD'
+  DASHBOARD = 'DASHBOARD',
+  PRIVACY = 'PRIVACY',
+  TERMS = 'TERMS'
 }
 
 export interface AnalysisResult {
