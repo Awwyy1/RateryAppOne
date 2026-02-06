@@ -1,5 +1,27 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { adminAuth } from './_firebaseAdmin';
+import { initializeApp, getApps, cert } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
+
+// --- Firebase Admin SDK init (inline to avoid Vercel module resolution issues) ---
+function getPrivateKey(): string {
+  let key = process.env.FIREBASE_PRIVATE_KEY || '';
+  if (key.startsWith('"') && key.endsWith('"')) {
+    try { key = JSON.parse(key); } catch { /* use as-is */ }
+  }
+  return key.replace(/\\n/g, '\n');
+}
+
+if (!getApps().length) {
+  initializeApp({
+    credential: cert({
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      privateKey: getPrivateKey(),
+    }),
+  });
+}
+
+const adminAuth = getAuth();
 
 // Creem.io API configuration
 const CREEM_API_KEY = process.env.CREEM_API_KEY;
