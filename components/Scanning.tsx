@@ -3,6 +3,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { AnalysisResult } from '../types';
 import { AlertTriangle, ArrowLeft } from 'lucide-react';
+import { auth } from '../firebase';
 
 interface Props {
   photo: string | null;
@@ -37,15 +38,32 @@ const Scanning: React.FC<Props> = ({ photo, onComplete }) => {
 
     const analyzePhoto = async () => {
       try {
+        // Get Firebase auth token for server-side verification
+        const token = await auth.currentUser?.getIdToken();
+        if (!token) {
+          setError('Please sign in to continue.');
+          setApiComplete(true);
+          return;
+        }
+
         const response = await fetch('/api/analyze', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
           },
           body: JSON.stringify({ image: photo }),
         });
 
         const result = await response.json();
+
+        // Handle auth/plan/rate-limit errors
+        if (response.status === 401 || response.status === 403 || response.status === 429) {
+          setError(result.error || 'Cannot perform scan right now.');
+          setApiComplete(true);
+          setTimeout(() => onComplete(null, result.error), 2500);
+          return;
+        }
 
         // Check for validation error (not a valid face)
         if (!response.ok || result.isValidFace === false) {

@@ -1,10 +1,15 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import Anthropic from '@anthropic-ai/sdk';
+import { adminAuth, adminDb, FieldValue } from './_firebaseAdmin';
 
 // Initialize the Anthropic client
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || '',
 });
+
+const FREE_SCANS_LIMIT = 1;
+const PREMIUM_MONTHLY_LIMIT = 49;
+const MIN_SCAN_INTERVAL_MS = 10_000; // 10 seconds between scans
 
 interface MetricData {
   label: string;
@@ -30,6 +35,52 @@ export default async function handler(
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // --- AUTH: Verify Firebase ID token ---
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized: Missing auth token' });
+  }
+
+  let uid: string;
+  try {
+    const idToken = authHeader.split('Bearer ')[1];
+    const decodedToken = await adminAuth.verifyIdToken(idToken);
+    uid = decodedToken.uid;
+  } catch {
+    return res.status(401).json({ error: 'Unauthorized: Invalid token' });
+  }
+
+  // --- FIRESTORE: Check plan & scan limits ---
+  const userRef = adminDb.collection('users').doc(uid);
+  const userDoc = await userRef.get();
+  const userData = userDoc.exists ? userDoc.data() : null;
+
+  const plan = userData?.plan || 'free';
+  const totalScans = userData?.totalScans || 0;
+  const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+  let scansThisMonth = userData?.scansThisMonth || 0;
+  const monthReset = userData?.monthReset || '';
+
+  // Reset monthly counter if new month
+  if (monthReset !== currentMonth) {
+    scansThisMonth = 0;
+  }
+
+  // Rate limiting: minimum interval between scans
+  const lastScanAt = userData?.lastScanAt?.toMillis?.() || 0;
+  if (Date.now() - lastScanAt < MIN_SCAN_INTERVAL_MS) {
+    return res.status(429).json({ error: 'Too many requests. Please wait before scanning again.' });
+  }
+
+  // Check scan limits based on plan
+  if (plan === 'free' && totalScans >= FREE_SCANS_LIMIT) {
+    return res.status(403).json({ error: 'Free scan limit reached. Please upgrade your plan.' });
+  }
+  if (plan === 'premium' && scansThisMonth >= PREMIUM_MONTHLY_LIMIT) {
+    return res.status(403).json({ error: 'Monthly scan limit reached. Upgrade to Pro for unlimited scans.' });
+  }
+
+  // --- ANALYZE: Process the image ---
   try {
     const { image } = req.body;
 
@@ -210,6 +261,15 @@ RESPOND ONLY WITH VALID JSON, no markdown, no code blocks.`;
         validationMessage: 'Unable to complete facial analysis. Please try with a different photo.'
       });
     }
+
+    // --- FIRESTORE: Update scan counts after successful analysis ---
+    await userRef.set({
+      plan,
+      scansThisMonth: scansThisMonth + 1,
+      monthReset: currentMonth,
+      totalScans: totalScans + 1,
+      lastScanAt: FieldValue.serverTimestamp(),
+    }, { merge: true });
 
     return res.status(200).json(analysisResult);
   } catch (error) {

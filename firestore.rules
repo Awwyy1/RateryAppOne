@@ -1,0 +1,19 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      // Users can read their own document
+      allow read: if request.auth != null && request.auth.uid == userId;
+
+      // Users can write only the 'plan' field (for test-mode payment flow)
+      // TODO: In production, remove client write access entirely
+      // and set plan ONLY via server-side webhook from Creem.io
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Deny all other access by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

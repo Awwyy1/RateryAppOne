@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { doc, onSnapshot, setDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 import { useAuth } from './AuthContext';
 
 export type PlanType = 'free' | 'premium' | 'pro';
@@ -80,7 +82,7 @@ interface SubscriptionContextType {
   canScan: boolean;
   incrementScanCount: () => void;
   setPlan: (plan: PlanType) => void;
-  setPremium: (status: boolean) => void; // Legacy support
+  setPremium: (status: boolean) => void;
   getCurrentPlanInfo: () => PlanInfo;
 }
 
@@ -100,49 +102,57 @@ export const useSubscription = () => {
 export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { user } = useAuth();
   const [currentPlan, setCurrentPlan] = useState<PlanType>('free');
-  const [scanCount, setScanCount] = useState(0); // Total scans ever
-  const [monthlyScansUsed, setMonthlyScansUsed] = useState(0); // Scans this month
-  const [lastResetMonth, setLastResetMonth] = useState<string>('');
+  const [scanCount, setScanCount] = useState(0);
+  const [monthlyScansUsed, setMonthlyScansUsed] = useState(0);
 
-  // Load subscription data from localStorage
+  // Sync subscription data from Firestore (real-time listener)
   useEffect(() => {
-    if (user) {
-      const savedPlan = localStorage.getItem(`ratery_plan_${user.uid}`) as PlanType | null;
-      const savedCount = localStorage.getItem(`ratery_scan_count_${user.uid}`);
-      const savedMonthly = localStorage.getItem(`ratery_monthly_scans_${user.uid}`);
-      const savedResetMonth = localStorage.getItem(`ratery_reset_month_${user.uid}`);
-
-      // Legacy support: check old premium flag
-      const legacyPremium = localStorage.getItem(`ratery_premium_${user.uid}`);
-
-      if (savedPlan) {
-        setCurrentPlan(savedPlan);
-      } else if (legacyPremium === 'true') {
-        setCurrentPlan('premium');
-      }
-
-      if (savedCount) {
-        setScanCount(parseInt(savedCount, 10));
-      }
-
-      // Check if we need to reset monthly scans (new month)
-      const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
-      if (savedResetMonth !== currentMonth) {
-        // New month - reset monthly counter
-        setMonthlyScansUsed(0);
-        localStorage.setItem(`ratery_monthly_scans_${user.uid}`, '0');
-        localStorage.setItem(`ratery_reset_month_${user.uid}`, currentMonth);
-        setLastResetMonth(currentMonth);
-      } else {
-        if (savedMonthly) {
-          setMonthlyScansUsed(parseInt(savedMonthly, 10));
-        }
-        setLastResetMonth(savedResetMonth || currentMonth);
-      }
+    if (!user) {
+      setCurrentPlan('free');
+      setScanCount(0);
+      setMonthlyScansUsed(0);
+      return;
     }
+
+    // Load cached plan from localStorage for instant UI while Firestore loads
+    const cachedPlan = localStorage.getItem(`ratery_plan_${user.uid}`) as PlanType | null;
+    if (cachedPlan) {
+      setCurrentPlan(cachedPlan);
+    }
+
+    // Listen for real-time updates from Firestore
+    const userDocRef = doc(db, 'users', user.uid);
+    const unsubscribe = onSnapshot(
+      userDocRef,
+      (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          const plan = (data.plan || 'free') as PlanType;
+          setCurrentPlan(plan);
+          setScanCount(data.totalScans || 0);
+
+          const currentMonth = new Date().toISOString().slice(0, 7);
+          if (data.monthReset === currentMonth) {
+            setMonthlyScansUsed(data.scansThisMonth || 0);
+          } else {
+            setMonthlyScansUsed(0);
+          }
+
+          // Cache in localStorage for fast next load
+          localStorage.setItem(`ratery_plan_${user.uid}`, plan);
+        }
+      },
+      (error) => {
+        console.error('Firestore subscription error:', error);
+        // Fall back to localStorage if Firestore is unreachable
+        const savedPlan = localStorage.getItem(`ratery_plan_${user.uid}`) as PlanType | null;
+        if (savedPlan) setCurrentPlan(savedPlan);
+      }
+    );
+
+    return () => unsubscribe();
   }, [user]);
 
-  // Calculate scans left based on plan
   const isPremium = currentPlan === 'premium' || currentPlan === 'pro';
   const isPro = currentPlan === 'pro';
 
@@ -154,40 +164,28 @@ export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ childr
 
   const canScan = scansLeft === 'unlimited' || scansLeft > 0;
 
-  // For backwards compatibility with header display
-  const freeScansLeft = currentPlan === 'free' ? Math.max(0, FREE_SCANS_LIMIT - scanCount) : 0;
-
-  // Increment scan count
+  // Optimistic UI update — real data arrives via Firestore onSnapshot after backend writes
   const incrementScanCount = () => {
-    if (!user) return;
-
-    const newTotalCount = scanCount + 1;
-    setScanCount(newTotalCount);
-    localStorage.setItem(`ratery_scan_count_${user.uid}`, newTotalCount.toString());
-
+    setScanCount(prev => prev + 1);
     if (currentPlan === 'premium') {
-      const newMonthly = monthlyScansUsed + 1;
-      setMonthlyScansUsed(newMonthly);
-      localStorage.setItem(`ratery_monthly_scans_${user.uid}`, newMonthly.toString());
+      setMonthlyScansUsed(prev => prev + 1);
     }
   };
 
-  // Set plan
+  // Set plan — writes to Firestore + localStorage cache
+  // In production, plan should ONLY be set via server-side webhook from payment provider
   const setPlan = (plan: PlanType) => {
     setCurrentPlan(plan);
     if (user) {
       localStorage.setItem(`ratery_plan_${user.uid}`, plan);
-      // Also set legacy flag for backwards compatibility
-      localStorage.setItem(`ratery_premium_${user.uid}`, (plan !== 'free').toString());
+      setDoc(doc(db, 'users', user.uid), { plan }, { merge: true }).catch(console.error);
     }
   };
 
-  // Legacy support
   const setPremium = (status: boolean) => {
     setPlan(status ? 'premium' : 'free');
   };
 
-  // Get current plan info
   const getCurrentPlanInfo = (): PlanInfo => {
     return PLANS.find(p => p.id === currentPlan) || PLANS[0];
   };
@@ -213,7 +211,6 @@ export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ childr
   );
 };
 
-// Helper to get scans left display text
 export const getScansLeftText = (scansLeft: number | 'unlimited'): string => {
   if (scansLeft === 'unlimited') return '∞';
   return scansLeft.toString();
