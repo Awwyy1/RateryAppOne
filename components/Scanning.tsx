@@ -55,7 +55,16 @@ const Scanning: React.FC<Props> = ({ photo, onComplete }) => {
           body: JSON.stringify({ image: photo }),
         });
 
-        const result = await response.json();
+        // Parse response — handle non-JSON errors (e.g. Vercel 500 page)
+        let result;
+        try {
+          result = await response.json();
+        } catch {
+          console.error('API returned non-JSON response, status:', response.status);
+          setError('Server error. Please try again later.');
+          setApiComplete(true);
+          return;
+        }
 
         // Handle auth/plan/rate-limit errors
         if (response.status === 401 || response.status === 403 || response.status === 429) {

@@ -46,7 +46,8 @@ export default async function handler(
     const idToken = authHeader.split('Bearer ')[1];
     const decodedToken = await adminAuth.verifyIdToken(idToken);
     uid = decodedToken.uid;
-  } catch {
+  } catch (authError) {
+    console.error('Token verification failed:', authError);
     return res.status(401).json({ error: 'Unauthorized: Invalid token' });
   }
 
