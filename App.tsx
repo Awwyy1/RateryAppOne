@@ -11,6 +11,8 @@ import PhotoUpload from './components/PhotoUpload';
 import Scanning from './components/Scanning';
 import Cabinet from './components/Cabinet';
 import Paywall from './components/Paywall';
+import PrivacyPolicy from './components/PrivacyPolicy';
+import TermsOfService from './components/TermsOfService';
 import { LogOut, User, Crown, CheckCircle, X, Sparkles } from 'lucide-react';
 
 const AppContent: React.FC = () => {
@@ -137,6 +139,15 @@ const AppContent: React.FC = () => {
     if (hasCompletedScan) {
       setStage(AppStage.DASHBOARD);
     }
+  };
+
+  const previousStageRef = React.useRef<AppStage>(AppStage.LANDING);
+  const handleShowLegal = (page: AppStage.PRIVACY | AppStage.TERMS) => {
+    previousStageRef.current = stage;
+    setStage(page);
+  };
+  const handleLegalBack = () => {
+    setStage(previousStageRef.current);
   };
 
   return (
@@ -277,22 +288,42 @@ const AppContent: React.FC = () => {
               onShowPaywall={() => setShowPaywall(true)}
             />
           )}
+          {stage === AppStage.PRIVACY && (
+            <PrivacyPolicy key="privacy" onBack={handleLegalBack} />
+          )}
+          {stage === AppStage.TERMS && (
+            <TermsOfService key="terms" onBack={handleLegalBack} />
+          )}
         </AnimatePresence>
       </main>
 
-      <footer className="hidden md:flex fixed bottom-8 left-10 right-10 justify-between items-end pointer-events-none z-[100]">
-        <div className="flex flex-col gap-1">
-          <div className="w-1 h-12 bg-white/10 rounded-full overflow-hidden">
+      <footer className="fixed bottom-0 left-0 right-0 z-[100] px-4 md:px-10 py-3 md:py-4 flex justify-between items-center border-t border-white/5 backdrop-blur-sm bg-[#050505]/80">
+        <div className="hidden md:flex items-center gap-2">
+          <div className="w-1 h-6 bg-white/10 rounded-full overflow-hidden">
             <motion.div
               className="w-full bg-[#00f0ff]"
               animate={{ height: ['0%', '100%'] }}
               transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
             />
           </div>
-          <span className="text-[8px] uppercase tracking-widest text-white/20 vertical-text mt-4">Active</span>
+          <span className="text-[8px] uppercase tracking-widest text-white/20 font-bold">Active</span>
         </div>
-        <div className="text-[9px] uppercase tracking-[0.4em] text-white/20 font-mono">
-          ©2025 Ratery
+        <div className="flex items-center gap-4 md:gap-6 pointer-events-auto">
+          <button
+            onClick={() => handleShowLegal(AppStage.PRIVACY)}
+            className="text-[8px] md:text-[9px] uppercase tracking-[0.2em] text-white/20 font-mono hover:text-[#00f0ff] transition-colors"
+          >
+            Privacy
+          </button>
+          <button
+            onClick={() => handleShowLegal(AppStage.TERMS)}
+            className="text-[8px] md:text-[9px] uppercase tracking-[0.2em] text-white/20 font-mono hover:text-[#00f0ff] transition-colors"
+          >
+            Terms
+          </button>
+          <span className="text-[8px] md:text-[9px] uppercase tracking-[0.3em] text-white/20 font-mono">
+            ©2026 Ratery
+          </span>
         </div>
       </footer>
 
