@@ -2,13 +2,11 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /users/{userId} {
-      // Users can read their own document
+      // Users can only READ their own document
+      // All writes go through server-side Firebase Admin SDK
+      // (Admin SDK bypasses these rules entirely)
       allow read: if request.auth != null && request.auth.uid == userId;
-
-      // Users can write only the 'plan' field (for test-mode payment flow)
-      // TODO: In production, remove client write access entirely
-      // and set plan ONLY via server-side webhook from Creem.io
-      allow write: if request.auth != null && request.auth.uid == userId;
+      allow write: if false;
     }
 
     // Deny all other access by default

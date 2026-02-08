@@ -6,6 +6,7 @@ import {
   onAuthStateChanged
 } from 'firebase/auth';
 import { auth, googleProvider } from '../firebase';
+import { trackLogin } from '../utils/analytics';
 
 interface AuthContextType {
   user: User | null;
@@ -44,6 +45,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const signInWithGoogle = async (): Promise<void> => {
     try {
       await signInWithPopup(auth, googleProvider);
+      trackLogin();
     } catch (error) {
       console.error('Error signing in with Google:', error);
       throw error;

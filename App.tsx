@@ -14,6 +14,7 @@ import Paywall from './components/Paywall';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import TermsOfService from './components/TermsOfService';
 import { LogOut, User, Crown, CheckCircle, X, Sparkles } from 'lucide-react';
+import { trackPaymentSuccess, trackStageChange } from './utils/analytics';
 
 const AppContent: React.FC = () => {
   const [stage, setStage] = useState<AppStage>(AppStage.LANDING);
@@ -32,12 +33,9 @@ const AppContent: React.FC = () => {
     const planParam = urlParams.get('plan');
 
     if (paymentStatus === 'success') {
-      // Set user plan based on what they purchased
-      if (planParam === 'pro') {
-        setPlan('pro');
-      } else {
-        setPlan('premium');
-      }
+      const newPlan = planParam === 'pro' ? 'pro' : 'premium';
+      setPlan(newPlan);
+      trackPaymentSuccess(newPlan);
       setShowPaymentSuccess(true);
       // Clear URL parameter
       window.history.replaceState({}, '', window.location.pathname);
@@ -85,7 +83,10 @@ const AppContent: React.FC = () => {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, [mouseX, mouseY]);
 
-  const handleStart = () => setStage(AppStage.ONBOARDING);
+  const handleStart = () => {
+    trackStageChange('onboarding');
+    setStage(AppStage.ONBOARDING);
+  };
   const handleOnboardingComplete = () => {
     // If user is already logged in, go directly to upload
     if (user) {
