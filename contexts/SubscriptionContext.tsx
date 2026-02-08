@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { doc, onSnapshot, setDoc } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from './AuthContext';
 
@@ -172,13 +172,27 @@ export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ childr
     }
   };
 
-  // Set plan — writes to Firestore + localStorage cache
-  // In production, plan should ONLY be set via server-side webhook from payment provider
-  const setPlan = (plan: PlanType) => {
-    setCurrentPlan(plan);
+  // Set plan via server endpoint — Firestore rules block all client writes
+  const setPlan = async (plan: PlanType) => {
+    setCurrentPlan(plan); // Optimistic UI update
     if (user) {
       localStorage.setItem(`ratery_plan_${user.uid}`, plan);
-      setDoc(doc(db, 'users', user.uid), { plan }, { merge: true }).catch(console.error);
+      try {
+        const token = await user.getIdToken();
+        const response = await fetch('/api/set-plan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ plan }),
+        });
+        if (!response.ok) {
+          console.error('Failed to set plan on server');
+        }
+      } catch (error) {
+        console.error('Error setting plan:', error);
+      }
     }
   };
 

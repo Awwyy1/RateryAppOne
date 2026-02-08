@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Zap, Crown, Sparkles, Star, X, Loader2, AlertCircle } from 'lucide-react';
 import { useSubscription, PLANS, PlanType, BillingCycle } from '../contexts/SubscriptionContext';
+import { trackPaywallOpened, trackPlanSelected } from '../utils/analytics';
 
 interface Props {
   onClose: () => void;
@@ -11,6 +12,8 @@ interface Props {
 const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
   const { currentPlan } = useSubscription();
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
+
+  useEffect(() => { trackPaywallOpened(currentPlan); }, []);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<PlanType | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -24,6 +27,7 @@ const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
     const plan = PLANS.find(p => p.id === planId);
     if (!plan || !plan.productIds) return;
 
+    trackPlanSelected(planId, billingCycle);
     setIsLoading(true);
     setSelectedPlan(planId);
     setError(null);

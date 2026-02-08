@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { AnalysisResult } from '../types';
 import { AlertTriangle, ArrowLeft } from 'lucide-react';
 import { auth } from '../firebase';
+import { trackScanStarted, trackScanCompleted, trackScanFailed } from '../utils/analytics';
+import { getTier } from '../utils/tiers';
 
 interface Props {
   photo: string | null;
@@ -37,6 +39,7 @@ const Scanning: React.FC<Props> = ({ photo, onComplete }) => {
     if (!photo) return;
 
     const analyzePhoto = async () => {
+      trackScanStarted();
       try {
         // Get Firebase auth token for server-side verification
         const token = await auth.currentUser?.getIdToken();
@@ -76,11 +79,14 @@ const Scanning: React.FC<Props> = ({ photo, onComplete }) => {
 
         // Check for validation error (not a valid face)
         if (!response.ok || result.isValidFace === false) {
-          setValidationError(result.validationMessage || 'No valid human face detected in the image.');
+          const msg = result.validationMessage || 'No valid human face detected in the image.';
+          trackScanFailed(msg);
+          setValidationError(msg);
           setApiComplete(true);
           return;
         }
 
+        trackScanCompleted(result.overallScore, getTier(result.overallScore));
         setAnalysisResult(result);
         setApiComplete(true);
       } catch (err) {
