@@ -5,6 +5,7 @@ import { AnalysisResult, MetricData } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import Dashboard from './Dashboard';
 import { getTier, getTierGradient } from '../utils/tiers';
+import { useTranslation } from 'react-i18next';
 import {
   BarChart3,
   Clock,
@@ -72,6 +73,7 @@ const compressPhoto = (base64: string, maxWidth = 400): Promise<string> => {
 };
 
 const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut, onShowPaywall }) => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabType>('results');
   const [scanHistory, setScanHistory] = useState<ScanHistoryItem[]>([]);
   const [saveHistory, setSaveHistory] = useState(true);
@@ -161,12 +163,12 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut,
     if (deleteTarget === 'all') {
       setScanHistory([]);
       localStorage.removeItem('ratery_scan_history');
-      setSuccessMessage('All scan history has been deleted');
+      setSuccessMessage(t('cabinet.allDeleted'));
     } else if (deleteTarget) {
       const updated = scanHistory.filter(s => s.id !== deleteTarget);
       setScanHistory(updated);
       localStorage.setItem('ratery_scan_history', JSON.stringify(updated));
-      setSuccessMessage('Scan deleted successfully');
+      setSuccessMessage(t('cabinet.scanDeleted'));
     }
     setShowDeleteConfirm(false);
     setDeleteTarget(null);
@@ -207,9 +209,9 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut,
   };
 
   const tabs = [
-    { id: 'results' as TabType, label: 'Results', icon: <BarChart3 className="w-4 h-4" /> },
-    { id: 'history' as TabType, label: 'History', icon: <Clock className="w-4 h-4" /> },
-    { id: 'settings' as TabType, label: 'Settings', icon: <Settings className="w-4 h-4" /> }
+    { id: 'results' as TabType, label: t('cabinet.results'), icon: <BarChart3 className="w-4 h-4" /> },
+    { id: 'history' as TabType, label: t('cabinet.history'), icon: <Clock className="w-4 h-4" /> },
+    { id: 'settings' as TabType, label: t('cabinet.settings'), icon: <Settings className="w-4 h-4" /> }
   ];
 
   return (
@@ -257,7 +259,7 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut,
             className="px-6 py-3 bg-white text-black font-black rounded-xl flex items-center gap-2 hover:bg-[#00f0ff] transition-all text-xs uppercase tracking-widest shadow-lg shadow-white/10"
           >
             <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">New Scan</span>
+            <span className="hidden sm:inline">{t('cabinet.newScan')}</span>
           </motion.button>
         </div>
       </motion.div>
@@ -289,9 +291,9 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut,
             <div className="glass p-6 rounded-[2rem] border border-white/5">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h2 className="text-2xl font-black tracking-tight mb-1">Scan History</h2>
+                  <h2 className="text-2xl font-black tracking-tight mb-1">{t('cabinet.scanHistory')}</h2>
                   <p className="text-white/40 text-xs uppercase tracking-widest">
-                    {scanHistory.length} {scanHistory.length === 1 ? 'scan' : 'scans'} saved
+                    {scanHistory.length === 1 ? t('cabinet.scansSaved', { count: scanHistory.length }) : t('cabinet.scansSavedPlural', { count: scanHistory.length })}
                   </p>
                 </div>
                 {scanHistory.length > 0 && (
@@ -300,7 +302,7 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut,
                     className="px-4 py-2 text-red-400 hover:bg-red-500/10 rounded-xl text-xs uppercase tracking-widest font-bold transition-all flex items-center gap-2"
                   >
                     <Trash2 className="w-4 h-4" />
-                    Clear All
+                    {t('cabinet.clearAll')}
                   </button>
                 )}
               </div>
@@ -310,13 +312,13 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut,
                   <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
                     <Clock className="w-8 h-8 text-white/20" />
                   </div>
-                  <h3 className="text-lg font-bold mb-2 text-white/60">No scans yet</h3>
-                  <p className="text-white/30 text-sm mb-6">Your DNA scan history will appear here</p>
+                  <h3 className="text-lg font-bold mb-2 text-white/60">{t('cabinet.noScansYet')}</h3>
+                  <p className="text-white/30 text-sm mb-6">{t('cabinet.noScansDesc')}</p>
                   <button
                     onClick={onNewScan}
                     className="px-6 py-3 bg-[#00f0ff] text-black font-black rounded-xl text-xs uppercase tracking-widest"
                   >
-                    Start First Scan
+                    {t('cabinet.startFirstScan')}
                   </button>
                 </div>
               ) : (
@@ -342,7 +344,7 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut,
                         {/* View Analytics Hint */}
                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
                           <div className="px-4 py-2 bg-[#00f0ff]/90 text-black font-bold rounded-xl text-xs uppercase tracking-widest backdrop-blur-md">
-                            View Analytics
+                            {t('cabinet.viewAnalytics')}
                           </div>
                         </div>
 
@@ -384,7 +386,7 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut,
                       <Plus className="w-8 h-8 text-white/30 group-hover:text-[#00f0ff] transition-all" />
                     </div>
                     <span className="text-white/30 group-hover:text-white/60 text-xs uppercase tracking-widest font-bold transition-all">
-                      New Scan
+                      {t('cabinet.newScan')}
                     </span>
                   </motion.button>
                 </div>
@@ -408,7 +410,7 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut,
                 <div className="w-10 h-10 rounded-xl bg-[#00f0ff]/10 flex items-center justify-center">
                   <User className="w-5 h-5 text-[#00f0ff]" />
                 </div>
-                <h3 className="text-lg font-black uppercase tracking-widest">Account</h3>
+                <h3 className="text-lg font-black uppercase tracking-widest">{t('cabinet.account')}</h3>
               </div>
 
               <div className="space-y-6">
@@ -426,18 +428,18 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut,
                     <p className="text-white/40 text-sm truncate">{user?.email}</p>
                   </div>
                   <div className="px-3 py-1 bg-green-500/20 rounded-lg">
-                    <span className="text-green-400 text-[10px] font-bold uppercase tracking-widest">Active</span>
+                    <span className="text-green-400 text-[10px] font-bold uppercase tracking-widest">{t('cabinet.active')}</span>
                   </div>
                 </div>
 
                 {/* Stats */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-4 bg-white/5 rounded-xl border border-white/5">
-                    <p className="text-[10px] text-white/40 uppercase tracking-widest mb-1">Total Scans</p>
+                    <p className="text-[10px] text-white/40 uppercase tracking-widest mb-1">{t('cabinet.totalScans')}</p>
                     <p className="text-2xl font-black">{scanHistory.length}</p>
                   </div>
                   <div className="p-4 bg-white/5 rounded-xl border border-white/5">
-                    <p className="text-[10px] text-white/40 uppercase tracking-widest mb-1">Best Score</p>
+                    <p className="text-[10px] text-white/40 uppercase tracking-widest mb-1">{t('cabinet.bestScore')}</p>
                     <p className="text-2xl font-black text-[#00f0ff]">
                       {scanHistory.length > 0
                         ? Math.max(...scanHistory.map(s => s.score)).toFixed(1)
@@ -453,7 +455,7 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut,
                   className="w-full py-4 bg-red-500/10 border border-red-500/20 text-red-400 font-bold rounded-2xl flex items-center justify-center gap-2 hover:bg-red-500/20 transition-all text-xs uppercase tracking-widest"
                 >
                   <LogOut className="w-4 h-4" />
-                  Sign Out
+                  {t('cabinet.signOut')}
                 </button>
               </div>
             </div>
@@ -474,7 +476,7 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut,
                     <Zap className="w-5 h-5 text-[#00f0ff]" />
                   )}
                 </div>
-                <h3 className="text-lg font-black uppercase tracking-widest">Subscription</h3>
+                <h3 className="text-lg font-black uppercase tracking-widest">{t('cabinet.subscription')}</h3>
               </div>
 
               <div className="space-y-6">
@@ -488,7 +490,7 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut,
                 }`}>
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <p className="text-[10px] text-white/40 uppercase tracking-widest mb-1">Current Plan</p>
+                      <p className="text-[10px] text-white/40 uppercase tracking-widest mb-1">{t('cabinet.currentPlan')}</p>
                       <p className={`text-2xl font-black ${
                         isPro ? 'text-amber-400' : isPremium ? 'text-[#00f0ff]' : 'text-white'
                       }`}>
@@ -511,20 +513,20 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut,
                     {scansLeft === 'unlimited' ? (
                       <>
                         <Infinity className="w-4 h-4 text-amber-400" />
-                        <span className="text-amber-400 font-bold">Unlimited Scans</span>
+                        <span className="text-amber-400 font-bold">{t('cabinet.unlimitedScans')}</span>
                       </>
                     ) : isPremium ? (
                       <>
                         <Zap className="w-4 h-4 text-[#00f0ff]" />
                         <span className="text-white/70">
-                          <span className="font-bold text-[#00f0ff]">{scansLeft}</span> scans remaining this month
+                          {t('cabinet.scansRemaining', { count: scansLeft })}
                         </span>
                       </>
                     ) : (
                       <>
                         <Zap className="w-4 h-4 text-white/40" />
                         <span className="text-white/70">
-                          <span className="font-bold">{scansLeft}</span> free scan{Number(scansLeft) !== 1 ? 's' : ''} left
+                          {Number(scansLeft) === 1 ? t('cabinet.freeScansLeft', { count: scansLeft }) : t('cabinet.freeScansLeftPlural', { count: scansLeft })}
                         </span>
                       </>
                     )}
@@ -544,12 +546,12 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut,
                     {isPremium ? (
                       <>
                         <Sparkles className="w-4 h-4" />
-                        Upgrade to Pro
+                        {t('cabinet.upgradeToProBtn')}
                       </>
                     ) : (
                       <>
                         <Crown className="w-4 h-4" />
-                        Upgrade Plan
+                        {t('cabinet.upgradePlan')}
                       </>
                     )}
                   </button>
@@ -557,7 +559,7 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut,
 
                 {/* Plan Features */}
                 <div className="space-y-2">
-                  <p className="text-[10px] text-white/40 uppercase tracking-widest">Plan Features</p>
+                  <p className="text-[10px] text-white/40 uppercase tracking-widest">{t('cabinet.planFeatures')}</p>
                   <ul className="space-y-2">
                     {getCurrentPlanInfo().features.map((feature, i) => (
                       <li key={i} className="flex items-center gap-2 text-sm">
@@ -572,7 +574,7 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut,
 
                 {/* Test Mode - Manual Plan Switch */}
                 <div className="mt-6 pt-6 border-t border-white/10">
-                  <p className="text-[10px] text-white/40 uppercase tracking-widest mb-3">Test Mode</p>
+                  <p className="text-[10px] text-white/40 uppercase tracking-widest mb-3">{t('cabinet.testMode')}</p>
                   <div className="flex flex-wrap gap-2">
                     {PLANS.map((plan) => (
                       <button
@@ -592,7 +594,7 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut,
                       </button>
                     ))}
                   </div>
-                  <p className="text-[9px] text-white/20 mt-2">For testing plan features</p>
+                  <p className="text-[9px] text-white/20 mt-2">{t('cabinet.testingFeatures')}</p>
                 </div>
               </div>
             </div>
@@ -603,7 +605,7 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut,
                 <div className="w-10 h-10 rounded-xl bg-[#00f0ff]/10 flex items-center justify-center">
                   <Shield className="w-5 h-5 text-[#00f0ff]" />
                 </div>
-                <h3 className="text-lg font-black uppercase tracking-widest">Privacy</h3>
+                <h3 className="text-lg font-black uppercase tracking-widest">{t('cabinet.privacy')}</h3>
               </div>
 
               <div className="space-y-4">
@@ -616,8 +618,8 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut,
                       <EyeOff className="w-5 h-5 text-white/40" />
                     )}
                     <div>
-                      <p className="font-bold text-sm">Save Scan History</p>
-                      <p className="text-white/40 text-xs">Store scans locally on this device</p>
+                      <p className="font-bold text-sm">{t('cabinet.saveHistory')}</p>
+                      <p className="text-white/40 text-xs">{t('cabinet.saveHistoryDesc')}</p>
                     </div>
                   </div>
                   <button
@@ -638,7 +640,7 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut,
                   className="w-full py-4 bg-white/5 border border-white/10 text-white/60 font-bold rounded-2xl flex items-center justify-center gap-2 hover:bg-white/10 transition-all text-xs uppercase tracking-widest"
                 >
                   <Trash2 className="w-4 h-4" />
-                  Clear All Data
+                  {t('cabinet.clearAllData')}
                 </button>
 
                 {/* Privacy Info */}
@@ -646,10 +648,9 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut,
                   <div className="flex items-start gap-3">
                     <Zap className="w-5 h-5 text-[#00f0ff] shrink-0 mt-0.5" />
                     <div>
-                      <p className="font-bold text-sm mb-1 text-[#00f0ff]">Your Privacy Matters</p>
+                      <p className="font-bold text-sm mb-1 text-[#00f0ff]">{t('cabinet.privacyMatters')}</p>
                       <p className="text-white/50 text-xs leading-relaxed">
-                        Photos are processed by AI and immediately deleted. We never store your images on our servers.
-                        History is saved only on your device.
+                        {t('cabinet.privacyInfo')}
                       </p>
                     </div>
                   </div>
@@ -663,16 +664,16 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut,
                 <div className="w-8 h-8 rounded-lg bg-[#00f0ff]/10 flex items-center justify-center">
                   <Dna className="w-4 h-4 text-[#00f0ff]" />
                 </div>
-                <h3 className="text-sm font-black uppercase tracking-widest">About</h3>
+                <h3 className="text-sm font-black uppercase tracking-widest">{t('cabinet.about')}</h3>
               </div>
 
               <div className="space-y-3">
                 <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
-                  <span className="text-[10px] text-white/40 uppercase tracking-widest">Version</span>
+                  <span className="text-[10px] text-white/40 uppercase tracking-widest">{t('cabinet.version')}</span>
                   <span className="font-bold text-sm">1.0.0</span>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
-                  <span className="text-[10px] text-white/40 uppercase tracking-widest">AI</span>
+                  <span className="text-[10px] text-white/40 uppercase tracking-widest">{t('cabinet.ai')}</span>
                   <span className="font-bold text-sm">Claude Vision</span>
                 </div>
               </div>
@@ -715,9 +716,9 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut,
                   </div>
                   <div>
                     <h3 className="text-xl font-black">
-                      {deleteTarget === 'all' ? 'Delete All Data?' : 'Delete Scan?'}
+                      {deleteTarget === 'all' ? t('cabinet.deleteAllTitle') : t('cabinet.deleteScanTitle')}
                     </h3>
-                    <p className="text-white/40 text-sm">This action cannot be undone</p>
+                    <p className="text-white/40 text-sm">{t('cabinet.cannotBeUndone')}</p>
                   </div>
                 </div>
               </div>
@@ -726,8 +727,8 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut,
               <div className="p-6">
                 <p className="text-white/60 text-sm leading-relaxed">
                   {deleteTarget === 'all'
-                    ? 'Are you sure you want to delete all your scan history? This will permanently remove all saved scans from your device.'
-                    : 'Are you sure you want to delete this scan? This will permanently remove it from your history.'
+                    ? t('cabinet.deleteAllConfirm')
+                    : t('cabinet.deleteScanConfirm')
                   }
                 </p>
               </div>
@@ -740,7 +741,7 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut,
                   whileTap={{ scale: 0.98 }}
                   className="flex-1 py-4 bg-white/10 border border-white/20 text-white font-bold rounded-2xl text-sm uppercase tracking-widest hover:bg-white/20 transition-all"
                 >
-                  Cancel
+                  {t('cabinet.cancel')}
                 </motion.button>
                 <motion.button
                   onClick={confirmDelete}
@@ -749,7 +750,7 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut,
                   className="flex-1 py-4 bg-red-500 text-white font-bold rounded-2xl text-sm uppercase tracking-widest hover:bg-red-600 transition-all flex items-center justify-center gap-2"
                 >
                   <Trash2 className="w-4 h-4" />
-                  {deleteTarget === 'all' ? 'Delete All' : 'Delete'}
+                  {deleteTarget === 'all' ? t('cabinet.deleteAll') : t('cabinet.delete')}
                 </motion.button>
               </div>
             </motion.div>
@@ -772,7 +773,7 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut,
             </div>
             <div>
               <p className="font-bold text-white">{successMessage}</p>
-              <p className="text-green-400/60 text-xs">Data removed from device</p>
+              <p className="text-green-400/60 text-xs">{t('cabinet.dataRemoved')}</p>
             </div>
             <button
               onClick={() => setShowSuccessToast(false)}
@@ -803,7 +804,7 @@ const Cabinet: React.FC<Props> = ({ photo, analysisResult, onNewScan, onSignOut,
                   className="flex items-center gap-3 px-5 py-3 bg-white/10 hover:bg-[#00f0ff]/20 border border-white/20 hover:border-[#00f0ff]/50 rounded-xl transition-all text-sm font-bold"
                 >
                   <ArrowLeft className="w-5 h-5" />
-                  Back to History
+                  {t('cabinet.backToHistory')}
                 </motion.button>
                 <div className="flex items-center gap-2 text-white/40 text-xs uppercase tracking-widest">
                   <Clock className="w-4 h-4" />

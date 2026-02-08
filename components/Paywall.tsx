@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Zap, Crown, Sparkles, Star, X, Loader2, AlertCircle } from 'lucide-react';
 import { useSubscription, PLANS, PlanType, BillingCycle } from '../contexts/SubscriptionContext';
 import { trackPaywallOpened, trackPlanSelected } from '../utils/analytics';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   onClose: () => void;
@@ -11,6 +12,7 @@ interface Props {
 
 const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
   const { currentPlan } = useSubscription();
+  const { t } = useTranslation();
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
 
   useEffect(() => { trackPaywallOpened(currentPlan); }, []);
@@ -46,7 +48,7 @@ const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
       window.location.href = paymentUrl;
     } catch (err) {
       console.error('Checkout error:', err);
-      setError('Could not open payment page. Please try again.');
+      setError(t('paywall.paymentError'));
       setIsLoading(false);
       setSelectedPlan(null);
     }
@@ -69,11 +71,11 @@ const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
   };
 
   const getButtonText = (planId: PlanType) => {
-    if (planId === currentPlan) return 'ACTIVE PLAN';
+    if (planId === currentPlan) return t('paywall.activePlan');
     switch (planId) {
-      case 'free': return 'ACTIVE PLAN';
-      case 'premium': return 'UPGRADE NOW';
-      case 'pro': return 'GET PRO ACCESS';
+      case 'free': return t('paywall.activePlan');
+      case 'premium': return t('paywall.upgradeNow');
+      case 'pro': return t('paywall.getProAccess');
     }
   };
 
@@ -104,10 +106,10 @@ const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
             animate={{ opacity: 1, scale: 1 }}
             className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/5 bg-white/5 text-[9px] uppercase tracking-[0.2em] font-bold text-[#00f0ff] mb-4"
           >
-            Social DNA Plans
+            {t('paywall.badge')}
           </motion.div>
-          <h2 className="text-3xl md:text-5xl font-black tracking-tighter mb-3">Choose Your <span className="text-[#00f0ff]">Plan</span></h2>
-          <p className="text-white/30 uppercase tracking-[0.2em] text-[8px] font-bold mb-8 md:mb-10">Unlock more scans and DNA markers</p>
+          <h2 className="text-3xl md:text-5xl font-black tracking-tighter mb-3">{t('paywall.title')} <span className="text-[#00f0ff]">{t('paywall.titleHighlight')}</span></h2>
+          <p className="text-white/30 uppercase tracking-[0.2em] text-[8px] font-bold mb-8 md:mb-10">{t('paywall.subtitle')}</p>
 
           {/* Billing Toggle */}
           <div className="flex flex-col items-center gap-3">
@@ -125,13 +127,13 @@ const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
                 onClick={() => setBillingCycle('monthly')}
                 className={`relative z-10 w-[76px] py-2 text-[9px] font-black uppercase tracking-wider transition-colors text-center ${billingCycle === 'monthly' ? 'text-black' : 'text-white/40'}`}
               >
-                Monthly
+                {t('paywall.monthly')}
               </button>
               <button
                 onClick={() => setBillingCycle('yearly')}
                 className={`relative z-10 w-[76px] py-2 text-[9px] font-black uppercase tracking-wider transition-colors text-center ${billingCycle === 'yearly' ? 'text-black' : 'text-white/40'}`}
               >
-                Yearly
+                {t('paywall.yearly')}
               </button>
 
               {/* 35% OFF Badge */}
@@ -144,7 +146,7 @@ const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
                 <div className="relative">
                   <div className="absolute inset-0 bg-[#00f0ff] blur-md opacity-30 rounded-md animate-pulse" />
                   <div className="relative bg-[#00f0ff] text-black text-[8px] font-black px-2 py-1 rounded-md uppercase tracking-tighter shadow-xl border border-white/20 whitespace-nowrap">
-                     35% OFF
+                     {t('paywall.off35')}
                   </div>
                   <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-[#00f0ff] rotate-45" />
                 </div>
@@ -160,7 +162,7 @@ const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
                   className="flex items-center gap-1.5 text-[#00f0ff] text-[9px] font-black uppercase tracking-[0.15em]"
                 >
                   <Zap className="w-3 h-3 fill-current" />
-                  Billed Annually — Save 35%
+                  {t('paywall.billedAnnually')}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -201,7 +203,7 @@ const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
                     className="absolute -top-3 left-1/2 -translate-x-1/2 text-black text-[8px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest shadow-lg whitespace-nowrap"
                     style={{ backgroundColor: color }}
                   >
-                    MOST POPULAR
+                    {t('paywall.mostPopular')}
                   </div>
                 )}
                 {plan.bestValue && (
@@ -210,7 +212,7 @@ const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
                     style={{ backgroundColor: color }}
                   >
                     <Star className="w-2.5 h-2.5 fill-current" />
-                    BEST VALUE
+                    {t('paywall.bestValue')}
                   </div>
                 )}
 
@@ -255,14 +257,14 @@ const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
                               exit={{ opacity: 0, scale: 0.8 }}
                               className="text-[#00f0ff] text-[7px] font-black uppercase tracking-tighter leading-none"
                             >
-                              SAVE 35%
+                              {t('paywall.save35')}
                             </motion.div>
                           )}
                         </AnimatePresence>
                       </div>
                     </div>
                     {billingCycle === 'yearly' && plan.id !== 'free' && (
-                      <span className="text-[8px] font-bold text-white/20 uppercase tracking-widest mt-1">Billed Annually</span>
+                      <span className="text-[8px] font-bold text-white/20 uppercase tracking-widest mt-1">{t('paywall.billedAnnuallyShort')}</span>
                     )}
                   </div>
                 </div>
@@ -299,7 +301,7 @@ const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
                   {isSelected && isLoading ? (
                     <>
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      Processing...
+                      {t('paywall.processing')}
                     </>
                   ) : (
                     <>
@@ -316,7 +318,7 @@ const Paywall: React.FC<Props> = ({ onClose, onSuccess }) => {
         {/* Footer */}
         <div className="mt-8 md:mt-10 text-center max-w-xl mx-auto">
           <p className="text-[8px] md:text-[9px] text-white/20 font-bold uppercase tracking-[0.2em] leading-relaxed">
-            Scan credits reset every 30 days. Yearly plans include priority support and early access to new features.
+            {t('paywall.footer')}
           </p>
         </div>
       </div>

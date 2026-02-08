@@ -6,6 +6,7 @@ import { AlertTriangle, ArrowLeft } from 'lucide-react';
 import { auth } from '../firebase';
 import { trackScanStarted, trackScanCompleted, trackScanFailed } from '../utils/analytics';
 import { getTier } from '../utils/tiers';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   photo: string | null;
@@ -13,6 +14,7 @@ interface Props {
 }
 
 const Scanning: React.FC<Props> = ({ photo, onComplete }) => {
+  const { t, i18n } = useTranslation();
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState('STARTING_DNA_SCAN...');
   const [tickerData, setTickerData] = useState('');
@@ -44,7 +46,7 @@ const Scanning: React.FC<Props> = ({ photo, onComplete }) => {
         // Get Firebase auth token for server-side verification
         const token = await auth.currentUser?.getIdToken();
         if (!token) {
-          setError('Please sign in to continue.');
+          setError(t('scanning.signInRequired'));
           setApiComplete(true);
           return;
         }
@@ -55,7 +57,7 @@ const Scanning: React.FC<Props> = ({ photo, onComplete }) => {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`,
           },
-          body: JSON.stringify({ image: photo }),
+          body: JSON.stringify({ image: photo, language: i18n.language }),
         });
 
         // Parse response — handle non-JSON errors (e.g. Vercel 500 page)
@@ -64,7 +66,7 @@ const Scanning: React.FC<Props> = ({ photo, onComplete }) => {
           result = await response.json();
         } catch {
           console.error('API returned non-JSON response, status:', response.status);
-          setError('Server error. Please try again later.');
+          setError(t('scanning.serverError'));
           setApiComplete(true);
           return;
         }
@@ -79,7 +81,7 @@ const Scanning: React.FC<Props> = ({ photo, onComplete }) => {
 
         // Check for validation error (not a valid face)
         if (!response.ok || result.isValidFace === false) {
-          const msg = result.validationMessage || 'No valid human face detected in the image.';
+          const msg = result.validationMessage || t('scanning.noFace');
           trackScanFailed(msg);
           setValidationError(msg);
           setApiComplete(true);
@@ -91,7 +93,7 @@ const Scanning: React.FC<Props> = ({ photo, onComplete }) => {
         setApiComplete(true);
       } catch (err) {
         console.error('Analysis error:', err);
-        setError('Failed to analyze image. Please try again.');
+        setError(t('scanning.analysisError'));
         setApiComplete(true);
       }
     };
@@ -191,8 +193,8 @@ const Scanning: React.FC<Props> = ({ photo, onComplete }) => {
                 <AlertTriangle className="w-6 h-6 text-red-500" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-red-400">Invalid Image</h3>
-                <p className="text-[10px] uppercase tracking-widest text-white/40">Analysis Rejected</p>
+                <h3 className="text-lg font-bold text-red-400">{t('scanning.invalidImage')}</h3>
+                <p className="text-[10px] uppercase tracking-widest text-white/40">{t('scanning.analysisRejected')}</p>
               </div>
             </div>
 
@@ -201,12 +203,12 @@ const Scanning: React.FC<Props> = ({ photo, onComplete }) => {
             </p>
 
             <div className="p-4 bg-white/5 rounded-xl mb-6">
-              <p className="text-[10px] uppercase tracking-widest text-white/40 mb-2">Requirements:</p>
+              <p className="text-[10px] uppercase tracking-widest text-white/40 mb-2">{t('scanning.requirements')}</p>
               <ul className="text-xs text-white/60 space-y-1">
-                <li>• Clear, front-facing human face</li>
-                <li>• Good lighting conditions</li>
-                <li>• No cartoons, robots, or AI-generated faces</li>
-                <li>• Single person in the photo</li>
+                <li>• {t('scanning.req1')}</li>
+                <li>• {t('scanning.req2')}</li>
+                <li>• {t('scanning.req3')}</li>
+                <li>• {t('scanning.req4')}</li>
               </ul>
             </div>
 
@@ -215,7 +217,7 @@ const Scanning: React.FC<Props> = ({ photo, onComplete }) => {
               className="w-full py-4 bg-white text-black font-bold rounded-2xl flex items-center justify-center gap-2 hover:bg-[#00f0ff] transition-all"
             >
               <ArrowLeft className="w-4 h-4" />
-              Try Another Photo
+              {t('scanning.tryAnother')}
             </button>
           </div>
         </motion.div>
@@ -330,7 +332,7 @@ const Scanning: React.FC<Props> = ({ photo, onComplete }) => {
                 className="absolute top-4 right-4 z-40 flex items-center gap-2 px-3 py-1.5 bg-green-500/20 border border-green-500/30 rounded-lg backdrop-blur-sm"
               >
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                <span className="text-[8px] font-mono text-green-400 uppercase">DNA Decoded</span>
+                <span className="text-[8px] font-mono text-green-400 uppercase">{t('scanning.dnaDecoded')}</span>
               </motion.div>
             )}
 
@@ -341,7 +343,7 @@ const Scanning: React.FC<Props> = ({ photo, onComplete }) => {
                 className="absolute top-4 right-4 z-40 flex items-center gap-2 px-3 py-1.5 bg-red-500/20 border border-red-500/30 rounded-lg backdrop-blur-sm"
               >
                 <div className="w-2 h-2 bg-red-500 rounded-full" />
-                <span className="text-[8px] font-mono text-red-400 uppercase">Invalid Subject</span>
+                <span className="text-[8px] font-mono text-red-400 uppercase">{t('scanning.invalidSubject')}</span>
               </motion.div>
             )}
           </div>
