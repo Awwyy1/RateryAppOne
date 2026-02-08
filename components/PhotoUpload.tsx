@@ -2,6 +2,7 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, Camera, FileText, AlertCircle, X, FlipHorizontal, ArrowLeft, RefreshCw } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   onPhotoSelected: (img: string) => void;
@@ -9,6 +10,7 @@ interface Props {
 }
 
 const PhotoUpload: React.FC<Props> = ({ onPhotoSelected, onCancel }) => {
+  const { t } = useTranslation();
   const [isDragging, setIsDragging] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
@@ -95,7 +97,7 @@ const PhotoUpload: React.FC<Props> = ({ onPhotoSelected, onCancel }) => {
       setShowCamera(true);
     } catch (err) {
       console.error('Camera error:', err);
-      setCameraError('Unable to access camera. Please check permissions or use file upload instead.');
+      setCameraError(t('upload.cameraError'));
       setIsSwitching(false);
     }
   }, []);
@@ -163,13 +165,13 @@ const PhotoUpload: React.FC<Props> = ({ onPhotoSelected, onCancel }) => {
           className="mb-6 flex items-center gap-2 px-4 py-2 text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all text-sm font-bold"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Results
+          {t('upload.backToResults')}
         </motion.button>
       )}
 
       <div className="text-center mb-10">
-        <h2 className="text-3xl font-bold tracking-tight mb-2">Upload Your Photo</h2>
-        <p className="text-slate-500">High-resolution headshots produce the most accurate DNA scan.</p>
+        <h2 className="text-3xl font-bold tracking-tight mb-2">{t('upload.title')}</h2>
+        <p className="text-slate-500">{t('upload.subtitle')}</p>
       </div>
 
       <AnimatePresence mode="wait">
@@ -250,9 +252,9 @@ const PhotoUpload: React.FC<Props> = ({ onPhotoSelected, onCancel }) => {
               <Upload className="w-8 h-8 text-[#00f0ff]" />
             </div>
 
-            <h3 className="text-xl font-semibold mb-2">Drag & Drop Headshot</h3>
+            <h3 className="text-xl font-semibold mb-2">{t('upload.dragDrop')}</h3>
             <p className="text-slate-500 text-sm text-center max-w-xs mb-8">
-              Support formats: JPG, PNG, WEBP. <br /> Maximum size: 10MB.
+              {t('upload.formats')} <br /> {t('upload.maxSize')}
             </p>
 
             <div className="flex gap-4" onClick={(e) => e.stopPropagation()}>
@@ -260,13 +262,13 @@ const PhotoUpload: React.FC<Props> = ({ onPhotoSelected, onCancel }) => {
                 onClick={(e) => { e.stopPropagation(); handleStartCamera(); }}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-xs font-semibold hover:bg-white/10 transition-all"
               >
-                <Camera className="w-4 h-4" /> Use Camera
+                <Camera className="w-4 h-4" /> {t('upload.useCamera')}
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-xs font-semibold hover:bg-white/10 transition-all"
               >
-                <FileText className="w-4 h-4" /> Pick File
+                <FileText className="w-4 h-4" /> {t('upload.pickFile')}
               </button>
             </div>
 
@@ -295,9 +297,9 @@ const PhotoUpload: React.FC<Props> = ({ onPhotoSelected, onCancel }) => {
       <div className="mt-8 glass p-4 rounded-2xl flex items-start gap-4 border-amber-500/20 bg-amber-500/5">
         <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
         <div>
-          <h4 className="text-xs font-bold text-amber-500 uppercase tracking-widest mb-1">Privacy Notice</h4>
+          <h4 className="text-xs font-bold text-amber-500 uppercase tracking-widest mb-1">{t('upload.privacyNotice')}</h4>
           <p className="text-[11px] text-slate-400 leading-normal">
-            Photos are processed by AI for analysis only and immediately discarded. We do not store your images. Scan history is saved locally on your device.
+            {t('upload.privacyText')}
           </p>
         </div>
       </div>

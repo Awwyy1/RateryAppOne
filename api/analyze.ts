@@ -107,7 +107,8 @@ export default async function handler(
 
   // --- ANALYZE: Process the image ---
   try {
-    const { image } = req.body;
+    const { image, language } = req.body;
+    const lang = (language === 'es' || language === 'pt') ? language : 'en';
 
     if (!image) {
       return res.status(400).json({ error: 'No image provided' });
@@ -224,6 +225,17 @@ Evaluate these 16 DNA metrics on a scale of 0-100:
 
 RESPOND ONLY WITH VALID JSON, no markdown, no code blocks.`;
 
+    // Append language instruction if not English
+    const langMap: Record<string, string> = {
+      es: 'Spanish (Español)',
+      pt: 'Brazilian Portuguese (Português)',
+    };
+    const langInstruction = lang !== 'en' && langMap[lang]
+      ? `\n\nIMPORTANT LANGUAGE REQUIREMENT: All "description" fields in metrics AND all "insights" strings MUST be written in ${langMap[lang]}. The "validationMessage" field (if applicable) must also be in ${langMap[lang]}. Metric labels (Trust, Magnetism, etc.) should remain in English as they are brand terms.`
+      : '';
+
+    const finalPrompt = prompt + langInstruction;
+
     // Call Claude API with vision
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
@@ -242,7 +254,7 @@ RESPOND ONLY WITH VALID JSON, no markdown, no code blocks.`;
             },
             {
               type: 'text',
-              text: prompt,
+              text: finalPrompt,
             },
           ],
         },

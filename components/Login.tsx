@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Shield, Lock, UserCheck } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   onSuccess: () => void;
@@ -11,6 +12,8 @@ const Login: React.FC<Props> = ({ onSuccess }) => {
   const { signInWithGoogle, loading } = useAuth();
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const { t } = useTranslation();
 
   const handleGoogleSignIn = async () => {
     setIsSigningIn(true);
@@ -23,7 +26,7 @@ const Login: React.FC<Props> = ({ onSuccess }) => {
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError('Failed to sign in. Please try again.');
+        setError(t('login.signInError'));
       }
     } finally {
       setIsSigningIn(false);
@@ -48,9 +51,9 @@ const Login: React.FC<Props> = ({ onSuccess }) => {
           <Lock className="w-8 h-8 text-[#00f0ff]" />
         </motion.div>
 
-        <h2 className="text-3xl font-bold tracking-tight mb-4">Secure Access Required</h2>
+        <h2 className="text-3xl font-bold tracking-tight mb-4">{t('login.title')}</h2>
         <p className="text-white/40 text-sm leading-relaxed max-w-sm mx-auto">
-          Authenticate to decode your Social DNA. Your session data remains encrypted and private.
+          {t('login.subtitle')}
         </p>
       </div>
 
@@ -71,7 +74,7 @@ const Login: React.FC<Props> = ({ onSuccess }) => {
                   animate={{ rotate: 360 }}
                   transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                 />
-                <span className="text-xs uppercase tracking-widest">Authenticating...</span>
+                <span className="text-xs uppercase tracking-widest">{t('login.authenticating')}</span>
               </>
             ) : (
               <>
@@ -93,7 +96,7 @@ const Login: React.FC<Props> = ({ onSuccess }) => {
                     d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                   />
                 </svg>
-                <span className="text-xs uppercase tracking-widest">Continue with Google</span>
+                <span className="text-xs uppercase tracking-widest">{t('login.continueGoogle')}</span>
               </>
             )}
           </motion.button>
@@ -111,7 +114,7 @@ const Login: React.FC<Props> = ({ onSuccess }) => {
           {/* Divider */}
           <div className="flex items-center gap-4 py-2">
             <div className="flex-1 h-px bg-white/5" />
-            <span className="text-[10px] uppercase tracking-widest text-white/20 font-bold">Security Protocols</span>
+            <span className="text-[10px] uppercase tracking-widest text-white/20 font-bold">{t('login.securityProtocols')}</span>
             <div className="flex-1 h-px bg-white/5" />
           </div>
 
@@ -122,8 +125,8 @@ const Login: React.FC<Props> = ({ onSuccess }) => {
                 <Shield className="w-4 h-4 text-[#00f0ff]" />
               </div>
               <div>
-                <p className="text-xs font-bold text-white/80">Secure Processing</p>
-                <p className="text-[10px] text-white/30">Photos analyzed and discarded</p>
+                <p className="text-xs font-bold text-white/80">{t('login.secureProcessing')}</p>
+                <p className="text-[10px] text-white/30">{t('login.secureProcessingDesc')}</p>
               </div>
             </div>
 
@@ -132,8 +135,8 @@ const Login: React.FC<Props> = ({ onSuccess }) => {
                 <UserCheck className="w-4 h-4 text-[#00f0ff]" />
               </div>
               <div>
-                <p className="text-xs font-bold text-white/80">Local Storage</p>
-                <p className="text-[10px] text-white/30">Your data stays on your device</p>
+                <p className="text-xs font-bold text-white/80">{t('login.localStorage')}</p>
+                <p className="text-[10px] text-white/30">{t('login.localStorageDesc')}</p>
               </div>
             </div>
           </div>
@@ -142,7 +145,7 @@ const Login: React.FC<Props> = ({ onSuccess }) => {
 
       {/* Footer Note */}
       <p className="text-center mt-8 text-[10px] text-white/20 max-w-xs mx-auto">
-        By continuing, you agree to our Terms of Service and acknowledge our Privacy Policy.
+        {t('login.terms')}
       </p>
     </motion.div>
   );

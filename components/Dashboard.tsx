@@ -10,6 +10,7 @@ import NeuralIdentityCard from './NeuralIdentityCard';
 import { getTier, getTierInfo, getNextTier } from '../utils/tiers';
 import { Download, Share2, Target, Zap, Shield, Cpu, Check, X, Dna, TrendingUp, Lock, Crown, ArrowLeft } from 'lucide-react';
 import { useSubscription } from '../contexts/SubscriptionContext';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   photo: string | null;
@@ -17,6 +18,7 @@ interface Props {
 }
 
 const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
+  const { t } = useTranslation();
   const [shareStatus, setShareStatus] = useState<'idle' | 'copied' | 'shared'>('idle');
   const [isDownloading, setIsDownloading] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -147,11 +149,11 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
           <div className="relative aspect-[3/4] rounded-3xl overflow-hidden mb-6 border border-white/5 shadow-2xl">
             {photo && <img src={photo} alt="Subject" className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" />}
             <div className="absolute top-4 left-4 flex gap-2 z-20">
-              <span className="px-2 py-1 bg-black/50 backdrop-blur-md rounded text-[8px] font-mono font-bold border border-white/10 uppercase">DNA Verified</span>
+              <span className="px-2 py-1 bg-black/50 backdrop-blur-md rounded text-[8px] font-mono font-bold border border-white/10 uppercase">{t('dashboard.dnaVerified')}</span>
             </div>
             {analysisResult && (
               <div className="absolute bottom-4 right-4 z-20">
-                <span className="px-2 py-1 bg-[#00f0ff]/20 backdrop-blur-md rounded text-[8px] font-mono font-bold border border-[#00f0ff]/30 uppercase text-[#00f0ff]">DNA Decoded</span>
+                <span className="px-2 py-1 bg-[#00f0ff]/20 backdrop-blur-md rounded text-[8px] font-mono font-bold border border-[#00f0ff]/30 uppercase text-[#00f0ff]">{t('dashboard.dnaDecoded')}</span>
               </div>
             )}
           </div>
@@ -159,7 +161,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
           <div className="space-y-4 relative z-20">
             <div className="flex justify-between items-end">
               <div>
-                <p className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold mb-1">Vibe Score</p>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold mb-1">{t('dashboard.vibeScore')}</p>
                 <p className="text-5xl font-black tracking-tighter">{overallScore.toFixed(1)}<span className="text-sm font-bold text-white/20">/10</span></p>
               </div>
               <div className="w-12 h-12 rounded-full border border-[#00f0ff]/30 flex items-center justify-center bg-[#00f0ff]/5">
@@ -170,11 +172,11 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
             {/* Status/Tier Display */}
             <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
               <div>
-                <p className="text-[8px] uppercase tracking-widest text-white/40 font-bold">Status</p>
+                <p className="text-[8px] uppercase tracking-widest text-white/40 font-bold">{t('dashboard.status')}</p>
                 <p className="text-lg font-black" style={{ color: tierInfo.color }}>{tierInfo.name}</p>
               </div>
               <div className="text-right">
-                <p className="text-[8px] uppercase tracking-widest text-white/40 font-bold">Match</p>
+                <p className="text-[8px] uppercase tracking-widest text-white/40 font-bold">{t('dashboard.match')}</p>
                 <p className="text-lg font-black text-white">{(overallScore * 10).toFixed(1)}%</p>
               </div>
             </div>
@@ -196,7 +198,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
                   </>
                 ) : (
                   <>
-                    <Download className="w-4 h-4" /> Download DNA Card
+                    <Download className="w-4 h-4" /> {t('dashboard.downloadCard')}
                   </>
                 )}
               </button>
@@ -206,15 +208,15 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
               >
                 {shareStatus === 'copied' ? (
                   <>
-                    <Check className="w-4 h-4 text-green-500" /> Copied to Clipboard
+                    <Check className="w-4 h-4 text-green-500" /> {t('dashboard.copiedClipboard')}
                   </>
                 ) : shareStatus === 'shared' ? (
                   <>
-                    <Check className="w-4 h-4 text-green-500" /> Shared!
+                    <Check className="w-4 h-4 text-green-500" /> {t('dashboard.shared')}
                   </>
                 ) : (
                   <>
-                    <Share2 className="w-4 h-4" /> Share My DNA
+                    <Share2 className="w-4 h-4" /> {t('dashboard.shareMyDna')}
                   </>
                 )}
               </button>
@@ -228,19 +230,19 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
         <div className="glass p-5 md:p-10 rounded-[2rem] md:rounded-[2.5rem] flex-1 flex flex-col min-h-[400px] md:min-h-[500px] border-white/5">
           <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6 md:mb-8">
             <div>
-              <h2 className="text-xl md:text-3xl font-black tracking-tighter mb-1 md:mb-2">Your DNA Markers</h2>
+              <h2 className="text-xl md:text-3xl font-black tracking-tighter mb-1 md:mb-2">{t('dashboard.dnaMarkers')}</h2>
               <p className="text-white/30 text-[10px] md:text-xs font-bold uppercase tracking-widest">
-                {visibleMarkersCount} of {metrics.length} markers unlocked
+                {t('dashboard.markersUnlocked', { count: visibleMarkersCount, total: metrics.length })}
               </p>
             </div>
             <div className="flex gap-2 md:gap-4 p-1.5 md:p-2 bg-black/20 rounded-lg md:rounded-xl border border-white/5">
               <div className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1">
                 <div className="w-1.5 md:w-2 h-1.5 md:h-2 rounded-full bg-[#00f0ff] shadow-[0_0_8px_#00f0ff]" />
-                <span className="text-[8px] md:text-[9px] uppercase tracking-widest font-black text-white">You</span>
+                <span className="text-[8px] md:text-[9px] uppercase tracking-widest font-black text-white">{t('dashboard.you')}</span>
               </div>
               <div className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1">
                 <div className="w-1.5 md:w-2 h-1.5 md:h-2 rounded-full bg-white/10" />
-                <span className="text-[8px] md:text-[9px] uppercase tracking-widest font-black text-white/40">Baseline</span>
+                <span className="text-[8px] md:text-[9px] uppercase tracking-widest font-black text-white/40">{t('dashboard.baseline')}</span>
               </div>
             </div>
           </div>
@@ -272,7 +274,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
       <motion.div variants={bentoItem} className="md:col-span-12 lg:col-span-3 flex flex-col gap-6">
         <div className="glass p-8 rounded-[2.5rem] border-white/5 flex-1">
           <h3 className="text-sm font-black uppercase tracking-[0.3em] mb-8 flex items-center gap-2 text-[#00f0ff]">
-            <Zap className="w-4 h-4" /> DNA Insights
+            <Zap className="w-4 h-4" /> {t('dashboard.dnaInsights')}
           </h3>
           <div className="space-y-8">
             {insights.map((insight, i) => (
@@ -294,7 +296,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
 
         <div className="glass p-8 rounded-[2.5rem] bg-[#00f0ff]/5 border-[#00f0ff]/20">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-sm font-black uppercase tracking-[0.3em]">Scan Status</h3>
+            <h3 className="text-sm font-black uppercase tracking-[0.3em]">{t('dashboard.scanStatus')}</h3>
             <Cpu className="w-4 h-4 text-[#00f0ff]" />
           </div>
           <div className="space-y-4">
@@ -319,11 +321,11 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
         <div className="glass p-4 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border-white/5">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8">
             <h3 className="text-xs md:text-sm font-black uppercase tracking-[0.2em] md:tracking-[0.3em] flex items-center gap-2">
-              <Shield className="w-4 h-4 text-[#00f0ff]" /> Detailed Breakdown
+              <Shield className="w-4 h-4 text-[#00f0ff]" /> {t('dashboard.detailedBreakdown')}
             </h3>
             <div className="flex items-center gap-2 text-[10px] text-white/40">
               <span className="px-2 py-1 bg-[#00f0ff]/10 rounded-lg text-[#00f0ff] font-bold">
-                {visibleMarkersCount}/{metrics.length} Markers Unlocked
+                {t('dashboard.markersUnlockedCount', { count: visibleMarkersCount, total: metrics.length })}
               </span>
             </div>
           </div>
@@ -369,7 +371,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
                           {metric.value >= metric.benchmark ? '↑' : '↓'} {Math.abs(metric.value - metric.benchmark)}
                         </span>
                       </div>
-                      <p className="text-[8px] text-[#00f0ff]/60 mt-2 font-medium">Tap for details</p>
+                      <p className="text-[8px] text-[#00f0ff]/60 mt-2 font-medium">{t('dashboard.tapForDetails')}</p>
                     </>
                   ) : (
                     <>
@@ -387,7 +389,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
                       </div>
                       <div className="flex items-center justify-center gap-1 text-[8px] text-white/20 mt-auto">
                         <Lock className="w-3 h-3" />
-                        <span>Locked</span>
+                        <span>{t('dashboard.locked')}</span>
                       </div>
                     </>
                   )}
@@ -409,17 +411,17 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
                   <Crown className="w-5 h-5 md:w-6 md:h-6 text-[#00f0ff]" />
                 </div>
                 <div>
-                  <p className="font-bold text-sm md:text-base text-white">Unlock All {metrics.length} DNA Markers</p>
+                  <p className="font-bold text-sm md:text-base text-white">{t('dashboard.unlockAllMarkers', { count: metrics.length })}</p>
                   <p className="text-[10px] md:text-xs text-white/40">
                     {currentPlan === 'free'
-                      ? 'Upgrade to Premium for 7 markers, or Pro for all 16'
-                      : 'Upgrade to Pro for all 16 DNA markers'}
+                      ? t('dashboard.upgradeForMarkers')
+                      : t('dashboard.upgradeToPro')}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-2 text-[9px] md:text-[10px] text-[#00f0ff] font-bold uppercase tracking-widest">
                 <Zap className="w-3 h-3" />
-                <span>{metrics.length - visibleMarkersCount} markers locked</span>
+                <span>{t('dashboard.markersLocked', { count: metrics.length - visibleMarkersCount })}</span>
               </div>
             </motion.div>
           )}
@@ -443,7 +445,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-bold">Share Your DNA</h3>
+              <h3 className="text-lg font-bold">{t('dashboard.shareYourDna')}</h3>
               <button
                 onClick={() => setShowShareModal(false)}
                 className="p-2 hover:bg-white/10 rounded-full transition-all"
@@ -453,7 +455,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
             </div>
 
             <p className="text-white/40 text-sm mb-6">
-              Share your Vibe Score of {overallScore.toFixed(1)}/10 with friends!
+              {t('dashboard.shareVibeScore', { score: overallScore.toFixed(1) })}
             </p>
 
             <div className="space-y-3">
@@ -468,8 +470,8 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
                   </svg>
                 </div>
                 <div className="text-left">
-                  <p className="font-bold text-sm">X (Twitter)</p>
-                  <p className="text-[10px] text-white/40">Tweet your score</p>
+                  <p className="font-bold text-sm">{t('dashboard.twitterX')}</p>
+                  <p className="text-[10px] text-white/40">{t('dashboard.tweetScore')}</p>
                 </div>
               </button>
 
@@ -484,8 +486,8 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
                   </svg>
                 </div>
                 <div className="text-left">
-                  <p className="font-bold text-sm">Instagram</p>
-                  <p className="text-[10px] text-white/40">Copy & share to story</p>
+                  <p className="font-bold text-sm">{t('dashboard.instagram')}</p>
+                  <p className="text-[10px] text-white/40">{t('dashboard.copyShareStory')}</p>
                 </div>
               </button>
 
@@ -500,14 +502,14 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
                   </svg>
                 </div>
                 <div className="text-left">
-                  <p className="font-bold text-sm">Threads</p>
-                  <p className="text-[10px] text-white/40">Share to Threads</p>
+                  <p className="font-bold text-sm">{t('dashboard.threads')}</p>
+                  <p className="text-[10px] text-white/40">{t('dashboard.shareToThreads')}</p>
                 </div>
               </button>
             </div>
 
             <p className="text-center text-[10px] text-white/20 mt-6">
-              Your Vibe Score: {overallScore.toFixed(1)}/10
+              {t('dashboard.yourVibeScore', { score: overallScore.toFixed(1) })}
             </p>
           </motion.div>
         </motion.div>
@@ -563,7 +565,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
           ) : (
             <>
               <Download className="w-5 h-5" />
-              Download Card
+              {t('dashboard.downloadDnaCard')}
             </>
           )}
         </button>
@@ -592,7 +594,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
               {/* Header */}
               <div className="flex justify-between items-start mb-6">
                 <div>
-                  <p className="text-[10px] uppercase tracking-widest text-[#00f0ff] font-bold mb-2">DNA Marker</p>
+                  <p className="text-[10px] uppercase tracking-widest text-[#00f0ff] font-bold mb-2">{t('dashboard.dnaMarker')}</p>
                   <h2 className="text-2xl md:text-3xl font-black tracking-tight">
                     {selectedMetric.label}
                   </h2>
@@ -624,7 +626,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
               {/* Benchmark Comparison */}
               <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl mb-6">
                 <div>
-                  <p className="text-[10px] uppercase tracking-widest text-white/40 font-bold">Benchmark</p>
+                  <p className="text-[10px] uppercase tracking-widest text-white/40 font-bold">{t('dashboard.benchmark')}</p>
                   <p className="text-lg font-bold">{selectedMetric.benchmark}</p>
                 </div>
                 <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${
@@ -641,7 +643,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
 
               {/* Description */}
               <div>
-                <p className="text-[10px] uppercase tracking-widest text-white/40 font-bold mb-3">Analysis</p>
+                <p className="text-[10px] uppercase tracking-widest text-white/40 font-bold mb-3">{t('dashboard.analysis')}</p>
                 <p className="text-white/70 leading-relaxed">
                   {selectedMetric.description}
                 </p>

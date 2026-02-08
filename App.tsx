@@ -15,8 +15,11 @@ import PrivacyPolicy from './components/PrivacyPolicy';
 import TermsOfService from './components/TermsOfService';
 import { LogOut, User, Crown, CheckCircle, X, Sparkles } from 'lucide-react';
 import { trackPaymentSuccess, trackStageChange } from './utils/analytics';
+import { useTranslation } from 'react-i18next';
+import LanguageSelector from './components/LanguageSelector';
 
 const AppContent: React.FC = () => {
+  const { t } = useTranslation();
   const [stage, setStage] = useState<AppStage>(AppStage.LANDING);
   const [photo, setPhoto] = useState<string | null>(null);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
@@ -187,10 +190,10 @@ const AppContent: React.FC = () => {
         <nav className="hidden lg:flex gap-8 text-[10px] font-bold uppercase tracking-widest text-white/40">
           <span className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 bg-[#00f0ff] rounded-full animate-pulse" />
-            AI Powered
+            {t('app.aiPowered')}
           </span>
           <span className="text-white/20">|</span>
-          <span>DNA Scanner</span>
+          <span>{t('app.dnaScanner')}</span>
         </nav>
 
         {/* User controls */}
@@ -200,7 +203,7 @@ const AppContent: React.FC = () => {
             {isPro ? (
               <div className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/30 rounded-full">
                 <Sparkles className="w-3 h-3 md:w-4 md:h-4 text-amber-400" />
-                <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-wider md:tracking-widest text-amber-400">Pro</span>
+                <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-wider md:tracking-widest text-amber-400">{t('app.pro')}</span>
               </div>
             ) : isPremium ? (
               <motion.button
@@ -211,7 +214,7 @@ const AppContent: React.FC = () => {
               >
                 <Crown className="w-3 h-3 md:w-4 md:h-4 text-[#00f0ff]" />
                 <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-wider md:tracking-widest text-[#00f0ff]">
-                  {scansLeft} left
+                  {scansLeft} {t('app.left')}
                 </span>
               </motion.button>
             ) : (
@@ -222,7 +225,7 @@ const AppContent: React.FC = () => {
                 className="flex items-center gap-1.5 px-2 md:px-3 py-1 md:py-1.5 bg-white/5 border border-white/10 rounded-full hover:border-[#00f0ff]/30 transition-all"
               >
                 <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-wider text-white/60">
-                  {scansLeft === 'unlimited' ? '∞' : scansLeft} free
+                  {scansLeft === 'unlimited' ? '∞' : scansLeft} {t('app.free')}
                 </span>
               </motion.button>
             )}
@@ -237,6 +240,7 @@ const AppContent: React.FC = () => {
                 {user.displayName || user.email}
               </span>
             </div>
+            <LanguageSelector />
             {/* Logout button */}
             <motion.button
               onClick={handleSignOut}
@@ -248,13 +252,16 @@ const AppContent: React.FC = () => {
             </motion.button>
           </div>
         ) : (
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="px-4 md:px-6 py-1.5 md:py-2 bg-white/5 border border-white/10 rounded-full text-[9px] md:text-[10px] font-bold uppercase tracking-widest hover:bg-white hover:text-black transition-all"
-          >
-            Access Console
-          </motion.button>
+          <div className="flex items-center gap-2 md:gap-3">
+            <LanguageSelector />
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-4 md:px-6 py-1.5 md:py-2 bg-white/5 border border-white/10 rounded-full text-[9px] md:text-[10px] font-bold uppercase tracking-widest hover:bg-white hover:text-black transition-all"
+            >
+              {t('app.accessConsole')}
+            </motion.button>
+          </div>
         )}
       </header>
 
@@ -303,13 +310,13 @@ const AppContent: React.FC = () => {
           onClick={() => handleShowLegal(AppStage.PRIVACY)}
           className="text-[8px] md:text-[9px] uppercase tracking-[0.2em] text-white/20 font-mono hover:text-[#00f0ff] transition-colors"
         >
-          Privacy
+          {t('app.privacy')}
         </button>
         <button
           onClick={() => handleShowLegal(AppStage.TERMS)}
           className="text-[8px] md:text-[9px] uppercase tracking-[0.2em] text-white/20 font-mono hover:text-[#00f0ff] transition-colors"
         >
-          Terms
+          {t('app.terms')}
         </button>
         <span className="text-[8px] md:text-[9px] uppercase tracking-[0.3em] text-white/20 font-mono">
           ©2026 Ratery
@@ -348,10 +355,10 @@ const AppContent: React.FC = () => {
             </div>
             <div>
               <p className="font-black text-base md:text-lg text-white">
-                Welcome to {isPro ? 'Pro' : 'Premium'}!
+                {isPro ? t('app.welcomePro') : t('app.welcomePremium')}
               </p>
               <p className={`text-xs md:text-sm ${isPro ? 'text-amber-400/80' : 'text-[#00f0ff]/80'}`}>
-                {isPro ? 'Enjoy unlimited scans forever' : 'Enjoy 49 scans per month'}
+                {isPro ? t('app.enjoyUnlimited') : t('app.enjoy49')}
               </p>
             </div>
             <button
