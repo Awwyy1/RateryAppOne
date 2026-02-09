@@ -14,6 +14,7 @@ import {
 import { MetricData } from '../types';
 import { useSubscription } from '../contexts/SubscriptionContext';
 import { MARKERS_BY_PLAN } from '../constants';
+import { useTranslation } from 'react-i18next';
 
 ChartJS.register(
   RadarController,
@@ -33,6 +34,7 @@ const RadarChart: React.FC<Props> = ({ metrics }) => {
   const chartRef = useRef<HTMLCanvasElement>(null);
   const chartInstance = useRef<ChartJS | null>(null);
   const { currentPlan } = useSubscription();
+  const { t } = useTranslation();
 
   // Determine how many markers to show based on plan
   const visibleMarkersCount = MARKERS_BY_PLAN[currentPlan] || 3;
@@ -50,7 +52,7 @@ const RadarChart: React.FC<Props> = ({ metrics }) => {
     // Always show 16 labels on the radar grid
     // Visible markers get their names, locked markers get "???"
     const labels = metrics.map((m, index) =>
-      index < visibleMarkersCount ? m.label.toUpperCase() : '???'
+      index < visibleMarkersCount ? t(`metrics.${m.label}`, m.label).toUpperCase() : '???'
     );
 
     // Data: visible markers get their values, locked markers get 0 (no polygon line to them)
@@ -133,7 +135,7 @@ const RadarChart: React.FC<Props> = ({ metrics }) => {
     chartInstance.current = new ChartJS(ctx, config);
 
     return () => chartInstance.current?.destroy();
-  }, [metrics, visibleMarkersCount]);
+  }, [metrics, visibleMarkersCount, t]);
 
   return (
     <div className="w-full h-full min-h-[300px] md:min-h-[400px] flex items-center justify-center relative p-2 md:p-4">
