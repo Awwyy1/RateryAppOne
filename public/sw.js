@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ratery-v11';
+const CACHE_NAME = 'ratery-v12';
 const urlsToCache = [
   '/',
   '/favicon.svg'
@@ -21,6 +21,7 @@ const BYPASS_PATTERNS = [
   'creem.io',
   'fonts.googleapis.com',
   'fonts.gstatic.com',
+  'googleusercontent.com',
   'grainy-gradients.vercel.app',
 ];
 
