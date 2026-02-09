@@ -231,7 +231,7 @@ RESPOND ONLY WITH VALID JSON, no markdown, no code blocks.`;
       pt: 'Brazilian Portuguese (Português)',
     };
     const langInstruction = lang !== 'en' && langMap[lang]
-      ? `\n\nIMPORTANT LANGUAGE REQUIREMENT: All "description" fields in metrics AND all "insights" strings MUST be written in ${langMap[lang]}. The "validationMessage" field (if applicable) must also be in ${langMap[lang]}. Metric labels (Trust, Magnetism, etc.) should remain in English as they are brand terms.`
+      ? `\n\nIMPORTANT LANGUAGE REQUIREMENT: All "description" fields in metrics AND all "insights" strings MUST be written in ${langMap[lang]}. The "validationMessage" field (if applicable) must also be in ${langMap[lang]}. Metric "label" fields (Trust, Magnetism, etc.) MUST remain in English exactly as specified — they are used as programmatic keys and translated on the client side.`
       : '';
 
     const finalPrompt = prompt + langInstruction;

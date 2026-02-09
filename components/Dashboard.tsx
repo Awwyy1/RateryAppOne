@@ -254,7 +254,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
           <div className="mt-8 pt-8 border-t border-white/5 grid grid-cols-3 gap-2 md:gap-4">
             {metrics.slice(0, 3).map((res, i) => (
               <div key={i}>
-                <p className="text-[8px] md:text-[9px] uppercase tracking-widest text-white/30 font-bold mb-2">{res.label}</p>
+                <p className="text-[8px] md:text-[9px] uppercase tracking-widest text-white/30 font-bold mb-2">{t(`metrics.${res.label}`, res.label)}</p>
                 <p className="text-lg md:text-xl font-black tracking-tighter">{res.value}%</p>
                 <div className="w-full h-1 bg-white/5 mt-2 rounded-full overflow-hidden">
                   <motion.div
@@ -350,7 +350,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
                 >
                   {isVisible ? (
                     <>
-                      <p className="text-[8px] md:text-[9px] uppercase tracking-widest text-white/30 font-bold mb-2">{metric.label}</p>
+                      <p className="text-[8px] md:text-[9px] uppercase tracking-widest text-white/30 font-bold mb-2">{t(`metrics.${metric.label}`, metric.label)}</p>
                       <div className="flex items-end gap-1 md:gap-2 mb-2 md:mb-3">
                         <span className="text-2xl md:text-3xl font-black text-white group-hover:text-[#00f0ff] transition-colors">{metric.value}</span>
                         <span className="text-[10px] md:text-xs text-white/20 mb-1">/ 100</span>
@@ -596,7 +596,7 @@ const Dashboard: React.FC<Props> = ({ photo, analysisResult }) => {
                 <div>
                   <p className="text-[10px] uppercase tracking-widest text-[#00f0ff] font-bold mb-2">{t('dashboard.dnaMarker')}</p>
                   <h2 className="text-2xl md:text-3xl font-black tracking-tight">
-                    {selectedMetric.label}
+                    {t(`metrics.${selectedMetric.label}`, selectedMetric.label)}
                   </h2>
                 </div>
                 <button
