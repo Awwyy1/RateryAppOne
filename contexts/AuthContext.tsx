@@ -2,6 +2,8 @@ import React, { createContext, useContext, useEffect, useState, ReactNode } from
 import {
   User,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut as firebaseSignOut,
   onAuthStateChanged
 } from 'firebase/auth';
@@ -25,6 +27,18 @@ export const useAuth = (): AuthContextType => {
   return context;
 };
 
+// Detect Safari browser
+const isSafari = (): boolean => {
+  const ua = navigator.userAgent;
+  return /^((?!chrome|android).)*safari/i.test(ua);
+};
+
+// Detect standalone PWA mode (added to home screen)
+const isStandalone = (): boolean => {
+  return ('standalone' in window.navigator && (window.navigator as unknown as { standalone: boolean }).standalone) ||
+    window.matchMedia('(display-mode: standalone)').matches;
+};
+
 interface AuthProviderProps {
   children: ReactNode;
 }
@@ -42,13 +56,43 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return () => unsubscribe();
   }, []);
 
+  // Handle redirect result on page load (for Safari redirect flow)
+  useEffect(() => {
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result?.user) {
+          trackLogin();
+        }
+      })
+      .catch((error) => {
+        console.error('Redirect sign-in error:', error);
+      });
+  }, []);
+
   const signInWithGoogle = async (): Promise<void> => {
-    try {
-      await signInWithPopup(auth, googleProvider);
-      trackLogin();
-    } catch (error) {
-      console.error('Error signing in with Google:', error);
-      throw error;
+    // Safari (especially PWA mode) doesn't support signInWithPopup reliably
+    // Use signInWithRedirect for Safari, popup for everything else
+    if (isSafari() || isStandalone()) {
+      try {
+        await signInWithRedirect(auth, googleProvider);
+      } catch (error) {
+        console.error('Error signing in with redirect:', error);
+        throw error;
+      }
+    } else {
+      try {
+        await signInWithPopup(auth, googleProvider);
+        trackLogin();
+      } catch (error) {
+        // If popup fails (blocked, etc.), fall back to redirect
+        console.warn('Popup sign-in failed, trying redirect:', error);
+        try {
+          await signInWithRedirect(auth, googleProvider);
+        } catch (redirectError) {
+          console.error('Redirect sign-in also failed:', redirectError);
+          throw redirectError;
+        }
+      }
     }
   };
 
